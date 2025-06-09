@@ -1,9 +1,10 @@
 plugins {
     kotlin("jvm")
+    id("maven-publish")
 }
 
 group = "tosaa.puml.ksp"
-version = "unspecified"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -21,4 +22,10 @@ tasks.test {
 
 kotlin {
     jvmToolchain(17)
+}
+
+publishing {
+    publications.create<MavenPublication>("ksp-puml-plugin").from(components["kotlin"])
+
+    repositories.mavenLocal()
 }

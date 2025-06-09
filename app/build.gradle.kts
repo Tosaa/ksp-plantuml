@@ -11,12 +11,22 @@ plugins {
 
 dependencies {
     // Project "app" depends on project "utils". (Project paths are separated with ":", so ":utils" refers to the top-level "utils" project.)
-    implementation(project(":pumlgenerator"))
-    ksp(project(":pumlgenerator"))
+    ksp("tosaa.puml.ksp:pumlgenerator:1.0.0")
 }
 
-ksp{
-    arg("wl", "com")
+ksp {
+    arg("showPublicClasses","true")
+    arg("showPublicProperties","true")
+    arg("showPublicFunctions","true")
+    arg("showInternalClasses","false")
+    arg("showInternalProperties","false")
+    arg("showInternalFunctions","false")
+    arg("showPrivateClasses","false")
+    arg("showPrivateProperties","false")
+    arg("showPrivateFunctions","false")
+    arg("showInheritance","false")
+    arg("showRelations","false")
+    arg("showPackages","false")
 }
 
 application {

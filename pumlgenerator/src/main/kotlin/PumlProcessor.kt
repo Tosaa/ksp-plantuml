@@ -22,6 +22,7 @@ class PumlProcessor(
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val files = resolver.getAllFiles()
+        logger.i { "Applied options: $options" }
         logger.i { "Process Files: ${files.joinToString()}" }
         val invalidFiles = files.filter { !it.validate() }
         files.forEach {

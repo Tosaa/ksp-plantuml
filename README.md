@@ -9,6 +9,27 @@ The output can be found at `app/build/resources/main/ClassDiagram.puml`.
 It can be rendered by using the Intellij Plantuml Plugin or the [Plantuml.com](https://plantuml.com/)
 
 ## Configuration options
+The following options can be set using ksp.
+```
+ksp {
+    arg("excludedPackages","com.do.not.add,com.app.main")
+    arg("excludedFunctions","<init>,finalize")
+    arg("showPublicClasses","true")
+    arg("showPublicProperties","true")
+    arg("showPublicFunctions","true")
+    arg("showInternalClasses","true")
+    arg("showInternalProperties","true")
+    arg("showInternalFunctions","true")
+    arg("showPrivateClasses","true")
+    arg("showPrivateProperties","true")
+    arg("showPrivateFunctions","true")
+    arg("showInheritance","true")
+    arg("showRelations","true")
+    arg("showPackages","false")
+    arg("allowEmptyPackage","true")
+}
+```
+
 Set `excludedPackages` to exclude packages.
 Packages need to be separated by a ','. 
 

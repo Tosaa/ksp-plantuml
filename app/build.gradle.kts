@@ -1,3 +1,6 @@
+import com.google.devtools.ksp.gradle.KspTaskJvm
+import org.gradle.kotlin.dsl.support.kotlinCompilerOptions
+
 plugins {
     // Apply the shared build logic from a convention plugin.
     // The shared code is located in `buildSrc/src/main/kotlin/kotlin-jvm.gradle.kts`.
@@ -15,18 +18,21 @@ dependencies {
 }
 
 ksp {
-    arg("showPublicClasses","true")
-    arg("showPublicProperties","true")
-    arg("showPublicFunctions","true")
-    arg("showInternalClasses","false")
-    arg("showInternalProperties","false")
-    arg("showInternalFunctions","false")
-    arg("showPrivateClasses","false")
-    arg("showPrivateProperties","false")
-    arg("showPrivateFunctions","false")
-    arg("showInheritance","false")
-    arg("showRelations","false")
-    arg("showPackages","false")
+    arg("excludedPackages", "com.do.not.add,com.app.main")
+    arg("excludedFunctions", "<init>,finalize")
+    arg("showPublicClasses", "true")
+    arg("showPublicProperties", "true")
+    arg("showPublicFunctions", "true")
+    arg("showInternalClasses", "true")
+    arg("showInternalProperties", "true")
+    arg("showInternalFunctions", "true")
+    arg("showPrivateClasses", "true")
+    arg("showPrivateProperties", "true")
+    arg("showPrivateFunctions", "true")
+    arg("showInheritance", "true")
+    arg("showRelations", "true")
+    arg("showPackages", "false")
+    arg("allowEmptyPackage", "true")
 }
 
 application {

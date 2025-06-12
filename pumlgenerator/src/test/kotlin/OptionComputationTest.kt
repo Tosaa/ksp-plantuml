@@ -19,7 +19,7 @@ class OptionComputationTest {
         val compilation = KotlinCompilation().apply {
             useKsp2()
             inheritClassPath = true
-            kspProcessorOptions["excludedPackages"] = "foo.bar,z.b.x.y"
+            kspProcessorOptions["puml.excludedPackages"] = "foo.bar,z.b.x.y"
             symbolProcessorProviders += SymbolProcessorProvider { env ->
                 options = Options(env.options)
                 return@SymbolProcessorProvider object : SymbolProcessor {
@@ -31,7 +31,7 @@ class OptionComputationTest {
         }
         compilation.compile()
         assertEquals(listOf("foo.bar", "z.b.x.y"), options?.excludedPackages)
-        assertEquals(Options.DEFAULT_EXCLUDED_FUNCTIONS, options?.excludedFunctions)
+        assertEquals(Options.DEFAULT_EXCLUDED_FUNCTIONS, options?.excludedFunctionNames)
         // Todo: further Options resolving
     }
 

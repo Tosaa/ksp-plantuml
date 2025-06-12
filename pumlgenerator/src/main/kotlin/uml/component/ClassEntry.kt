@@ -1,6 +1,7 @@
 package uml.component
 
 import Options
+import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.Modifier
 import isValid
@@ -32,14 +33,14 @@ data class ClassEntry(val uniqueIdentifier: String, val className: String, val c
 """
     }
 
-    class Builder(val clazz: KSClassDeclaration, override val options: Options? = null) : DiagramComponent.Builder<ClassEntry> {
+    class Builder(val clazz: KSClassDeclaration, override val options: Options? = null, val logger: KSPLogger? = null) : DiagramComponent.Builder<ClassEntry> {
         override fun build(): ClassEntry? {
-            return if (options.isValid(clazz)) {
+            return if (options.isValid(clazz, logger)) {
                 val companionObject = clazz.declarations.filter { it is KSClassDeclaration && it.isCompanionObject }.map { it as? KSClassDeclaration }.firstOrNull()
-                val companionProperties = (companionObject?.getAllProperties() ?: emptySequence()).filter { options?.isValid(it) == true }.toList()
-                val companionFunctions = (companionObject?.getAllFunctions() ?: emptySequence()).filter { options?.isValid(it) == true }.toList()
-                val classProperties = clazz.getAllProperties().filter { options?.isValid(it) == true }.toList()
-                val classFunctions = clazz.getAllFunctions().filter { options?.isValid(it) == true }.toList()
+                val companionProperties = (companionObject?.getAllProperties() ?: emptySequence()).filter { options?.isValid(it, logger) == true }.toList()
+                val companionFunctions = (companionObject?.getAllFunctions() ?: emptySequence()).filter { options?.isValid(it, logger) == true }.toList()
+                val classProperties = clazz.getAllProperties().filter { options?.isValid(it, logger) == true }.toList()
+                val classFunctions = clazz.getAllFunctions().filter { options?.isValid(it, logger) == true }.toList()
                 ClassEntry(
                     uniqueIdentifier = clazz.fullQualifiedName,
                     className = clazz.className,

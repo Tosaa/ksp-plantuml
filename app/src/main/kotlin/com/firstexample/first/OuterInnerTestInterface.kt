@@ -1,4 +1,4 @@
-package first
+package com.firstexample.first
 
 interface OuterInterface {
     fun a(): Unit

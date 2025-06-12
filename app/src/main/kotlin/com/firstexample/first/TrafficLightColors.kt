@@ -1,4 +1,4 @@
-package first
+package com.firstexample.first
 
 enum class TrafficLightColors(val hexColorValue: String) {
     RED("#FFaa00"),

@@ -2,19 +2,24 @@ package uml.component
 
 import com.google.devtools.ksp.symbol.KSType
 
-data class Type(val uniqueIdentifier: String, val typeAlias: String) {
+data class Type(
+    val originalKSType: KSType? = null,
+    val uniqueIdentifier: String,
+    val typeAlias: String
+) {
     val fullQualifiedName: String
-        get() = uniqueIdentifier.replace(".", "_")
+        get() = uniqueIdentifier.replace(".", "_").trim('_')
 
     companion object {
-        val Unit: Type = Type("", "Unit")
+        val Unit: Type = Type(null, "", "Unit")
     }
 }
 
 
 fun KSType.toType(): Type {
     return Type(
-        uniqueIdentifier = "${this.declaration.qualifiedName?.getQualifier() ?: this.declaration.packageName.asString()}.${this.declaration.simpleName.asString()}",
-        typeAlias = this.declaration.simpleName.asString()
+        this,
+        "${this.declaration.qualifiedName?.getQualifier() ?: this.declaration.packageName.asString()}.${this.declaration.simpleName.asString()}",
+        this.declaration.simpleName.asString()
     )
 }

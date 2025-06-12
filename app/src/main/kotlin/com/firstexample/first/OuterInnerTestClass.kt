@@ -1,6 +1,6 @@
-package first
+package com.firstexample.first
 
-import second.Bar
+import com.firstexample.second.Bar
 
 open class OuterClass {
     open val foo: Foo? = null

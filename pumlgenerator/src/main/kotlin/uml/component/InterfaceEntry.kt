@@ -1,6 +1,7 @@
 package uml.component
 
 import Options
+import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.Modifier
 import isValid
@@ -31,15 +32,15 @@ data class InterfaceEntry(val uniqueIdentifier: String, val className: String, v
 """
     }
 
-    class Builder(val clazz: KSClassDeclaration, override val options: Options? = null) : DiagramComponent.Builder<InterfaceEntry> {
+    class Builder(val clazz: KSClassDeclaration, override val options: Options? = null, val logger: KSPLogger?) : DiagramComponent.Builder<InterfaceEntry> {
         override fun build(): InterfaceEntry? {
-            return if (options.isValid(clazz)) {
+            return if (options.isValid(clazz, logger)) {
                 InterfaceEntry(
                     uniqueIdentifier = clazz.fullQualifiedName,
                     className = clazz.className,
                     classAlias = clazz.fullQualifiedName.replace(".", "_").trim('_'),
-                    attributes = clazz.getAllProperties().filter { options?.isValid(it) == true }.map { it.toAttribute() }.toList(),
-                    functions = clazz.getAllFunctions().filter { options?.isValid(it) == true }.map { it.toFunction() }.toList(),
+                    attributes = clazz.getAllProperties().filter { options?.isValid(it, logger) == true }.map { it.toAttribute() }.toList(),
+                    functions = clazz.getAllFunctions().filter { options?.isValid(it, logger) == true }.map { it.toFunction() }.toList(),
                     isSealedClass = clazz.modifiers.contains(Modifier.SEALED)
                 )
             } else {

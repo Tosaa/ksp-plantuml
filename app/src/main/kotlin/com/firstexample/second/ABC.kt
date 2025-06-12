@@ -1,6 +1,6 @@
-package second
+package com.firstexample.second
 
-import first.OuterClass
+import com.firstexample.first.OuterClass
 
 sealed class ABC {
     abstract val tuc: Int

@@ -1,6 +1,7 @@
 package uml.component
 
 import Options
+import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import isValid
 import uml.className
@@ -25,15 +26,15 @@ data class ObjectEntry(val uniqueIdentifier: String, val className: String, val 
 """
     }
 
-    class Builder(val clazz: KSClassDeclaration, override val options: Options? = null) : DiagramComponent.Builder<ObjectEntry> {
+    class Builder(val clazz: KSClassDeclaration, override val options: Options? = null, val logger: KSPLogger?) : DiagramComponent.Builder<ObjectEntry> {
         override fun build(): ObjectEntry? {
-            return if (options.isValid(clazz)) {
+            return if (options.isValid(clazz, logger)) {
                 ObjectEntry(
                     uniqueIdentifier = clazz.fullQualifiedName,
                     className = clazz.className,
                     classAlias = clazz.fullQualifiedName.replace(".", "_").trim('_'),
-                    attributes = clazz.getAllProperties().filter { options?.isValid(it) == true }.map { it.toAttribute() }.toList(),
-                    functions = clazz.getAllFunctions().filter { options?.isValid(it) == true }.map { it.toFunction() }.toList()
+                    attributes = clazz.getAllProperties().filter { options?.isValid(it, logger) == true }.map { it.toAttribute() }.toList(),
+                    functions = clazz.getAllFunctions().filter { options?.isValid(it, logger) == true }.map { it.toFunction() }.toList()
                 )
             } else {
                 null

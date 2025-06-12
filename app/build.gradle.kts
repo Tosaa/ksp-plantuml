@@ -18,21 +18,57 @@ dependencies {
 }
 
 ksp {
-    arg("excludedPackages", "com.do.not.add,com.app.main")
-    arg("excludedFunctions", "<init>,finalize")
-    arg("showPublicClasses", "true")
-    arg("showPublicProperties", "true")
-    arg("showPublicFunctions", "true")
-    arg("showInternalClasses", "true")
-    arg("showInternalProperties", "true")
-    arg("showInternalFunctions", "true")
-    arg("showPrivateClasses", "true")
-    arg("showPrivateProperties", "true")
-    arg("showPrivateFunctions", "true")
-    arg("showInheritance", "true")
-    arg("showRelations", "true")
-    arg("showPackages", "false")
-    arg("allowEmptyPackage", "true")
+
+    // Example 1
+    /*
+    arg("puml.excludedPackages", "com.ignore,com.app.main")
+    arg("puml.excludedPropertyNames", "")
+    arg("puml.excludedFunctionNames", "<init>,finalize")
+    arg("puml.showPublicClasses", "true")
+    arg("puml.showPublicProperties", "true")
+    arg("puml.showPublicFunctions", "true")
+    arg("puml.showInternalClasses", "true")
+    arg("puml.showInternalProperties", "true")
+    arg("puml.showInternalFunctions", "true")
+    arg("puml.showPrivateClasses", "true")
+    arg("puml.showPrivateProperties", "true")
+    arg("puml.showPrivateFunctions", "true")
+    arg("puml.showInheritance", "true")
+    arg("puml.showRelations", "true")
+    arg("puml.showPackages", "false")
+    arg("puml.allowEmptyPackage", "true")
+     */
+
+    // Example 2
+
+    arg("puml.title", "Diagram of example 2")
+    arg("puml.prefix","""'Here could be anything you'd like to have in your diagram
+skinparam class {
+    BackgroundColor #fdf0d5
+    classFontSize 16
+    ArrowColor 003049
+    BorderColor 003049
+    FontColor 003049
+    FontSize 20
+}
+    """.trimMargin())
+    arg("puml.excludedPackages", "com.firstexample")
+    arg("puml.excludedPropertyNames", "")
+    arg("puml.excludedFunctionNames", "<init>")
+    arg("puml.showPublicClasses", "true")
+    arg("puml.showPublicProperties", "true")
+    arg("puml.showPublicFunctions", "true")
+    arg("puml.showInternalClasses", "true")
+    arg("puml.showInternalProperties", "true")
+    arg("puml.showInternalFunctions", "true")
+    arg("puml.showPrivateClasses", "false")
+    arg("puml.showPrivateProperties", "false")
+    arg("puml.showPrivateFunctions", "false")
+    arg("puml.showInheritance", "true")
+    arg("puml.showRelations", "true")
+    arg("puml.showPackages", "true")
+    arg("puml.allowEmptyPackage", "false")
+
 }
 
 application {

@@ -1,4 +1,4 @@
-package second
+package com.firstexample.second
 
 import javax.crypto.Cipher
 

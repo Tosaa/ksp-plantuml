@@ -37,7 +37,13 @@ class OptionsTest : CompilationTest() {
 
     @Test
     fun `Only public properties and functions are visualized`() {
-        val puml = compile(Options(showPublicClasses = true, showInternalClasses = false, showPrivateClasses = false), listOf(kotlinClassCode("public","TestClass")))
+        val puml = compile(
+            Options(
+                showPublicClasses = true, showPublicFunctions = true, showPublicProperties = true,
+                showInternalClasses = false, showInternalFunctions = false, showInternalProperties = false,
+                showPrivateClasses = false, showPrivateFunctions = false, showPrivateProperties = false,
+            ), listOf(kotlinClassCode("public", "TestClass"))
+        )
         // Public
         assertContains(puml, "one : Int")
         assertContains(puml, "two : Int")
@@ -53,7 +59,13 @@ class OptionsTest : CompilationTest() {
 
     @Test
     fun `Only internal properties and functions are visualized`() {
-        val puml = compile(Options(showPublicClasses = false, showInternalClasses = true, showPrivateClasses = false), listOf(kotlinClassCode("internal","TestClass")))
+        val puml = compile(
+            Options(
+                showPublicClasses = false, showPublicFunctions = false, showPublicProperties = false,
+                showInternalClasses = true, showInternalFunctions = true, showInternalProperties = true,
+                showPrivateClasses = false, showPrivateFunctions = false, showPrivateProperties = false,
+            ), listOf(kotlinClassCode("internal", "TestClass"))
+        )
         // Public
         assertContainsNot(puml, "one : Int")
         assertContainsNot(puml, "two : Int")
@@ -69,7 +81,13 @@ class OptionsTest : CompilationTest() {
 
     @Test
     fun `Only private properties and functions are visualized`() {
-        val puml = compile(Options(showPublicClasses = false, showInternalClasses = false, showPrivateClasses = true), listOf(kotlinClassCode("private","TestClass")))
+        val puml = compile(
+            Options(
+                showPublicClasses = false, showPublicFunctions = false, showPublicProperties = false,
+                showInternalClasses = false, showInternalFunctions = false, showInternalProperties = false,
+                showPrivateClasses = true, showPrivateFunctions = true, showPrivateProperties = true,
+            ), listOf(kotlinClassCode("private", "TestClass"))
+        )
         // Public
         assertContainsNot(puml, "one : Int")
         assertContainsNot(puml, "two : Int")
@@ -85,7 +103,13 @@ class OptionsTest : CompilationTest() {
 
     @Test
     fun `public and Internal properties and functions are visualized`() {
-        val puml = compile(Options(showPublicClasses = true, showInternalClasses = true, showPrivateClasses = false), listOf(kotlinClassCode("public","TestClass")))
+        val puml = compile(
+            Options(
+                showPublicClasses = true, showPublicFunctions = true, showPublicProperties = true,
+                showInternalClasses = true, showInternalFunctions = true, showInternalProperties = true,
+                showPrivateClasses = false, showPrivateFunctions = false, showPrivateProperties = false
+            ), listOf(kotlinClassCode("public", "TestClass"))
+        )
         // Public
         assertContains(puml, "one : Int")
         assertContains(puml, "two : Int")
@@ -102,14 +126,26 @@ class OptionsTest : CompilationTest() {
     @Test
     fun `Only public classes are visualized`() {
         val puml = compile(
-            Options(showPublicClasses = true, showInternalClasses = false, showPrivateClasses = false), listOf(
-                kotlinClassCode("public","FirstClass"),
-                kotlinClassCode("internal","SecondClass"),
-                kotlinClassCode("public","ThirdClass"),
+            Options(showPublicClasses = true, showPublicFunctions = true, showPublicProperties = true,
+                showInternalClasses = false, showInternalFunctions = true, showInternalProperties = true,
+                showPrivateClasses = false, showPrivateFunctions = true, showPrivateProperties = true,), listOf(
+                kotlinClassCode("public", "FirstClass"),
+                kotlinClassCode("internal", "SecondClass"),
+                kotlinClassCode("public", "ThirdClass"),
             )
         )
-        assertContains(puml,"FirstClass")
-        assertContainsNot(puml,"SecondClass")
-        assertContains(puml,"ThirdClass")
+        assertContains(puml, "FirstClass")
+        assertContainsNot(puml, "SecondClass")
+        assertContains(puml, "ThirdClass")
+    }
+
+    @Test
+    fun `title and prefix and postfix are appended`() {
+        val puml = compile(
+            Options(title = "Diagram without anything", prefix = "'start", postfix = "'end"), listOf()
+        )
+        assertContains(puml, "title Diagram without anything")
+        assertContains(puml, "'start")
+        assertContains(puml, "'end")
     }
 }

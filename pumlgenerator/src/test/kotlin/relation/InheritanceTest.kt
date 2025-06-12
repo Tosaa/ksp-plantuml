@@ -75,6 +75,5 @@ class InheritanceTest : CompilationTest() {
         assertContains(generatedFile, "explorer_database_Animal <|-- explorer_database_pets_Cat")
         assertContains(generatedFile, "explorer_database_Animal <|-- explorer_database_pets_Dog")
         assertContains(generatedFile, "explorer_database_Animal <|-- explorer_database_forensic_TRex")
-
     }
 }

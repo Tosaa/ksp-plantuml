@@ -17,32 +17,30 @@ dependencies {
     ksp("tosaa.puml.ksp:pumlgenerator:1.0.0")
 }
 
-ksp {
+val firstExampleConfiguration = mutableMapOf<String, String>().apply {
+    put("puml.excludedPackages", "com.ignore,com.app.main")
+    put("puml.excludedPropertyNames", "")
+    put("puml.excludedFunctionNames", "<init>,finalize")
+    put("puml.showPublicClasses", "true")
+    put("puml.showPublicProperties", "true")
+    put("puml.showPublicFunctions", "true")
+    put("puml.showInternalClasses", "true")
+    put("puml.showInternalProperties", "true")
+    put("puml.showInternalFunctions", "true")
+    put("puml.showPrivateClasses", "true")
+    put("puml.showPrivateProperties", "true")
+    put("puml.showPrivateFunctions", "true")
+    put("puml.showInheritance", "true")
+    put("puml.showPropertyRelations", "true")
+    put("puml.showFunctionRelations", "false")
+    put("puml.showPackages", "false")
+    put("puml.allowEmptyPackage", "true")
+}
 
-    // Example 1
-    /*
-    arg("puml.excludedPackages", "com.ignore,com.app.main")
-    arg("puml.excludedPropertyNames", "")
-    arg("puml.excludedFunctionNames", "<init>,finalize")
-    arg("puml.showPublicClasses", "true")
-    arg("puml.showPublicProperties", "true")
-    arg("puml.showPublicFunctions", "true")
-    arg("puml.showInternalClasses", "true")
-    arg("puml.showInternalProperties", "true")
-    arg("puml.showInternalFunctions", "true")
-    arg("puml.showPrivateClasses", "true")
-    arg("puml.showPrivateProperties", "true")
-    arg("puml.showPrivateFunctions", "true")
-    arg("puml.showInheritance", "true")
-    arg("puml.showRelations", "true")
-    arg("puml.showPackages", "false")
-    arg("puml.allowEmptyPackage", "true")
-     */
-
-    // Example 2
-
-    arg("puml.title", "Diagram of example 2")
-    arg("puml.prefix","""'Here could be anything you'd like to have in your diagram
+val secondExampleConfiguration = mutableMapOf<String, String>().apply {
+    put("puml.title", "Diagram of example 2")
+    put(
+        "puml.prefix", """'Here could be anything you'd like to have in your diagram
 skinparam class {
     BackgroundColor #fdf0d5
     classFontSize 16
@@ -51,24 +49,41 @@ skinparam class {
     FontColor 003049
     FontSize 20
 }
-    """.trimMargin())
-    arg("puml.excludedPackages", "com.firstexample")
-    arg("puml.excludedPropertyNames", "")
-    arg("puml.excludedFunctionNames", "<init>")
-    arg("puml.showPublicClasses", "true")
-    arg("puml.showPublicProperties", "true")
-    arg("puml.showPublicFunctions", "true")
-    arg("puml.showInternalClasses", "true")
-    arg("puml.showInternalProperties", "true")
-    arg("puml.showInternalFunctions", "true")
-    arg("puml.showPrivateClasses", "false")
-    arg("puml.showPrivateProperties", "false")
-    arg("puml.showPrivateFunctions", "false")
-    arg("puml.showInheritance", "true")
-    arg("puml.showRelations", "true")
-    arg("puml.showPackages", "true")
-    arg("puml.allowEmptyPackage", "false")
+    """.trimMargin()
+    )
+    put("puml.excludedPackages", "com.firstexample")
+    put("puml.excludedPropertyNames", "")
+    put("puml.excludedFunctionNames", "<init>,equals,hashCode,toString")
+    put("puml.showVisibilityModifiers", "false")
+    put("puml.showPublicClasses", "true")
+    put("puml.showPublicProperties", "true")
+    put("puml.showPublicFunctions", "true")
+    put("puml.showInternalClasses", "true")
+    put("puml.showInternalProperties", "true")
+    put("puml.showInternalFunctions", "true")
+    put("puml.showPrivateClasses", "false")
+    put("puml.showPrivateProperties", "false")
+    put("puml.showPrivateFunctions", "false")
+    put("puml.showInheritance", "true")
+    put("puml.showPropertyRelations", "true")
+    put("puml.showFunctionRelations", "false")
+    put("puml.showPackages", "true")
+    put("puml.allowEmptyPackage", "false")
+}
 
+ksp {
+
+    // Example 1
+    /*
+    firstExampleConfiguration.forEach {
+        arg(it.key, it.value)
+    }
+    */
+
+    // Example 2
+    secondExampleConfiguration.forEach {
+        arg(it.key, it.value)
+    }
 }
 
 application {

@@ -124,6 +124,60 @@ class OptionsTest : CompilationTest() {
     }
 
     @Test
+    fun `visibility modifiers can be shown`() {
+        val puml = compile(
+            Options(
+                showPublicClasses = true, showPublicFunctions = true, showPublicProperties = true,
+                showInternalClasses = true, showInternalFunctions = true, showInternalProperties = true,
+                showPrivateClasses = true, showPrivateFunctions = true, showPrivateProperties = true,
+                showVisibilityModifiers = true
+            ), listOf(kotlinClassCode("public", "TestClass"))
+        )
+        // Public
+        assertContains(puml, "+ one : Int")
+        assertContains(puml, "+ two : Int")
+        assertContains(puml, "+ firstFun() : Unit")
+        assertContains(puml, "+ secondFun() : Unit")
+        // Internal
+        assertContains(puml, "# three : Int")
+        assertContains(puml, "# thirdFun() : Unit")
+        // Private
+        assertContains(puml, "- four : Int")
+        assertContains(puml, "- fourthFun() : Unit")
+    }
+
+    @Test
+    fun `visibility modifiers can be hidden`() {
+        val puml = compile(
+            Options(
+                showPublicClasses = true, showPublicFunctions = true, showPublicProperties = true,
+                showInternalClasses = true, showInternalFunctions = true, showInternalProperties = true,
+                showPrivateClasses = true, showPrivateFunctions = true, showPrivateProperties = true,
+                showVisibilityModifiers = false
+            ), listOf(kotlinClassCode("public", "TestClass"))
+        )
+        // Public
+        assertContainsNot(puml, "+ one : Int")
+        assertContains(puml, "one : Int")
+        assertContainsNot(puml, "+ two : Int")
+        assertContains(puml, "two : Int")
+        assertContainsNot(puml, "+ firstFun() : Unit")
+        assertContains(puml, "firstFun() : Unit")
+        assertContainsNot(puml, "+ secondFun() : Unit")
+        assertContains(puml, "secondFun() : Unit")
+        // Internal
+        assertContainsNot(puml, "# three : Int")
+        assertContains(puml, "three : Int")
+        assertContainsNot(puml, "# thirdFun() : Unit")
+        assertContains(puml, "thirdFun() : Unit")
+        // Private
+        assertContainsNot(puml, "- four : Int")
+        assertContains(puml, "four : Int")
+        assertContainsNot(puml, "- fourthFun() : Unit")
+        assertContains(puml, "fourthFun() : Unit")
+    }
+
+    @Test
     fun `Only public classes are visualized`() {
         val puml = compile(
             Options(showPublicClasses = true, showPublicFunctions = true, showPublicProperties = true,

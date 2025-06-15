@@ -74,6 +74,10 @@ $finalDiagram
 
 class PumlProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
+        val unexpectedKeys = environment.options.filter { it.key !in ALL_KEYS }.toList()
+        if (unexpectedKeys.isNotEmpty()) {
+            environment.logger.w { "Environment configuration contains unexpected keys: ${unexpectedKeys.joinToString()}" }
+        }
         return PumlProcessor(
             codeGenerator = environment.codeGenerator,
             logger = environment.logger,

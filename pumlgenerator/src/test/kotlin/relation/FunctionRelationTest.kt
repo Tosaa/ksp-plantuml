@@ -12,15 +12,12 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class PropertyRelationTest : CompilationTest() {
+class FunctionRelationTest : CompilationTest() {
     val somethingCode = """
     package com
     import com.other.OtherThing
     import com.one.OneThing
     public interface Something {
-        val a : OneThing
-        val b : OtherThing
-        val c : List<OtherThing>
         fun findAThing() : OneThing
     }
     """
@@ -28,8 +25,8 @@ class PropertyRelationTest : CompilationTest() {
     package com.one
     import com.other.OtherThing
     interface OneThing {
-        val otherThing : OtherThing
-        val description : String
+        fun findOtherThing() : OtherThing
+        fun retrieveDescription() : String
     }
     """
     val otherthingCode = """
@@ -40,7 +37,7 @@ class PropertyRelationTest : CompilationTest() {
 
     @OptIn(ExperimentalCompilerApi::class)
     @Test
-    fun `Create relations between classes`() {
+    fun `Create relations in functions between classes`() {
         val fileNames = listOf("Something.kt", "OneThing.kt", "OtherThing.kt")
         val codes = listOf(somethingCode, onethingCode, otherthingCode)
         val files = fileNames.zip(codes).map { (name, code) ->
@@ -53,9 +50,9 @@ class PropertyRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile, "com_Something::a --* com_one_OneThing")
-        assertContains(generatedFile, "com_Something::b --* com_other_OtherThing")
-        assertContains(generatedFile, "com_one_OneThing::otherThing --* com_other_OtherThing")
+
+        assertContains(generatedFile, "com_Something::findAThing --* com_one_OneThing")
+        assertContains(generatedFile, "com_one_OneThing::findOtherThing --* com_other_OtherThing")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -73,9 +70,8 @@ class PropertyRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile, "com_Something::a --* com_one_OneThing")
-        assertContainsNot(generatedFile, "com_Something::b --* com_other_OtherThing")
-        assertContainsNot(generatedFile, "com_one_OneThing::otherThing --* com_other_OtherThing")
+        assertContains(generatedFile, "com_Something::findAThing --* com_one_OneThing")
+        assertContainsNot(generatedFile, "com_one_OneThing::findOtherThing --* com_other_OtherThing")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -86,15 +82,14 @@ class PropertyRelationTest : CompilationTest() {
         val files = fileNames.zip(codes).map { (name, code) ->
             SourceFile.kotlin(name, code)
         }.toList()
-        val compilation = newCompilation(Options(showPropertyRelations = false), files)
+        val compilation = newCompilation(Options(showFunctionRelations = false), files)
         val result = compilation.compile()
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContainsNot(generatedFile, "com_Something::a --* com_one_OneThing")
-        assertContainsNot(generatedFile, "com_Something::b --* com_other_OtherThing")
-        assertContainsNot(generatedFile, "com_one_OneThing::otherThing --* com_other_OtherThing")
+        assertContainsNot(generatedFile, "com_Something::findAThing --* com_one_OneThing")
+        assertContainsNot(generatedFile, "com_one_OneThing::findOtherThing --* com_other_OtherThing")
     }
 }

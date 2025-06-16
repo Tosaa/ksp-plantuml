@@ -7,44 +7,66 @@ import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.validate
+import java.io.File
 import java.io.OutputStreamWriter
 
 class PumlProcessor(
     val codeGenerator: CodeGenerator,
     val logger: KSPLogger,
     val options: Options,
-    val diagramCollection: ClassDiagramDescription = ClassDiagramDescription(options)
+    val diagramCollection: ClassDiagramDescription = ClassDiagramDescription(options, logger)
 ) : SymbolProcessor {
     override fun finish() {
-        saveDiagramToFile(diagramCollection)
+        val finalDiagram = generateFinalDiagram(diagramCollection)
+        logger.i {
+            """
+finish():
+$finalDiagram            
+        """
+        }
+        saveDiagramToFile(finalDiagram)
         super.finish()
     }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val files = resolver.getAllFiles()
+        logger.i { "Applied options: $options" }
         logger.i { "Process Files: ${files.joinToString()}" }
-        val invalidFiles = files.filter { !it.validate() }
-        files.forEach {
+        val invalidFiles = files.mapNotNull {
             it.accept(UMLGenerator(logger, diagramCollection, options), Unit)
+
+            if (!it.validate()) {
+                it
+            } else {
+                null
+            }
         }
-        logger.i { diagramCollection.computeUMLClassDiagrams(options) }
-        logger.i { diagramCollection.computeHierarchies() }
+        logger.i { "process(): processed all ${files.toSet().size} Files" }
         return invalidFiles.toList()
     }
 
-    private fun saveDiagramToFile(diagramCollection: ClassDiagramDescription) {
+    private fun generateFinalDiagram(diagramCollection: ClassDiagramDescription): String {
+        val diagramBuilder = StringBuilder()
+        diagramBuilder.appendLine("@startuml")
+        options.title.takeIf { it.isNotBlank() }?.let { diagramBuilder.appendLine("title $it") }
+        options.prefix.takeIf { it.isNotBlank() }?.let { diagramBuilder.appendLine(it) }
+        diagramBuilder.appendLine(diagramCollection.computeUMLClassDiagrams(options))
+        diagramBuilder.appendLine()
+        if (options.showInheritance) {
+            diagramBuilder.appendLine(diagramCollection.computeHierarchies())
+        }
+        options.postfix.takeIf { it.isNotBlank() }?.let { diagramBuilder.appendLine(it) }
+        diagramBuilder.appendLine("@enduml")
+        return diagramBuilder.toString()
+    }
+
+    private fun saveDiagramToFile(fileContent: String) {
         kotlin.runCatching {
             codeGenerator.generatedFile.forEach {
                 it.delete()
             }
             val file = OutputStreamWriter(codeGenerator.createNewFile(Dependencies(true), "", "ClassDiagram", "puml"))
-            file.appendLine("@startuml")
-            file.appendLine(diagramCollection.computeUMLClassDiagrams(options))
-            file.appendLine()
-            if (options.showInheritance) {
-                file.appendLine(diagramCollection.computeHierarchies())
-            }
-            file.appendLine("@enduml")
+            file.append(fileContent)
             file.close()
         }
     }
@@ -52,6 +74,10 @@ class PumlProcessor(
 
 class PumlProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
+        val unexpectedKeys = environment.options.filter { it.key !in ALL_KEYS }.toList()
+        if (unexpectedKeys.isNotEmpty()) {
+            environment.logger.w { "Environment configuration contains unexpected keys: ${unexpectedKeys.joinToString()}" }
+        }
         return PumlProcessor(
             codeGenerator = environment.codeGenerator,
             logger = environment.logger,

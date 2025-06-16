@@ -7,12 +7,22 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 
+// Active includes/excludes
+private const val KEY_INCLUDED_PACKAGES = "puml.includedPackages"
 private const val KEY_EXCLUDE_PACKAGES = "puml.excludedPackages"
+private const val KEY_EXCLUDE_CLASS_NAMES = "puml.excludedClassNames"
 private const val KEY_EXCLUDE_PROPERTY_NAMES = "puml.excludedPropertyNames"
 private const val KEY_EXCLUDE_FUNCTION_NAMES = "puml.excludedFunctionNames"
+private const val KEY_ALLOW_EMPTY_PACKAGE = "puml.allowEmptyPackage"
+
+// Enable/Disable individual visualisations
 private const val KEY_SHOW_VISIBILITY_MODIFIERS = "puml.showVisibilityModifiers"
-private const val KEY_SHOW_EXTENSIONS = "puml.showExtensions"
 private const val KEY_MARK_EXTENSIONS = "puml.markExtensions"
+
+// Show/Hide kotlin specific information in diagram
+private const val KEY_SHOW_EXTENSIONS = "puml.showExtensions"
+
+// Show/Hide information in diagram by visibility
 private const val KEY_SHOW_PUBLIC_CLASSES = "puml.showPublicClasses"
 private const val KEY_SHOW_PUBLIC_PROPERTIES = "puml.showPublicProperties"
 private const val KEY_SHOW_PUBLIC_FUNCTIONS = "puml.showPublicFunctions"
@@ -22,17 +32,25 @@ private const val KEY_SHOW_INTERNAL_FUNCTIONS = "puml.showInternalFunctions"
 private const val KEY_SHOW_PRIVATE_CLASSES = "puml.showPrivateClasses"
 private const val KEY_SHOW_PRIVATE_PROPERTIES = "puml.showPrivateProperties"
 private const val KEY_SHOW_PRIVATE_FUNCTIONS = "puml.showPrivateFunctions"
+
+// Show/Hide relations in diagram
 private const val KEY_SHOW_INHERITANCE = "puml.showInheritance"
 private const val KEY_SHOW_PROPERTY_RELATIONS = "puml.showPropertyRelations"
 private const val KEY_SHOW_FUNCTION_RELATIONS = "puml.showFunctionRelations"
+
+// Others
 private const val KEY_SHOW_PACKAGES = "puml.showPackages"
-private const val KEY_ALLOW_EMPTY_PACKAGE = "puml.allowEmptyPackage"
+
+// Add custom puml content
 private const val KEY_PREFIX = "puml.prefix"
 private const val KEY_POSTFIX = "puml.postfix"
 private const val KEY_TITLE = "puml.title"
+
 internal val ALL_KEYS: List<String>
     get() = listOf(
+        KEY_INCLUDED_PACKAGES,
         KEY_EXCLUDE_PACKAGES,
+        KEY_EXCLUDE_CLASS_NAMES,
         KEY_EXCLUDE_PROPERTY_NAMES,
         KEY_EXCLUDE_FUNCTION_NAMES,
         KEY_SHOW_VISIBILITY_MODIFIERS,
@@ -58,7 +76,9 @@ internal val ALL_KEYS: List<String>
     )
 
 data class Options(
+    val includedPackages: List<String> = emptyList(),
     val excludedPackages: List<String> = emptyList(),
+    val excludedClassNames: List<String> = emptyList(),
     val excludedPropertyNames: List<String> = emptyList(),
     val excludedFunctionNames: List<String> = DEFAULT_EXCLUDED_FUNCTIONS,
     val showVisibilityModifiers: Boolean = true,
@@ -83,7 +103,9 @@ data class Options(
     val title: String = "",
 ) {
     constructor(kspProcessorOptions: Map<String, String>) : this(
+        includedPackages = kspProcessorOptions[KEY_INCLUDED_PACKAGES]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
         excludedPackages = kspProcessorOptions[KEY_EXCLUDE_PACKAGES]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        excludedClassNames = kspProcessorOptions[KEY_EXCLUDE_CLASS_NAMES]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
         excludedPropertyNames = kspProcessorOptions[KEY_EXCLUDE_PROPERTY_NAMES]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
         excludedFunctionNames = kspProcessorOptions[KEY_EXCLUDE_FUNCTION_NAMES]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: DEFAULT_EXCLUDED_FUNCTIONS,
         showVisibilityModifiers = kspProcessorOptions[KEY_SHOW_VISIBILITY_MODIFIERS]?.equals("true", true) ?: true,
@@ -110,7 +132,9 @@ data class Options(
 
     fun asMap(): Map<String, String> {
         return mutableMapOf<String, String>().apply {
+            put(KEY_INCLUDED_PACKAGES, includedPackages.joinToString(", "))
             put(KEY_EXCLUDE_PACKAGES, excludedPackages.joinToString(", "))
+            put(KEY_EXCLUDE_CLASS_NAMES, excludedClassNames.joinToString(", "))
             put(KEY_EXCLUDE_PROPERTY_NAMES, excludedPropertyNames.joinToString(", "))
             put(KEY_EXCLUDE_FUNCTION_NAMES, excludedFunctionNames.joinToString(", "))
             put(KEY_SHOW_VISIBILITY_MODIFIERS, if (showVisibilityModifiers) "true" else "false")
@@ -150,7 +174,9 @@ fun Options?.isValid(packageName: String, logger: KSPLogger? = null): Boolean = 
         false
     }
 
-    packageName.isNotBlank() && excludedPackages.isEmpty() ->
+    packageName.isBlank() && this.allowEmptyPackage -> true
+
+    packageName.isNotBlank() && excludedPackages.isEmpty() && includedPackages.isEmpty() ->
         true
 
     this.excludedPackages.any { it == packageName } -> {
@@ -162,6 +188,11 @@ fun Options?.isValid(packageName: String, logger: KSPLogger? = null): Boolean = 
     this.excludedPackages.any { (packageName.startsWith(it)) } -> {
         val packageThatExcludesThisClass = this.excludedPackages.find { (packageName.startsWith(it)) }
         logger.v { "Exclude package $packageName by excluded package: $packageThatExcludesThisClass" }
+        false
+    }
+
+    this.includedPackages.isNotEmpty() && this.includedPackages.none { it == packageName || packageName.startsWith(it) } -> {
+        logger.v { "Exclude package $packageName since it does not match the included packages: ${this.includedPackages.joinToString()}" }
         false
     }
 
@@ -212,6 +243,11 @@ fun Options?.isValid(declaration: KSClassDeclaration, logger: KSPLogger? = null)
 
     declaration.isPrivate() && !this.showPrivateClasses -> {
         logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Private and Private deactivated by the options" }
+        false
+    }
+
+    declaration.simpleName.asString() in this.excludedClassNames -> {
+        logger.v { "Exclude ${declaration.simpleName.asString()} since its in excludedClassNames" }
         false
     }
 

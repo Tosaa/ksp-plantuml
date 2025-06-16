@@ -22,5 +22,5 @@ pluginManagement {
 
 rootProject.name = "PumlKSP"
 
-include(":app")
+include(":example")
 include(":pumlgenerator")

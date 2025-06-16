@@ -1,12 +1,11 @@
 # PumlKSP 
-**(Work in progress, unreleased!)**
 
 PumlKSP is designed to configure and create Class Diagrams in the plantuml format, by applying a KSP Plugin on your Project.
 
 ## Try it out
-Run `./gradlew :app:kspKotlin` to generate a Plantuml Classdiagram.  
-The output can be found at `app/build/resources/main/ClassDiagram.puml`.  
-It can be rendered by using the Intellij Plantuml Plugin or the [Plantuml.com](https://plantuml.com/)
+Run `./gradlew :example:kspKotlin` to generate a Plantuml Classdiagram.  
+The output can be found at `example/build/resources/main/ClassDiagram.puml`.  
+It can be rendered by using the Intellij Plantuml Plugin or on [Plantuml.com](https://plantuml.com/)
 
 *** 
 
@@ -47,67 +46,105 @@ Take control of which packages should be used for your UML diagrams by setting:
 
 ## Configuration options
 The following options can be set using ksp.
+
+Key | Default                                              | Description
+--|------------------------------------------------------|--
+`puml.includedPackages` | `emptyList`                                          | If nothing is specified, all packages are taken into account for the generation.
+`puml.excludedPackages` | `emptyList`                                          | Exclude packages that would be included otherwise.
+`puml.excludedClassNames` | `emptyList`                                          | Exclude classes by name
+`puml.excludedPropertyNames` | `emptyList`                                          | Exclude variables by name
+`puml.excludedFunctionNames` | `listOf("<init>", "toString", "equals", "hashCode")` | Exclude functions by name
+`puml.allowEmptyPackage` | `false`                                              | Allow/Deny classes without a package
+`puml.showVisibilityModifiers` | `true`                                               | Show/Hide visiblity modifiers indicated by +/#/-
+`puml.markExtensions` | `true`                                               | Show/Hide information that a variable/function is an extension variable / function
+`puml.showExtensions` | `true`                                               | Show/Hide extension variables / function
+`puml.showPublicClasses` | `true`                                               | Allow/Ignore public classes
+`puml.showPublicProperties` | `true`                                               | Allow/Ignore public variables
+`puml.showPublicFunctions` | `true`                                               | Allow/Ignore public functions
+`puml.showInternalClasses` | `true`                                               | Allow/Ignore internal classes
+`puml.showInternalProperties` | `true`                                               | Allow/Ignore internal variables
+`puml.showInternalFunctions` | `true`                                               | Allow/Ignore internal functions
+`puml.showPrivateClasses` | `true`                                               | Allow/Ignore private classes
+`puml.showPrivateProperties` | `true`                                               | Allow/Ignore private variables
+`puml.showPrivateFunctions` | `true`                                               | Allow/Ignore private functions
+`puml.showInheritance` | `true`                                               | Show Inheritance of classes by drawing Arrows
+`puml.showPropertyRelations` | `true`                                               | Show Relations of variables by drawing Arrows when the type could be resolved and is shown as class in the diagram
+`puml.showFunctionRelations` | `false`                                              | Show Relations of functions by drawing Arrows when the return type of the function could be resolved and is shown as class in the diagram. Parameters of the function are not drawn.
+`puml.showPackages` | `false`                                              | Group classes that are in the same package
+`puml.prefix` | ``                                                   | Add a custom prefix to the plantuml diagram
+`puml.postfix` | ``                                                   | Add a custom postfix to the plantuml diagram
+`puml.title` | ``                                                   | Add a custom title to the plantuml diagram
+
 ```
+
+val visualizePublicAPIConfiguration = mutableMapOf<String, String>().apply {
+    put("puml.title", "Public API")
+    put(
+        "puml.prefix", """
+skinparam class {
+    BackgroundColor #fdf0d5
+    classFontSize 16
+    ArrowColor 003049
+    BorderColor 003049
+    FontColor 003049
+    FontSize 20
+}
+    """.trimMargin()
+    )
+    
+    put("puml.excludedFunctionNames", "<init>,equals,hashCode,toString")
+    put("puml.showVisibilityModifiers", "false")
+    // Only keep public API
+    put("puml.showPublicClasses", "true")
+    put("puml.showPublicProperties", "true")
+    put("puml.showPublicFunctions", "true")
+    // Hide internal and private 
+    put("puml.showInternalClasses", "false")
+    put("puml.showInternalProperties", "false")
+    put("puml.showInternalFunctions", "false")
+    put("puml.showPrivateClasses", "false")
+    put("puml.showPrivateProperties", "false")
+    put("puml.showPrivateFunctions", "false")
+    // Actively show inheritance but skip property/function relations
+    put("puml.showInheritance", "true")
+    put("puml.showPropertyRelations", "false")
+    put("puml.showFunctionRelations", "false")
+    // Show packages since they might be helpful for the API consumer
+    put("puml.showPackages", "true")
+    put("puml.allowEmptyPackage", "false")
+}
+
 ksp {
-    arg("excludedPackages","com.do.not.add,com.app.main")
-    arg("excludedFunctions","<init>,finalize")
-    arg("showPublicClasses","true")
-    arg("showPublicProperties","true")
-    arg("showPublicFunctions","true")
-    arg("showInternalClasses","true")
-    arg("showInternalProperties","true")
-    arg("showInternalFunctions","true")
-    arg("showPrivateClasses","true")
-    arg("showPrivateProperties","true")
-    arg("showPrivateFunctions","true")
-    arg("showInheritance","true")
-    arg("showPropertyRelations","true")
-    arg("showPackages","false")
-    arg("allowEmptyPackage","true")
+    // Add all configured options to the KSP environment
+    visualizePublicAPIConfiguration.forEach {
+        arg(it.key, it.value)
+    }
 }
 ```
 
-Set `excludedPackages` to exclude packages.
-Packages need to be separated by a ','. 
+***
 
-Set `excludedFunctions` to exclude functions.
-Functions need to be separated by a ','. 
+## Setup
+To setup the ksp-plantuml-generator, KSP itself need to be enabled and setup.
+In general it is useful to read the [KSP Quickstart](https://kotlinlang.org/docs/ksp-quickstart.html) to understand whats going on.
 
-If `showPublicClasses` is set to `true` all public classes are added as class Entry for the generated UML Diagram.  
-Default is `true`
+1. Add the KSP plugin to your module
+```
+plugins {
+    id("com.google.devtools.ksp") version "2.1.21-2.0.1"
+}
+```
+2. Add the ksp-plantuml-generator dependency
+```
+dependencies {
+    ksp("io.github.tosaa.puml.ksp:ksp-plantuml-generator:0.0.1")
+}
+```
+3. Configure the KSP extension as shown above
+4. Run the `ksp-plantuml-generator` by `./gradlew :<modulename>:kspKotlin`
+5. Check the output in `<modulename>/build/resources/main/ClassDiagram.puml`
 
-If `showPublicProperties` is set to `true` all public classes are added as class Entry for the generated UML Diagram.  
-Default is `true`.
 
-If `showPublicFunctions` is set to `true` all public classes are added as class Entry for the generated UML Diagram.  
-Default is `true`.
-
-If `showInternalClasses` is set to `true` all public classes are added as class Entry for the generated UML Diagram.  
-Default is `true`.
-
-If `showInternalProperties` is set to `true` all public classes are added as class Entry for the generated UML Diagram.  
-Default is `true`.
-
-If `showInternalFunctions` is set to `true` all public classes are added as class Entry for the generated UML Diagram.  
-Default is `true`.
-
-If `showPrivateClasses` is set to `true` all public classes are added as class Entry for the generated UML Diagram.  
-Default is `true`.
-
-If `showPrivateProperties` is set to `true` all public classes are added as class Entry for the generated UML Diagram.  
-Default is `true`.
-
-If `showPrivateFunctions` is set to `true` all public classes are added as class Entry for the generated UML Diagram.  
-Default is `true`.
-
-If `showInheritance` is set to `true`, inheritance between classes is shown.
-Default is `true`
-
-If `showPropertyRelations` is set to `true`, relations between classes is shown.
-Default is `true`
-
-If `showPackages` is set to `true`, packages are visualized.
-Default is `false`
-
-If `allowEmptyPackage` is set to `true`, all classes without a package are also visualized.
-Default is `true`
+## Examples
+Here is the generated image of the example project using the "secondExampleConfiguration":
+![example2Image](./doc/example/example2.png)

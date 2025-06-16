@@ -14,7 +14,7 @@ plugins {
 
 dependencies {
     // Project "app" depends on project "utils". (Project paths are separated with ":", so ":utils" refers to the top-level "utils" project.)
-    ksp("tosaa.puml.ksp:pumlgenerator:1.0.0")
+    ksp("io.github.tosaa.puml.ksp:pumlgenerator:1.0.0")
 }
 
 val firstExampleConfiguration = mutableMapOf<String, String>().apply {

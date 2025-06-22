@@ -65,7 +65,11 @@ $finalDiagram
             codeGenerator.generatedFile.forEach {
                 it.delete()
             }
-            val file = OutputStreamWriter(codeGenerator.createNewFile(Dependencies(true), "", "ClassDiagram", "puml"))
+
+            val file = codeGenerator.createNewFileByPath(Dependencies(true), File("generated/puml/ClassDiagram${fileContent.hashCode()}").path, "puml").let {
+                OutputStreamWriter(it)
+            }
+            // val file = OutputStreamWriter(codeGenerator.createNewFile(Dependencies(true), "", "ClassDiagram", "puml"))
             file.append(fileContent)
             file.close()
         }
@@ -75,6 +79,16 @@ $finalDiagram
 class PumlProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         val unexpectedKeys = environment.options.filter { it.key !in ALL_KEYS }.toList()
+        environment.logger.i {
+            """
+KSP Environment
+    platforms: ${environment.platforms}
+    apiVersion: ${environment.apiVersion}            
+    compilerVersion: ${environment.compilerVersion}            
+    kotlinVersion: ${environment.kotlinVersion}
+    kspVersion: ${environment.kspVersion}            
+"""
+        }
         if (unexpectedKeys.isNotEmpty()) {
             environment.logger.w { "Environment configuration contains unexpected keys: ${unexpectedKeys.joinToString()}" }
         }

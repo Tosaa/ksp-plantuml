@@ -1,4 +1,4 @@
-fun generateEnum(packageName: String, className: String, entries:List<String>, properties: List<String>, functions: List<String>, innerClassScope: String = ""): String {
+fun generateEnum(packageName: String, className: String, entries: List<String>, properties: List<String>, functions: List<String>, innerClassScope: String = ""): String {
     val optimizedFunctions = functions.map {
         if (!it.contains("{.*}")) {
             """
@@ -84,11 +84,34 @@ fun generateClass(packageName: String, className: String, properties: List<Strin
     )
 }
 
-private fun generateCode(type: String, packageName: String, className: String, properties: List<String>, functions: List<String>, innerClassScope: String = ""): String {
+fun generateDataClass(packageName: String, className: String, properties: List<String>, functions: List<String>, innerClassScope: String = ""): String {
+    val optimizedFunctions = functions.map {
+        if (!it.contains("{.*}")) {
+            """
+        $it {
+            // TO DO: implement function logic
+            return Any() as ${it.split(" ").last()}!!
+        }"""
+        } else {
+            it
+        }
+    }
+    return generateCode(
+        type = "data class",
+        packageName = packageName,
+        className = className,
+        properties = emptyList(),
+        functions = optimizedFunctions,
+        innerClassScope = innerClassScope,
+        constructor = "constructor(${properties.joinToString(", ") { it.ensureStartsWith("val ") }})"
+    )
+}
+
+private fun generateCode(type: String, packageName: String, className: String, properties: List<String>, functions: List<String>, innerClassScope: String = "", constructor: String = ""): String {
     return """
 ${packageName.takeIf { it.isNotBlank() }?.let { "        package $packageName\n" } ?: ""}        
         
-    $type $className {    
+    $type $className $constructor{    
 ${properties.joinToString(separator = "\n") { "\t\t$it" }}  
   
 ${functions.joinToString(separator = "\n") { "\t\t$it" }}    

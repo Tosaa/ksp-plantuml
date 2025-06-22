@@ -105,4 +105,37 @@ class InterfaceGenerationTest : CompilationTest() {
         assertContains(generatedFile, innerClassDefinition)
     }
 
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Test UML Generation of KSP SymbolProcessor`() {
+        val interfaceCode = """
+    package com.google.devtools.ksp.processing
+    import com.google.devtools.ksp.symbol.KSAnnotated
+    interface SymbolProcessor {
+        fun process(resolver: Resolver): List<KSAnnotated>
+        fun finish()
+        fun onError()
+    }
+    """
+        val expectedOuterClassName = "SymbolProcessor"
+        val expectedOuterClassAlias = "com_google_devtools_ksp_processing_SymbolProcessor"
+        val outerClassDefinition = "interface \"$expectedOuterClassName\" as $expectedOuterClassAlias"
+        val kotlinSource = SourceFile.kotlin(
+            "SymbolProcessor.kt",
+            interfaceCode
+        ).also { println(it) }
+        val compilation = newCompilation(DEFAULT_OPTIONS, listOf(kotlinSource))
+
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, outerClassDefinition)
+        assertContains(generatedFile,"process")
+        assertContains(generatedFile,"finish")
+        assertContains(generatedFile,"onError")
+    }
+
 }

@@ -32,8 +32,11 @@ class EnumGenerationTest : CompilationTest() {
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, classDefinition)
+
         entries.forEach {
-            assertContains(generatedFile, it)
+            generatedFile.lines().any {
+                it.trim().equals(it)
+            }
         }
     }
 

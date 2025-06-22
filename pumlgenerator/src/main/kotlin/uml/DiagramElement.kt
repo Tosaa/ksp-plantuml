@@ -4,6 +4,7 @@ import Options
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import ensureStartsWith
 
 /**
  * Example:
@@ -36,7 +37,6 @@ abstract class DiagramElement : Renderable {
         fun build(): T?
     }
 
-    private fun String.ensureStartsWith(char: Char): String = if (this.startsWith(char)) this else char + this
 
     companion object {
         val INDENT = "\t"

@@ -4,6 +4,7 @@ import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import jdk.javadoc.internal.doclets.toolkit.util.DocPath.parent
 import uml.element.ClassElement
 import uml.DiagramElement
 import uml.element.EnumElement
@@ -23,7 +24,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         }
 
         val existingBuilder = componentBuilder.find { it.clazz == classDeclaration }
-        if (existingBuilder != null){
+        if (existingBuilder != null) {
             logger.v { "${classDeclaration.fullQualifiedName} was added previously" }
             return
         }
@@ -103,6 +104,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             !options.isValid(parent, logger) ->
                 logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due to invalid parent" }
 
+            child == parent ->
+                logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due to reference to itself is ignored" }
+
             else ->
                 relationsBuilder.add(ElementRelation.InheritanceBuilder(child, parent))
         }
@@ -112,6 +116,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         when {
             !options.isValid(base, logger) ->
                 logger.v { "Property relation between ${base.fullQualifiedName} and $builder excluded due to invalid property reference" }
+
+            builder.clazz == base ->
+                logger.v { "Property relation between ${base.fullQualifiedName} and $builder excluded due to reference to itself is ignored" }
 
             else -> {
                 val attributes = when (builder) {
@@ -134,7 +141,10 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
     private fun addFunctionRelations(base: KSClassDeclaration, builder: DiagramElement.Builder<*>) {
         when {
             !options.isValid(base, logger) ->
-                logger.v { "Property relation between ${base.fullQualifiedName} and $builder excluded due to invalid property reference" }
+                logger.v { "Function relation between ${base.fullQualifiedName} and $builder excluded due to invalid property reference" }
+
+            builder.clazz == base ->
+                logger.v { "Function relation between ${base.fullQualifiedName} and $builder excluded due to reference to itself is ignored" }
 
             else -> {
                 val functions = when (builder) {
@@ -222,13 +232,18 @@ package $usedPackageName {
                 return
 
             else -> {
-                val builder = componentBuilder.find { it.clazz == classOfExtensionFunction }
+                val functionOwningClass = if (classOfExtensionFunction.isCompanionObject) {
+                    classOfExtensionFunction.parentDeclaration as? KSClassDeclaration ?: classOfExtensionFunction
+                } else {
+                    classOfExtensionFunction
+                }
+                val builder = componentBuilder.find { it.clazz == functionOwningClass }
                 if (builder != null) {
                     builder.functions.add(function)
                 } else {
-                    logger.w { "No builder found for class $classOfExtensionFunction -> addClass first then add extension function" }
+                    logger.w { "No builder found for class $functionOwningClass -> addClass first then add extension function" }
                     addClass(classOfExtensionFunction)
-                    componentBuilder.find { it.clazz == classOfExtensionFunction }?.functions?.add(function)
+                    componentBuilder.find { it.clazz == functionOwningClass }?.functions?.add(function)
                 }
             }
         }
@@ -246,13 +261,18 @@ package $usedPackageName {
                 return
 
             else -> {
+                val variableOwningClass = if (classOfExtensionVariable.isCompanionObject) {
+                    classOfExtensionVariable.parentDeclaration as? KSClassDeclaration ?: classOfExtensionVariable
+                } else {
+                    classOfExtensionVariable
+                }
                 val builder = componentBuilder.find { it.clazz == classOfExtensionVariable }
                 if (builder != null) {
                     builder.properties.add(property)
                 } else {
-                    logger.w { "No builder found for class $classOfExtensionVariable -> addClass first then add extension property" }
-                    addClass(classOfExtensionVariable)
-                    componentBuilder.find { it.clazz == classOfExtensionVariable }?.properties?.add(property)
+                    logger.w { "No builder found for class $variableOwningClass -> addClass first then add extension property" }
+                    addClass(variableOwningClass)
+                    componentBuilder.find { it.clazz == variableOwningClass }?.properties?.add(property)
                 }
             }
         }

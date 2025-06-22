@@ -19,10 +19,11 @@ data class ClassElement(
     val uniqueIdentifier: String,
     val attributes: List<Field>,
     val functions: List<Method>,
-    val isSealedClass: Boolean
+    val isSealedClass: Boolean,
+    val isDataClass: Boolean
 ) : DiagramElement() {
     override val comment: String = "'$uniqueIdentifier"
-    override val elementKind: ElementKind = ElementKind.CLAZZ(isSealedClass)
+    override val elementKind: ElementKind = ElementKind.CLAZZ(isSealedClass, isData = isDataClass)
     override fun getContent(indent: String): String {
         val attributesString = attributes
             .takeIf { it.isNotEmpty() }
@@ -61,7 +62,8 @@ $functionsString
                     elementAlias = clazz.fullQualifiedName.replace(".", "_").trim('_'),
                     attributes = properties.map { it.toField(options) },
                     functions = functions.map { it.toMethod(options) },
-                    isSealedClass = clazz.modifiers.contains(Modifier.SEALED)
+                    isSealedClass = clazz.modifiers.contains(Modifier.SEALED),
+                    isDataClass = clazz.modifiers.contains(Modifier.DATA)
                 )
             } else {
                 null

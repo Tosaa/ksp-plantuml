@@ -4,6 +4,8 @@ import Options
 import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.KSTypeReference
 
 data class Method(val originalKSFunctionDeclaration: KSFunctionDeclaration, val showVisibility: Boolean, val markExtension: Boolean) {
     val uniqueIdentifier: String
@@ -16,11 +18,12 @@ data class Method(val originalKSFunctionDeclaration: KSFunctionDeclaration, val 
         get() = originalKSFunctionDeclaration.returnType?.resolve()?.toType() ?: Type.Unit
 
     val modifiers = mutableListOf<String>().apply {
-        val isCompanionFunction = (originalKSFunctionDeclaration.parent as? KSClassDeclaration)?.isCompanionObject == true
+        val isExtensionFunction = originalKSFunctionDeclaration.extensionReceiver != null
+        val isCompanionFunction = (originalKSFunctionDeclaration.parent as? KSClassDeclaration)?.isCompanionObject == true || (originalKSFunctionDeclaration.extensionReceiver?.resolve()?.declaration as? KSClassDeclaration)?.isCompanionObject == true
         if (isCompanionFunction) {
             add("{static}")
         }
-        if (markExtension && originalKSFunctionDeclaration.extensionReceiver != null){
+        if (markExtension && isExtensionFunction) {
             add("<ext>")
         }
         if (originalKSFunctionDeclaration.modifiers.contains(com.google.devtools.ksp.symbol.Modifier.SUSPEND)) {
@@ -31,7 +34,8 @@ data class Method(val originalKSFunctionDeclaration: KSFunctionDeclaration, val 
     val visibility = if (showVisibility) "${originalKSFunctionDeclaration.getVisibility().pumlVisibility} " else ""
 
     fun render(): String {
-        return "$visibility${modifiers.takeIf { it.isNotEmpty() }?.joinToString(" ", "", " ") ?: ""}${functionName}(${parameter.joinToString(", ") { it.typeName }}) : ${returnType.typeName}"
+        val modifiers = modifiers.takeIf { it.isNotEmpty() }?.joinToString(" ", "", " ") ?: ""
+        return "$visibility$modifiers${functionName}(${parameter.joinToString(", ") { it.typeName }}) : ${returnType.typeName}"
     }
 }
 

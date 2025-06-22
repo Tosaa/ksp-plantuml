@@ -1,5 +1,6 @@
 import com.google.devtools.ksp.gradle.KspTaskJvm
 import org.gradle.kotlin.dsl.support.kotlinCompilerOptions
+import java.io.File
 
 plugins {
     // Apply the shared build logic from a convention plugin.
@@ -11,12 +12,6 @@ plugins {
     application
 
 }
-
-dependencies {
-    // Project "app" depends on project "utils". (Project paths are separated with ":", so ":utils" refers to the top-level "utils" project.)
-    ksp("io.github.tosaa.puml.ksp:ksp-plantuml-generator:0.0.1")
-}
-
 val firstExampleConfiguration = mutableMapOf<String, String>().apply {
     put("puml.excludedPackages", "com.ignore,com.app.main")
     put("puml.excludedPropertyNames", "")
@@ -35,6 +30,17 @@ val firstExampleConfiguration = mutableMapOf<String, String>().apply {
     put("puml.showFunctionRelations", "false")
     put("puml.showPackages", "false")
     put("puml.allowEmptyPackage", "true")
+}
+
+tasks {
+    register("kspExample1") {
+        ksp {
+            firstExampleConfiguration.forEach {
+                arg(it.key, it.value)
+            }
+        }
+        dependsOn(findByName("kspKotlin"))
+    }
 }
 
 val secondExampleConfiguration = mutableMapOf<String, String>().apply {
@@ -71,19 +77,20 @@ skinparam class {
     put("puml.allowEmptyPackage", "false")
 }
 
-ksp {
-
-    // Example 1
-    /*
-    firstExampleConfiguration.forEach {
-        arg(it.key, it.value)
+tasks {
+    register("kspExample2") {
+        ksp {
+            secondExampleConfiguration.forEach {
+                arg(it.key, it.value)
+            }
+        }
+        dependsOn(findByName("kspKotlin"))
     }
-    */
+}
 
-    // Example 2
-    secondExampleConfiguration.forEach {
-        arg(it.key, it.value)
-    }
+dependencies {
+    // Project "app" depends on project "utils". (Project paths are separated with ":", so ":utils" refers to the top-level "utils" project.)
+    ksp("io.github.tosaa.puml.ksp:ksp-plantuml-generator:0.0.2")
 }
 
 application {

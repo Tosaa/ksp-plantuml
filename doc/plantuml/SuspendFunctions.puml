@@ -24,7 +24,6 @@ Kotlin Code:
 
     package events
     data class Event(val id:Int)
-    
     interface EventsRepository {
         val events : List<Event>
         suspend fun fetchEvents() : Result<Unit>

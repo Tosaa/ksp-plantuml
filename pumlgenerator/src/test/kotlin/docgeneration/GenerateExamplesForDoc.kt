@@ -123,6 +123,16 @@ class GenerationForDoc : CompilationTest() {
     }
     """
 
+
+    val sealedClassesCode = """
+    package ui
+    sealed class UIState {
+        data object Loading : UIState()
+        data class Success(val data: String) : UIState()
+        data class Error(val exception: Exception) : UIState()
+    }
+    """
+
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `generate Docs`() {
@@ -135,6 +145,7 @@ class GenerationForDoc : CompilationTest() {
             "Enums" to enumsCode,
             "Inheritance" to inheritanceCode,
             "SuspendFunctions" to suspendCode,
+            "SealedClasses" to sealedClassesCode
         ).forEach { (name, code) ->
             val note = """ 
 note as note_of_code

@@ -1,4 +1,13 @@
 import com.vanniktech.maven.publish.SonatypeHost
+import okhttp3.WebSocket
+import okhttp3.internal.toHexString
+import okio.ByteString.Companion.encodeUtf8
+import java.io.BufferedReader
+import java.io.ByteArrayInputStream
+import java.io.FileOutputStream
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 
 plugins {
     kotlin("jvm")
@@ -22,6 +31,46 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks {
+    // Todo: Auto generate png by the Plantuml server
+    /*
+    register("docsToPNG") {
+        val directory = file(layout.projectDirectory.file("../doc/plantuml/"))
+        doLast {
+            directory.listFiles()?.forEach {
+                val hex = it.readText().map { it.code.toHexString() }.joinToString("")
+                println(it.nameWithoutExtension + ": " + hex)
+                val url = URL("https://www.plantuml.com/plantuml/png/~h$hex")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.connect()
+
+                val newPNGFile = File(it.parentFile, it.nameWithoutExtension + ".png")
+                newPNGFile.createNewFile()
+                val filePath = newPNGFile.path
+
+                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                    val inputStream = connection.inputStream
+                    val fileOutputStream = FileOutputStream(filePath)
+
+                    val buffer = ByteArray(1024)
+                    var bytesRead: Int
+
+                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                        fileOutputStream.write(buffer, 0, bytesRead)
+                    }
+
+                    fileOutputStream.close()
+                    inputStream.close()
+                    println("PNG saved to $filePath")
+                } else {
+                    println("Failed to download image. HTTP response code: ${connection.responseCode}")
+                    println(connection.responseMessage)
+                }
+            }
+        }
+    }*/
 }
 
 kotlin {

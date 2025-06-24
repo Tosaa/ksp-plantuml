@@ -7,42 +7,71 @@ Run `./gradlew :example:kspKotlin` to generate a Plantuml Classdiagram.
 The output can be found at `example/build/resources/main/ClassDiagram.puml`.  
 It can be rendered by using the Intellij Plantuml Plugin or on [Plantuml.com](https://plantuml.com/)
 
-*** 
+***
 
-## Features
-### Visualize inheritance, relations and dependencies
-The by PumlKSP generated UML diagrams you can visualize 
-the inheritance hierarchy of your classes, 
-showcasing the parent-child relationships and 
-enabling you to identify dependencies within your classes.
+## Setup
+To setup the ksp-plantuml-generator, KSP itself need to be enabled and setup.
+In general it is useful to read the [KSP Quickstart](https://kotlinlang.org/docs/ksp-quickstart.html) to understand whats going on.
 
-### Filter classes, functions and variables according their visibility
-PumlKSP provides granular control over visibility modifiers. 
-For example one can focus on the public interface of the codebase by disabling private and internal classes, variables and functions.
-If one wants to dig deeper into internal or private implementation details all visibility modifiers can be enabled.
-
-you can individually enable or disable the visibility of:
-- Public classes, functions, and variables
-- Internal classes, functions, and variables
-- Private classes, functions, and variables
-
-### Kotlin-Specific Support for Accurate UML
-
-PumlKSP is taking into account Kotlin's unique features and language nuances.
-When generating UML diagrams, it is ensured that the following Kotlin-specific elements are accurately represented:
-- Sealed classes: Sealed classes are displayed with their subclasses.
-- Suspend functions: Suspend functions are also indicated in the UML diagram as such.
-- Companion objects as static: Variables and Functions of Companion objects are identified as static elements.
-
-### Customize the packages used for the UML Diagram
-
-Take control of which packages should be used for your UML diagrams by setting:
-- Specify used packages: Specify specific packages that should be used for the UML diagram.
-- Excluded packages: Hide packages that should not be part of the UML diagram.
-- Include/Exclude empty packages: Decide whether to include or exclude empty packages for the UML diagram.
+1. Add the KSP plugin to your module
+```
+plugins {
+    id("com.google.devtools.ksp") version "2.1.21-2.0.1"
+}
+```
+2. Add the ksp-plantuml-generator dependency
+```
+dependencies {
+    ksp("io.github.tosaa.puml.ksp:ksp-plantuml-generator:0.0.2")
+}
+```
+3. Configure the KSP extension as shown above
+4. Run the `ksp-plantuml-generator` by `./gradlew :<modulename>:kspKotlin`
+5. Check the output in `<modulename>/build/resources/main/ClassDiagram.puml`
 
 ***
 
+## Examples
+### DataClass example
+![example of how the uml looks like if a Data class is defined in Kotlin](doc/plantuml/DataClass.png)
+
+### Companion object example
+No additional `Class.Companion` entry is added but companion variables and functions are declared as static for the owning `class`.
+
+![example of how the uml looks like if a Companion object is defined in Kotlin](doc/plantuml/CompanionObjects.png)
+
+### Enums example
+
+![example of how the uml looks like if an enum is defined in Kotlin](doc/plantuml/Enums.png)
+
+### Extensions example
+Extension variables and functions can be marked as `<ext>`. Extensions of the Companion object are marked as static as well.
+
+![example of how the uml looks like if an extension variable or function is defined in Kotlin](doc/plantuml/Extensions.png)
+
+### Interface example
+
+![example of how the uml looks like if an interface is defined in Kotlin](doc/plantuml/Interface.png)
+
+### Inheritance example
+
+![example of how the uml looks like if one class inherits another in Kotlin](doc/plantuml/Inheritance.png)
+
+### Objects example
+Since `object` is equal to Singleton in Kotlin, it is highlighted with a red indicating color and the tag `<<object>>`.
+
+![example of how the uml looks like if an object is defined in Kotlin](doc/plantuml/Objects.png)
+
+### Sealed classes example
+
+![example of how the uml looks like if a sealed class is defined in Kotlin](doc/plantuml/SealedClasses.png)
+
+### Suspend functions example
+Since coroutines and the concept of `suspend` functions is a very important detail in Kotlin, suspend functions can be marked as such in the final diagram as well. 
+
+![example of how the uml looks like if a suspend function is defined in Kotlin](doc/plantuml/SuspendFunctions.png)
+
+***
 
 ## Configuration options
 The following options can be set using ksp.
@@ -124,27 +153,34 @@ ksp {
 
 ***
 
-## Setup
-To setup the ksp-plantuml-generator, KSP itself need to be enabled and setup.
-In general it is useful to read the [KSP Quickstart](https://kotlinlang.org/docs/ksp-quickstart.html) to understand whats going on.
+## Features
+### Visualize inheritance, relations and dependencies
+The by PumlKSP generated UML diagrams you can visualize
+the inheritance hierarchy of your classes,
+showcasing the parent-child relationships and
+enabling you to identify dependencies within your classes.
 
-1. Add the KSP plugin to your module
-```
-plugins {
-    id("com.google.devtools.ksp") version "2.1.21-2.0.1"
-}
-```
-2. Add the ksp-plantuml-generator dependency
-```
-dependencies {
-    ksp("io.github.tosaa.puml.ksp:ksp-plantuml-generator:0.0.1")
-}
-```
-3. Configure the KSP extension as shown above
-4. Run the `ksp-plantuml-generator` by `./gradlew :<modulename>:kspKotlin`
-5. Check the output in `<modulename>/build/resources/main/ClassDiagram.puml`
+### Filter classes, functions and variables according their visibility
+PumlKSP provides granular control over visibility modifiers.
+For example one can focus on the public interface of the codebase by disabling private and internal classes, variables and functions.
+If one wants to dig deeper into internal or private implementation details all visibility modifiers can be enabled.
 
+you can individually enable or disable the visibility of:
+- Public classes, functions, and variables
+- Internal classes, functions, and variables
+- Private classes, functions, and variables
 
-## Examples
-Here is the generated image of the example project using the "secondExampleConfiguration":
-![example2Image](./doc/example/example2.png)
+### Kotlin-Specific Support for Accurate UML
+
+PumlKSP is taking into account Kotlin's unique features and language nuances.
+When generating UML diagrams, it is ensured that the following Kotlin-specific elements are accurately represented:
+- Sealed classes: Sealed classes are displayed with their subclasses.
+- Suspend functions: Suspend functions are also indicated in the UML diagram as such.
+- Companion objects as static: Variables and Functions of Companion objects are identified as static elements.
+
+### Customize the packages used for the UML Diagram
+
+Take control of which packages should be used for your UML diagrams by setting:
+- Specify used packages: Specify specific packages that should be used for the UML diagram.
+- Excluded packages: Hide packages that should not be part of the UML diagram.
+- Include/Exclude empty packages: Decide whether to include or exclude empty packages for the UML diagram.

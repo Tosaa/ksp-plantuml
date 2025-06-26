@@ -58,5 +58,10 @@ $functionsString
                 null
             }
         }
+
+
+        override fun toString(): String {
+            return "InterfaceBuilder(clazz=${clazz.fullQualifiedName})"
+        }
     }
 }

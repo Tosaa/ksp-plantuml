@@ -27,6 +27,7 @@ class FunctionRelationTest : CompilationTest() {
     interface OneThing {
         fun findOtherThing() : OtherThing
         fun retrieveDescription() : String
+        fun copy() : OneThing
     }
     """
     val otherthingCode = """
@@ -91,5 +92,23 @@ class FunctionRelationTest : CompilationTest() {
         assertContains(generatedFile, "@enduml")
         assertContainsNot(generatedFile, "com_Something::findAThing --* com_one_OneThing")
         assertContainsNot(generatedFile, "com_one_OneThing::findOtherThing --* com_other_OtherThing")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Do not create a relations to itself`() {
+        val fileNames = listOf("Something.kt", "OneThing.kt", "OtherThing.kt")
+        val codes = listOf(somethingCode, onethingCode, otherthingCode)
+        val files = fileNames.zip(codes).map { (name, code) ->
+            SourceFile.kotlin(name, code)
+        }.toList()
+        val compilation = newCompilation(Options(), files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContainsNot(generatedFile, "com_other_OtherThing::copy --* com_other_OtherThing")
     }
 }

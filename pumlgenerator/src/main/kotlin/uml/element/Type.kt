@@ -4,14 +4,18 @@ import com.google.devtools.ksp.symbol.KSType
 
 data class Type(
     val originalKSType: KSType? = null,
-    val uniqueIdentifier: String,
     val typeName: String
 ) {
     val fullQualifiedName: String
-        get() = uniqueIdentifier.replace(".", "_").trim('_')
+        get() = if (originalKSType == null) {
+            ""
+        } else {
+            "${originalKSType.declaration.qualifiedName?.getQualifier() ?: originalKSType.declaration.packageName.asString()}.${originalKSType.declaration.simpleName.asString()}"
+        }
+
 
     companion object {
-        val Unit: Type = Type(null, "", "Unit")
+        val Unit: Type = Type(null, "Unit")
     }
 }
 
@@ -19,9 +23,9 @@ data class Type(
 fun KSType.toType(): Type {
     val genericTypes = this.arguments.mapNotNull { it.type?.resolve()?.toType() }
     val generic = if (genericTypes.isNotEmpty()) genericTypes.joinToString(prefix = "<", postfix = ">", separator = ",") { it.typeName } else ""
+    val optionalIndicator = if (this.isMarkedNullable){"?"}else{""}
     return Type(
         this,
-        "${this.declaration.qualifiedName?.getQualifier() ?: this.declaration.packageName.asString()}.${this.declaration.simpleName.asString()}",
-        "${this.declaration.simpleName.asString()}$generic"
+        "${this.declaration.simpleName.asString()}$generic$optionalIndicator"
     )
 }

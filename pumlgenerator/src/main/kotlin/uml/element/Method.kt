@@ -19,7 +19,9 @@ data class Method(val originalKSFunctionDeclaration: KSFunctionDeclaration, val 
 
     val modifiers = mutableListOf<String>().apply {
         val isExtensionFunction = originalKSFunctionDeclaration.extensionReceiver != null
-        val isCompanionFunction = (originalKSFunctionDeclaration.parent as? KSClassDeclaration)?.isCompanionObject == true || (originalKSFunctionDeclaration.extensionReceiver?.resolve()?.declaration as? KSClassDeclaration)?.isCompanionObject == true
+        val isParentCompanion = (originalKSFunctionDeclaration.parent as? KSClassDeclaration)?.isCompanionObject == true
+        val isExtensionReceiverCompanion = (originalKSFunctionDeclaration.extensionReceiver?.resolve()?.declaration as? KSClassDeclaration)?.isCompanionObject == true
+        val isCompanionFunction = isParentCompanion || isExtensionReceiverCompanion
         if (isCompanionFunction) {
             add("{static}")
         }

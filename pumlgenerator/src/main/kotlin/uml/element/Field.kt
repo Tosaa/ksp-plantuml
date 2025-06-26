@@ -1,6 +1,7 @@
 package uml.element
 
 import Options
+import com.google.devtools.ksp.closestClassDeclaration
 import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
@@ -19,11 +20,13 @@ data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibili
 
 
     val modifiers = mutableListOf<String>().apply {
-        val isCompanionFunction = (originalKSProperty.parent as? KSClassDeclaration)?.isCompanionObject == true
+        val isParentCompanion = (originalKSProperty.parent as? KSClassDeclaration)?.isCompanionObject == true
+        val isExtensionReceiverCompanion = (originalKSProperty.extensionReceiver?.resolve()?.declaration as? KSClassDeclaration)?.isCompanionObject == true
+        val isCompanionFunction = isParentCompanion || isExtensionReceiverCompanion
         if (isCompanionFunction) {
             add("{static}")
         }
-        if (markExtension && originalKSProperty.extensionReceiver != null){
+        if (markExtension && originalKSProperty.extensionReceiver != null) {
             add("<ext>")
         }
     }

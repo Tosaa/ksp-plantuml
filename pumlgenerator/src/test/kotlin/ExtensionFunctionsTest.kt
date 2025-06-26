@@ -33,8 +33,10 @@ class ExtensionFunctionsTest : CompilationTest() {
     val colorExtensionFunctionsCode = """
     package my.color
     
+    // companion
     val Color.Companion.red : Color
         get() = Color("ffff0000")
+    // Not companion
     fun Color.halfTransparent() : Color = Color("7f"+this.hex.takeLast(6))
     """
 
@@ -49,7 +51,7 @@ class ExtensionFunctionsTest : CompilationTest() {
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "{static} <ext> red : Color")
-        assertContains(generatedFile, "{static} <ext> halfTransparent(Color) : Color")
+        assertContains(generatedFile, "<ext> halfTransparent() : Color")
     }
 
     @OptIn(ExperimentalCompilerApi::class)

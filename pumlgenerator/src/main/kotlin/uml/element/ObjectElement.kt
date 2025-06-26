@@ -61,5 +61,9 @@ $functionsString
                 null
             }
         }
+        
+        override fun toString(): String {
+            return "ObjectBuilder(clazz=${clazz.fullQualifiedName})"
+        }
     }
 }

@@ -57,6 +57,7 @@ class GenerationForDoc : CompilationTest() {
         // Defines a companion object that acts as a factory for creating User instances
         companion object Factory {
             fun create(name: String): User = User(name)
+            fun createOnlyIfValid(name:String): User? = name.takeIf{ it.isNotEmpty() }?.let{ User(name) }
         }
     }  
     """

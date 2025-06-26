@@ -67,5 +67,9 @@ $functionsString
                 null
             }
         }
+
+        override fun toString(): String {
+            return "EnumBuilder(clazz=${clazz.fullQualifiedName})"
+        }
     }
 }

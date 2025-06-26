@@ -33,6 +33,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             classDeclaration.superTypes
                 .mapNotNull { it.resolve().declaration as? KSClassDeclaration }
                 .filterNot { it.packageName.asString().startsWith("kotlin") }
+                .filterNot { it.packageName.asString().startsWith("java") }
                 .forEach { parent ->
                     addHierarchy(classDeclaration, parent)
                 }
@@ -115,10 +116,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
     private fun addPropertyRelations(base: KSClassDeclaration, builder: DiagramElement.Builder<*>) {
         when {
             !options.isValid(base, logger) ->
-                logger.v { "Property relation between ${base.fullQualifiedName} and $builder excluded due to invalid property reference" }
-
-            builder.clazz == base ->
-                logger.v { "Property relation between ${base.fullQualifiedName} and $builder excluded due to reference to itself is ignored" }
+                logger.v { "Property relations of ${base.fullQualifiedName} are excluded due to invalid KSClassDeclaration" }
 
             else -> {
                 val attributes = when (builder) {
@@ -129,10 +127,15 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     else -> emptyList()
                 } ?: emptyList()
                 attributes
-                    .filterNot { it.attributeType.uniqueIdentifier.startsWith("kotlin") }
+                    .filterNot { it.attributeType.fullQualifiedName.startsWith("kotlin") }
+                    .filterNot { it.attributeType.fullQualifiedName.startsWith("java") }
                     .filter { options.isValid(it.originalKSProperty) && options.isValid(it.attributeType.originalKSType) }
-                    .forEach {
-                        relationsBuilder.add(ElementRelation.PropertyBuilder(base, it))
+                    .forEach { fieldOfClass ->
+                        if (base.fullQualifiedName == fieldOfClass.attributeType.fullQualifiedName) {
+                            logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
+                        } else {
+                            relationsBuilder.add(ElementRelation.PropertyBuilder(base, fieldOfClass))
+                        }
                     }
             }
         }
@@ -141,10 +144,8 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
     private fun addFunctionRelations(base: KSClassDeclaration, builder: DiagramElement.Builder<*>) {
         when {
             !options.isValid(base, logger) ->
-                logger.v { "Function relation between ${base.fullQualifiedName} and $builder excluded due to invalid property reference" }
+                logger.v { "Function relations of ${base.fullQualifiedName} are excluded due to invalid KSClassDeclaration" }
 
-            builder.clazz == base ->
-                logger.v { "Function relation between ${base.fullQualifiedName} and $builder excluded due to reference to itself is ignored" }
 
             else -> {
                 val functions = when (builder) {
@@ -155,10 +156,15 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     else -> emptyList()
                 } ?: emptyList()
                 functions
-                    .filterNot { it.returnType.uniqueIdentifier.startsWith("kotlin") }
+                    .filterNot { it.returnType.fullQualifiedName.startsWith("kotlin") }
+                    .filterNot { it.returnType.fullQualifiedName.startsWith("java") }
                     .filter { options.isValid(it.originalKSFunctionDeclaration) && options.isValid(it.returnType.originalKSType) }
-                    .forEach {
-                        relationsBuilder.add(ElementRelation.FunctionBuilder(base, it))
+                    .forEach { methodOfClass ->
+                        if (base.fullQualifiedName == methodOfClass.returnType.fullQualifiedName) {
+                            logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
+                        } else {
+                            relationsBuilder.add(ElementRelation.FunctionBuilder(base, methodOfClass))
+                        }
                     }
             }
         }

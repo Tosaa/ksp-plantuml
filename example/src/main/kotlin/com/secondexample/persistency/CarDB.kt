@@ -1,9 +1,9 @@
 package com.secondexample.persistency
 
-import com.secondexample.car.CarID
+import com.secondexample.api.Car
 
 interface CarDB {
-    suspend fun saveCarID(carID: CarID)
+    suspend fun saveCarID(carID: Car.ID)
 
-    suspend fun retrieveSavedCarIDs(): List<CarID>
+    suspend fun retrieveSavedCarIDs(): List<Car.ID>
 }

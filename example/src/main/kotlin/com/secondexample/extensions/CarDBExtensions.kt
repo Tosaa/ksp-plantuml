@@ -1,12 +1,12 @@
 package com.secondexample.extensions
 
-import com.secondexample.car.CarID
+import com.secondexample.api.Car
 import com.secondexample.persistency.CarDB
 
-private fun CarID.isNew():Boolean{
+private fun Car.ID.isNew():Boolean{
     return this.id.startsWith("5")
 }
 
-suspend fun CarDB.retrieveOnlyNewCarIDs(): List<CarID>{
+suspend fun CarDB.retrieveOnlyNewCarIDs(): List<Car.ID>{
     return this.retrieveSavedCarIDs().filter { it.isNew() }
 }

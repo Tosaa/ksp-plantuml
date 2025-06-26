@@ -10,6 +10,7 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
 class TypeResolveTest : CompilationTest() {
 
@@ -42,4 +43,8 @@ class TypeResolveTest : CompilationTest() {
         assertContains(generatedFile,"optionalValue : Definitely?")
     }
 
+    @Test
+    fun failPlease(){
+        fail("Test should fail to test CI")
+    }
 }

@@ -6,6 +6,7 @@ title Example for CompanionObjects
     class "User" as user_User {
         + name : String
 		+ {static} create(String) : User
+		+ {static} createOnlyIfValid(String) : User?
     }
 
 
@@ -19,6 +20,7 @@ Kotlin Code:
         // Defines a companion object that acts as a factory for creating User instances
         companion object Factory {
             fun create(name: String): User = User(name)
+            fun createOnlyIfValid(name:String): User? = name.takeIf{ it.isNotEmpty() }?.let{ User(name) }
         }
     }  
     

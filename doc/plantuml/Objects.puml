@@ -10,8 +10,8 @@ title Example for Objects
 		+ info(Function0<String>) : Unit
 		+ verbose(String) : Unit
 		+ verbose(Function0<String>) : Unit
-		+ error(String, Throwable) : Unit
-		+ error(Function0<String>, Throwable) : Unit
+		+ error(String, Throwable?) : Unit
+		+ error(Function0<String>, Throwable?) : Unit
     }
 
 

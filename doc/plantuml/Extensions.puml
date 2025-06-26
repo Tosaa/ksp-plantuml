@@ -5,7 +5,7 @@ title Example for Extensions
     'my.pck.Color
     class "Color" as my_pck_Color {
         + hex : String
-		+ <ext> red : Color
+		+ {static} <ext> red : Color
 		+ <ext> halfTransparent() : Color
 		+ {static} <ext> byRGBInt(Int, Int, Int, Int) : Color
     }

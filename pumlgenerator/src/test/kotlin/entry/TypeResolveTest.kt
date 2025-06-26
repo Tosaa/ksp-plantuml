@@ -43,8 +43,4 @@ class TypeResolveTest : CompilationTest() {
         assertContains(generatedFile,"optionalValue : Definitely?")
     }
 
-    @Test
-    fun failPlease(){
-        fail("Test should fail to test CI")
-    }
 }

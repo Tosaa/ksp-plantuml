@@ -1,0 +1,33 @@
+name: PullRequest
+on:
+  pull_request:
+    types: [ opened, synchronize ]
+
+jobs:
+  executeTests:
+    name: Run all tests
+    runs-on: macOS-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 21
+      - name: Run all tests
+        run: ./gradlew test
+
+  success:
+    needs: executeTests
+    runs-on: ubuntu-latest
+    if: needs.executeTests.result == 'success'
+    steps:
+      - run: echo "Tests succeeded"
+
+  failure:
+    needs: executeTests
+    runs-on: ubuntu-latest
+    if: needs.executeTests.result == 'failure'
+    steps:
+      - run: echo "Tests failed"

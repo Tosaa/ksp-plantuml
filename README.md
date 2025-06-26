@@ -1,6 +1,6 @@
-# PumlKSP 
+# Kotlin-symbol-processor-plantuml-generator 
 
-PumlKSP is designed to configure and create Class Diagrams in the plantuml format, by applying a KSP Plugin on your Project.
+Kotlin-symbol-processor-plantuml-generator is designed to configure and create Class Diagrams in the plantuml format, by applying a KSP Plugin on your Project.
 
 ## Try it out
 Run `./gradlew :example:kspKotlin` to generate a Plantuml Classdiagram.  
@@ -155,13 +155,13 @@ ksp {
 
 ## Features
 ### Visualize inheritance, relations and dependencies
-The by PumlKSP generated UML diagrams you can visualize
+Use the KSP plantuml generated UML diagrams to visualize
 the inheritance hierarchy of your classes,
 showcasing the parent-child relationships and
-enabling you to identify dependencies within your classes.
+to identify dependencies within your classes.
 
 ### Filter classes, functions and variables according their visibility
-PumlKSP provides granular control over visibility modifiers.
+KSP plantuml generator configuration options provides granular control over visibility modifiers.
 For example one can focus on the public interface of the codebase by disabling private and internal classes, variables and functions.
 If one wants to dig deeper into internal or private implementation details all visibility modifiers can be enabled.
 
@@ -172,7 +172,7 @@ you can individually enable or disable the visibility of:
 
 ### Kotlin-Specific Support for Accurate UML
 
-PumlKSP is taking into account Kotlin's unique features and language nuances.
+KSP plantuml generator is taking into account Kotlin's unique features and language nuances.
 When generating UML diagrams, it is ensured that the following Kotlin-specific elements are accurately represented:
 - Sealed classes: Sealed classes are displayed with their subclasses.
 - Suspend functions: Suspend functions are also indicated in the UML diagram as such.

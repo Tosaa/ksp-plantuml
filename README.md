@@ -29,6 +29,9 @@ dependencies {
 4. Run the `ksp-plantuml-generator` by `./gradlew :<modulename>:kspKotlin`
 5. Check the output in `<modulename>/build/resources/main/ClassDiagram.puml`
 
+_You can find the artifact here: [central.sonatype.com](https://central.sonatype.com/artifact/io.github.tosaa.puml.ksp/ksp-plantuml-generator/overview)_ 
+
+
 ***
 
 ## Examples

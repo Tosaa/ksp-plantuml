@@ -2,15 +2,27 @@
 
 Kotlin-symbol-processor-plantuml-generator is designed to configure and create Class Diagrams in the plantuml format, by applying a KSP Plugin on your Project.
 
+## Guideline
+1. [Try it out :roller_coaster:](#try-it-out)
+2. [Setup :hammer:](#setup)
+3. [Examples :books:](#examples)
+4. [Configuration options :wrench:](#configuration-options)
+5. [Kotlin agnostic Features :mega:](#features)
+6. [Contribute :+1:](#contribute)
+7. [Changelog :clipboard:](#changelog)
+
+
 ## Try it out
-Run `./gradlew :example:kspKotlin` to generate a Plantuml Classdiagram.  
-The output can be found at `example/build/resources/main/ClassDiagram.puml`.  
-It can be rendered by using the Intellij Plantuml Plugin or on [Plantuml.com](https://plantuml.com/)
+1. Clone this Repository.
+2. Run `./gradlew :example:kspKotlin` to generate a Plantuml Classdiagram.  
+3. The output can be found at `example/build/resources/main/ClassDiagram.puml`.  
+
+Tghe generated file can be rendered by using the Intellij Plantuml Plugin or on [Plantuml.com](https://plantuml.com/)
 
 ***
 
 ## Setup
-To setup the ksp-plantuml-generator, KSP itself need to be enabled and setup.
+To setup the ksp-plantuml-generator in your repository, KSP itself need to be enabled and setup.
 In general it is useful to read the [KSP Quickstart](https://kotlinlang.org/docs/ksp-quickstart.html) to understand whats going on.
 
 1. Add the KSP plugin to your module
@@ -19,6 +31,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.1.21-2.0.1"
 }
 ```
+
 2. Add the ksp-plantuml-generator dependency
 ```
 dependencies {
@@ -187,3 +200,10 @@ Take control of which packages should be used for your UML diagrams by setting:
 - Specify used packages: Specify specific packages that should be used for the UML diagram.
 - Excluded packages: Hide packages that should not be part of the UML diagram.
 - Include/Exclude empty packages: Decide whether to include or exclude empty packages for the UML diagram.
+
+## Contribute
+If you have any suggestions for improvements, new features or bugs please report these as an [issue](https://github.com/Tosaa/ksp-plantuml/issues).
+
+## Changelog
+Please check the [Changelog file](https://github.com/Tosaa/ksp-plantuml/blob/main/CHANGELOG.md) to see the changes of the latest releases.
+

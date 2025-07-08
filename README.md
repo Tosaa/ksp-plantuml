@@ -42,8 +42,36 @@ dependencies {
 4. Run the `ksp-plantuml-generator` by `./gradlew :<modulename>:kspKotlin`
 5. Check the output in `<modulename>/build/resources/main/ClassDiagram.puml`
 
-_You can find the artifact here: [central.sonatype.com](https://central.sonatype.com/artifact/io.github.tosaa.puml.ksp/ksp-plantuml-generator/overview)_ 
+_You can find the artifact here: [central.sonatype.com](https://central.sonatype.com/artifact/io.github.tosaa.puml.ksp/ksp-plantuml-generator/overview)_
 
+**(Optional) Setup your own gradle Task**  
+This way you can setup multiple tasks with different ksp configurations to produces various outcomes of diagrams for different purposes.
+
+1. Setup the configuration
+```
+'build.gradle.kts
+val firstExampleConfiguration = mutableMapOf<String, String>().apply {
+    // add all your settings here
+    put("puml.allowEmptyPackage", "true")
+}
+```
+
+2. Setup your own task
+    - Add all your configuration entries to the ksp action
+    - make your task depend on the original kspKotlin task
+```
+'build.gradle.kts
+tasks {
+    register("generatePlantumlWithMySettings") {
+        ksp {
+            firstExampleConfiguration.forEach {
+                arg(it.key, it.value)
+            }
+        }
+        dependsOn(findByName("kspKotlin"))
+    }
+}
+```
 
 ***
 

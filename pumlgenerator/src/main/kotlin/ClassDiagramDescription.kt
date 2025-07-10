@@ -4,7 +4,6 @@ import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
-import jdk.javadoc.internal.doclets.toolkit.util.DocPath.parent
 import uml.element.ClassElement
 import uml.DiagramElement
 import uml.element.EnumElement
@@ -12,6 +11,7 @@ import uml.element.InterfaceElement
 import uml.element.ObjectElement
 import uml.fullQualifiedName
 import uml.relation.ElementRelation
+import kotlin.math.log
 
 class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = null) {
     val componentBuilder = mutableListOf<DiagramElement.Builder<*>>()
@@ -43,48 +43,24 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 val builder = ClassElement.Builder(clazz = classDeclaration, options = options, logger = logger)
                 componentBuilder.add(builder)
                 logger.v { "${classDeclaration.fullQualifiedName} added" }
-                if (options.showPropertyRelations) {
-                    addPropertyRelations(classDeclaration, builder)
-                }
-                if (options.showFunctionRelations) {
-                    addFunctionRelations(classDeclaration, builder)
-                }
             }
 
             ClassKind.INTERFACE -> {
                 val builder = InterfaceElement.Builder(clazz = classDeclaration, options = options, logger = logger)
                 componentBuilder.add(builder)
                 logger.v { "${classDeclaration.fullQualifiedName} added" }
-                if (options.showPropertyRelations) {
-                    addPropertyRelations(classDeclaration, builder)
-                }
-                if (options.showFunctionRelations) {
-                    addFunctionRelations(classDeclaration, builder)
-                }
             }
 
             ClassKind.ENUM_CLASS -> {
                 val builder = EnumElement.Builder(clazz = classDeclaration, options = options, logger = logger)
                 componentBuilder.add(builder)
                 logger.v { "${classDeclaration.fullQualifiedName} added" }
-                if (options.showPropertyRelations) {
-                    addPropertyRelations(classDeclaration, builder)
-                }
-                if (options.showFunctionRelations) {
-                    addFunctionRelations(classDeclaration, builder)
-                }
             }
 
             ClassKind.OBJECT -> {
                 val builder = ObjectElement.Builder(clazz = classDeclaration, options = options, logger = logger)
                 componentBuilder.add(builder)
                 logger.v { "${classDeclaration.fullQualifiedName} added" }
-                if (options.showPropertyRelations) {
-                    addPropertyRelations(classDeclaration, builder)
-                }
-                if (options.showFunctionRelations) {
-                    addFunctionRelations(classDeclaration, builder)
-                }
             }
 
             else -> Unit
@@ -113,6 +89,8 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         }
     }
 
+    private fun addPropertyRelations(builder: DiagramElement.Builder<DiagramElement>) = addPropertyRelations(base = builder.clazz, builder = builder)
+
     private fun addPropertyRelations(base: KSClassDeclaration, builder: DiagramElement.Builder<*>) {
         when {
             !options.isValid(base, logger) ->
@@ -127,19 +105,29 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     else -> emptyList()
                 } ?: emptyList()
                 attributes
-                    .filterNot { it.attributeType.fullQualifiedName.startsWith("kotlin") }
-                    .filterNot { it.attributeType.fullQualifiedName.startsWith("java") }
-                    .filter { options.isValid(it.originalKSProperty) && options.isValid(it.attributeType.originalKSType) }
                     .forEach { fieldOfClass ->
-                        if (base.fullQualifiedName == fieldOfClass.attributeType.fullQualifiedName) {
-                            logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
-                        } else {
-                            relationsBuilder.add(ElementRelation.PropertyBuilder(base, fieldOfClass))
+                        when {
+                            fieldOfClass.attributeType.fullQualifiedName.startsWith("kotlin") ->
+                                logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due kotlin std classes are ignored" }
+
+                            fieldOfClass.attributeType.fullQualifiedName.startsWith("java") ->
+                                logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored" }
+
+                            !options.isValid(fieldOfClass.originalKSProperty, logger) || !options.isValid(fieldOfClass.attributeType.originalKSType, logger) ->
+                                Unit // Reason is logged in the isValid invocation
+
+                            base.fullQualifiedName == fieldOfClass.attributeType.fullQualifiedName ->
+                                logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
+
+                            else ->
+                                relationsBuilder.add(ElementRelation.PropertyBuilder(base, fieldOfClass))
                         }
                     }
             }
         }
     }
+
+    private fun addFunctionRelations(builder: DiagramElement.Builder<DiagramElement>) = addFunctionRelations(base = builder.clazz, builder = builder)
 
     private fun addFunctionRelations(base: KSClassDeclaration, builder: DiagramElement.Builder<*>) {
         when {
@@ -156,14 +144,22 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     else -> emptyList()
                 } ?: emptyList()
                 functions
-                    .filterNot { it.returnType.fullQualifiedName.startsWith("kotlin") }
-                    .filterNot { it.returnType.fullQualifiedName.startsWith("java") }
-                    .filter { options.isValid(it.originalKSFunctionDeclaration) && options.isValid(it.returnType.originalKSType) }
                     .forEach { methodOfClass ->
-                        if (base.fullQualifiedName == methodOfClass.returnType.fullQualifiedName) {
-                            logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
-                        } else {
-                            relationsBuilder.add(ElementRelation.FunctionBuilder(base, methodOfClass))
+                        when {
+                            methodOfClass.returnType.fullQualifiedName.startsWith("kotlin") ->
+                                logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due kotlin std classes are ignored" }
+
+                            methodOfClass.returnType.fullQualifiedName.startsWith("java") ->
+                                logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored" }
+
+                            !options.isValid(methodOfClass.originalKSFunctionDeclaration, logger) || !options.isValid(methodOfClass.returnType.originalKSType, logger) ->
+                                Unit // Reason is logged in the isValid invocation
+
+                            base.fullQualifiedName == methodOfClass.returnType.fullQualifiedName ->
+                                logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
+
+                            else ->
+                                relationsBuilder.add(ElementRelation.FunctionBuilder(base, methodOfClass))
                         }
                     }
             }
@@ -222,8 +218,26 @@ package $usedPackageName {
         }
     }
 
-    fun computeHierarchies(): String {
-        return relationsBuilder.mapNotNull { it.build()?.render() }.joinToString("\n").split("\n").distinct().joinToString("\n")
+    fun computeInheritanceRelations(): String {
+        return relationsBuilder.filterIsInstance<ElementRelation.InheritanceBuilder>().joinToString("\n") { it.build().render() }.split("\n").distinct().joinToString("\n")
+    }
+
+    fun computePropertyRelations(): String {
+        componentBuilder
+            .filterIsInstance<DiagramElement.Builder<DiagramElement>>()
+            .forEach { builder ->
+                addPropertyRelations(builder)
+            }
+        return relationsBuilder.filterIsInstance<ElementRelation.PropertyBuilder>().joinToString("\n") { it.build().render() }.split("\n").distinct().joinToString("\n")
+    }
+
+    fun computeFunctionRelations(): String {
+        componentBuilder
+            .filterIsInstance<DiagramElement.Builder<DiagramElement>>()
+            .forEach { builder ->
+                addFunctionRelations(builder)
+            }
+        return relationsBuilder.filterIsInstance<ElementRelation.FunctionBuilder>().joinToString("\n") { it.build().render() }.split("\n").distinct().joinToString("\n")
     }
 
     fun addFunction(function: KSFunctionDeclaration) {

@@ -30,9 +30,14 @@ title Example for SealedClasses
     }
 
 
+'Inheritance relations
 ui_UIState <|-- ui_UIState_Loading
 ui_UIState <|-- ui_UIState_Success
 ui_UIState <|-- ui_UIState_Error
+'Property relations
+
+'Function relations
+
  
 note as note_of_code
 Kotlin Code:

@@ -48,6 +48,7 @@ data class ElementRelation(val headAlias: String, val tailAlias: String, val rel
             return ElementRelation("$classNameAlias::$propertyName", typeAlias, RelationKind.Property)
         }
     }
+
     class FunctionBuilder(val classDeclaration: KSClassDeclaration, val classMethod: Method, override val options: Options? = null, val logger: KSPLogger? = null) : Builder {
         override fun build(): ElementRelation {
             val classNameAlias = classDeclaration.fullQualifiedName.replace(".", "_").trim('_')

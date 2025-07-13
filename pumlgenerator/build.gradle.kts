@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "io.github.tosaa.puml.ksp"
-version = libs.versions.pumlgenerator
+version = "0.0.3"
 
 repositories {
     mavenCentral()

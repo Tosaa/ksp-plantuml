@@ -165,157 +165,182 @@ data class Options(
     }
 }
 
-fun Options?.isValid(packageName: String, logger: KSPLogger? = null): Boolean = when {
-    this == null ->
-        true
+fun Options?.isValid(packageName: String, logger: KSPLogger? = null): Boolean = runCatching {
+    when {
+        this == null ->
+            true
 
-    packageName.isBlank() && !this.allowEmptyPackage -> {
-        logger.v { "Exclude $packageName since empty Package deactivated by the options" }
-        false
+        packageName.isBlank() && !this.allowEmptyPackage -> {
+            logger.v { "Exclude $packageName since empty Package deactivated by the options" }
+            false
+        }
+
+        packageName.isBlank() && this.allowEmptyPackage -> true
+
+        packageName.isNotBlank() && excludedPackages.isEmpty() && includedPackages.isEmpty() ->
+            true
+
+        this.excludedPackages.any { it == packageName } -> {
+            logger.v { "Package is excluded: $packageName" }
+            false
+        }
+
+
+        this.excludedPackages.any { (packageName.startsWith(it)) } -> {
+            val packageThatExcludesThisClass = this.excludedPackages.find { (packageName.startsWith(it)) }
+            logger.v { "Exclude package $packageName by excluded package: $packageThatExcludesThisClass" }
+            false
+        }
+
+        this.includedPackages.isNotEmpty() && this.includedPackages.none { it == packageName || packageName.startsWith(it) } -> {
+            logger.v { "Exclude package $packageName since it does not match the included packages: ${this.includedPackages.joinToString()}" }
+            false
+        }
+
+        else -> true
     }
-
-    packageName.isBlank() && this.allowEmptyPackage -> true
-
-    packageName.isNotBlank() && excludedPackages.isEmpty() && includedPackages.isEmpty() ->
-        true
-
-    this.excludedPackages.any { it == packageName } -> {
-        logger.v { "Package is excluded: $packageName" }
-        false
-    }
-
-
-    this.excludedPackages.any { (packageName.startsWith(it)) } -> {
-        val packageThatExcludesThisClass = this.excludedPackages.find { (packageName.startsWith(it)) }
-        logger.v { "Exclude package $packageName by excluded package: $packageThatExcludesThisClass" }
-        false
-    }
-
-    this.includedPackages.isNotEmpty() && this.includedPackages.none { it == packageName || packageName.startsWith(it) } -> {
-        logger.v { "Exclude package $packageName since it does not match the included packages: ${this.includedPackages.joinToString()}" }
-        false
-    }
-
-    else -> true
+}.getOrElse { throwable ->
+    logger.w { "Exclude package $packageName due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
+    false
 }
 
-fun Options?.isValid(type: KSType?, logger: KSPLogger? = null): Boolean = when {
-    this == null ->
-        true
+fun Options?.isValid(type: KSType?, logger: KSPLogger? = null): Boolean = runCatching {
+    when {
+        this == null ->
+            true
 
-    type == null ->
-        true
+        type == null ->
+            true
 
 
-    type.declaration.isPublic() && !this.showPublicClasses -> {
-        logger.v { "Exclude ${type.declaration.simpleName.getShortName()} since its Public and Public deactivated by the options" }
-        false
+        type.declaration.isPublic() && !this.showPublicClasses -> {
+            logger.v { "Exclude ${type.declaration.simpleName.getShortName()} since its Public and Public deactivated by the options" }
+            false
+        }
+
+        type.declaration.isInternal() && !this.showInternalClasses -> {
+            logger.v { "Exclude ${type.declaration.simpleName.getShortName()} since its Internal and Internal deactivated by the options" }
+            false
+        }
+
+        type.declaration.isPrivate() && !this.showPrivateClasses -> {
+            logger.v { "Exclude ${type.declaration.simpleName.getShortName()} since its Private and Private deactivated by the options" }
+            false
+        }
+
+        !isValid(type.declaration.packageName.asString(), logger) -> false
+
+        else -> true
     }
-
-    type.declaration.isInternal() && !this.showInternalClasses -> {
-        logger.v { "Exclude ${type.declaration.simpleName.getShortName()} since its Internal and Internal deactivated by the options" }
-        false
-    }
-
-    type.declaration.isPrivate() && !this.showPrivateClasses -> {
-        logger.v { "Exclude ${type.declaration.simpleName.getShortName()} since its Private and Private deactivated by the options" }
-        false
-    }
-
-    !isValid(type.declaration.packageName.asString(), logger) -> false
-
-    else -> true
+}.getOrElse { throwable ->
+    logger.w { "Exclude ${type?.declaration?.simpleName?.asString()} due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
+    false
 }
 
-fun Options?.isValid(declaration: KSClassDeclaration, logger: KSPLogger? = null): Boolean = when {
-    this == null ->
-        true
+fun Options?.isValid(declaration: KSClassDeclaration, logger: KSPLogger? = null): Boolean = runCatching {
+    when {
+        this == null ->
+            true
 
-    declaration.isPublic() && !this.showPublicClasses -> {
-        logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Public and Public deactivated by the options" }
-        false
+        declaration.isPublic() && !this.showPublicClasses -> {
+            logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Public and Public deactivated by the options" }
+            false
+        }
+
+        declaration.isInternal() && !this.showInternalClasses -> {
+            logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Internal and Internal deactivated by the options" }
+            false
+        }
+
+        declaration.isPrivate() && !this.showPrivateClasses -> {
+            logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Private and Private deactivated by the options" }
+            false
+        }
+
+        declaration.simpleName.asString() in this.excludedClassNames -> {
+            logger.v { "Exclude ${declaration.simpleName.asString()} since its in excludedClassNames" }
+            false
+        }
+
+        !isValid(declaration.packageName.asString(), logger) -> false
+
+        else -> true
     }
-
-    declaration.isInternal() && !this.showInternalClasses -> {
-        logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Internal and Internal deactivated by the options" }
-        false
-    }
-
-    declaration.isPrivate() && !this.showPrivateClasses -> {
-        logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Private and Private deactivated by the options" }
-        false
-    }
-
-    declaration.simpleName.asString() in this.excludedClassNames -> {
-        logger.v { "Exclude ${declaration.simpleName.asString()} since its in excludedClassNames" }
-        false
-    }
-
-    !isValid(declaration.packageName.asString(), logger) -> false
-
-    else -> true
+}.getOrElse { throwable ->
+    logger.w { "Exclude ${declaration.simpleName.asString()} due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
+    false
 }
 
-fun Options?.isValid(declaration: KSPropertyDeclaration, logger: KSPLogger? = null): Boolean = when {
-    this == null ->
-        true
+fun Options?.isValid(declaration: KSPropertyDeclaration, logger: KSPLogger? = null): Boolean = runCatching {
+    when {
+        this == null ->
+            true
 
-    declaration.isPublic() && !this.showPublicProperties -> {
-        logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Public and Public deactivated by the options" }
-        false
+        declaration.isPublic() && !this.showPublicProperties -> {
+            logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Public and Public deactivated by the options" }
+            false
+        }
+
+        declaration.isInternal() && !this.showInternalProperties -> {
+            logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Internal and Internal deactivated by the options" }
+            false
+        }
+
+        declaration.isPrivate() && !this.showPrivateProperties -> {
+            logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Private and Private deactivated by the options" }
+            false
+        }
+
+        declaration.simpleName.asString() in this.excludedPropertyNames -> {
+            logger.v { "Exclude ${declaration.simpleName.asString()} since its in excludedPropertyNames" }
+            false
+        }
+
+        declaration.extensionReceiver != null && !this.showExtensions -> {
+            logger.v { "Exclude ${declaration.simpleName.asString()} since Extension Functions are deactivated by the options" }
+            false
+        }
+
+        else -> true
     }
-
-    declaration.isInternal() && !this.showInternalProperties -> {
-        logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Internal and Internal deactivated by the options" }
-        false
-    }
-
-    declaration.isPrivate() && !this.showPrivateProperties -> {
-        logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Private and Private deactivated by the options" }
-        false
-    }
-
-    declaration.simpleName.asString() in this.excludedPropertyNames -> {
-        logger.v { "Exclude ${declaration.simpleName.asString()} since its in excludedPropertyNames" }
-        false
-    }
-
-    declaration.extensionReceiver != null && !this.showExtensions -> {
-        logger.v { "Exclude ${declaration.simpleName.asString()} since Extension Functions are deactivated by the options" }
-        false
-    }
-
-    else -> true
+}.getOrElse { throwable ->
+    logger.w { "Exclude ${declaration.simpleName.asString()} due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
+    false
 }
 
-fun Options?.isValid(declaration: KSFunctionDeclaration, logger: KSPLogger? = null): Boolean = when {
-    this == null ->
-        true
+fun Options?.isValid(declaration: KSFunctionDeclaration, logger: KSPLogger? = null): Boolean = runCatching {
+    when {
+        this == null ->
+            true
 
-    declaration.isPublic() && !this.showPublicFunctions -> {
-        logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Public and Public deactivated by the options" }
-        false
+        declaration.isPublic() && !this.showPublicFunctions -> {
+            logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Public and Public deactivated by the options" }
+            false
+        }
+
+        declaration.isInternal() && !this.showInternalFunctions -> {
+            logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Internal and Internal deactivated by the options" }
+            false
+        }
+
+        declaration.isPrivate() && !this.showPrivateFunctions -> {
+            logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Private and Private deactivated by the options" }
+            false
+        }
+
+        declaration.simpleName.asString() in this.excludedFunctionNames -> {
+            logger.v { "Exclude ${declaration.simpleName.asString()} since its in excludedFunctionNames" }
+            false
+        }
+
+        declaration.extensionReceiver != null && !this.showExtensions -> {
+            logger.v { "Exclude ${declaration.simpleName.asString()} since Extension Functions are deactivated by the options" }
+            false
+        }
+
+        else -> true
     }
-
-    declaration.isInternal() && !this.showInternalFunctions -> {
-        logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Internal and Internal deactivated by the options" }
-        false
-    }
-
-    declaration.isPrivate() && !this.showPrivateFunctions -> {
-        logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Private and Private deactivated by the options" }
-        false
-    }
-
-    declaration.simpleName.asString() in this.excludedFunctionNames -> {
-        logger.v { "Exclude ${declaration.simpleName.asString()} since its in excludedFunctionNames" }
-        false
-    }
-
-    declaration.extensionReceiver != null && !this.showExtensions -> {
-        logger.v { "Exclude ${declaration.simpleName.asString()} since Extension Functions are deactivated by the options" }
-        false
-    }
-
-    else -> true
+}.getOrElse { throwable ->
+    logger.w { "Exclude ${declaration.simpleName.asString()} due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
+    false
 }

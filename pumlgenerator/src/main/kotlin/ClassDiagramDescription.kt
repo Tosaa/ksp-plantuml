@@ -78,14 +78,14 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due to reference to itself is ignored" }
 
             else ->
-                when{
+                when {
                     parent.fullQualifiedName !in renderedComponents.map { it.fullQualifiedName } ->
                         logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due Superclass is a not rendered class" }
 
                     child.fullQualifiedName !in renderedComponents.map { it.fullQualifiedName } ->
                         logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due derived class is a not rendered class" }
 
-                    else->
+                    else ->
                         relationsBuilder.add(ElementRelation.InheritanceBuilder(child, parent))
                 }
         }
@@ -177,60 +177,62 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         }
     }
 
-    fun computeUMLClassDiagrams(options: Options? = null): String {
-        return if (options?.showPackages == true) {
-            componentBuilder.groupBy {
-                (it as? InterfaceElement.Builder)?.clazz?.packageName?.asString()
-                    ?: (it as? ClassElement.Builder)?.clazz?.packageName?.asString()
-                    ?: (it as? EnumElement.Builder)?.clazz?.packageName?.asString()
-                    ?: (it as? ObjectElement.Builder)?.clazz?.packageName?.asString()
-            }.mapNotNull { (packageName, builder) ->
-                val classComponents = builder.mapNotNull { it.build() }
-                if (classComponents.isEmpty()) {
-                    logger.v { "Ignore package $packageName since it contains no classes" }
-                    return@mapNotNull null
-                }
-                val usedPackageName: String = when {
-                    packageName == null && options.allowEmptyPackage -> ""
-                    packageName == null && !options.allowEmptyPackage -> {
-                        logger.v { "Ignore package $packageName since empty packageName is not allowed" }
-                        return@mapNotNull null
-                    }
+    private fun computeUMLDiagramsWithPackages(options: Options) = componentBuilder.groupBy {
+        (it as? InterfaceElement.Builder)?.clazz?.packageName?.asString()
+            ?: (it as? ClassElement.Builder)?.clazz?.packageName?.asString()
+            ?: (it as? EnumElement.Builder)?.clazz?.packageName?.asString()
+            ?: (it as? ObjectElement.Builder)?.clazz?.packageName?.asString()
+    }.mapNotNull { (packageName, builder) ->
+        val classComponents = builder.mapNotNull { it.build() }
+        if (classComponents.isEmpty()) {
+            logger.v { "Ignore package $packageName since it contains no classes" }
+            return@mapNotNull null
+        }
+        val usedPackageName: String = when {
+            packageName == null && options.allowEmptyPackage -> ""
+            packageName == null && !options.allowEmptyPackage -> {
+                logger.v { "Ignore package $packageName since empty packageName is not allowed" }
+                return@mapNotNull null
+            }
 
-                    packageName != null && packageName.isBlank() && options.allowEmptyPackage -> ""
-                    packageName != null && packageName.isBlank() && !options.allowEmptyPackage -> {
-                        logger.v { "Ignore package $packageName since empty packageName is not allowed" }
-                        return@mapNotNull null
-                    }
+            packageName != null && packageName.isBlank() && options.allowEmptyPackage -> ""
+            packageName != null && packageName.isBlank() && !options.allowEmptyPackage -> {
+                logger.v { "Ignore package $packageName since empty packageName is not allowed" }
+                return@mapNotNull null
+            }
 
-                    !options.isValid(packageName ?: "", logger) -> {
-                        logger.v { "Ignore package $packageName since it is excluded" }
-                        return@mapNotNull null
-                    }
+            !options.isValid(packageName ?: "", logger) -> {
+                logger.v { "Ignore package $packageName since it is excluded" }
+                return@mapNotNull null
+            }
 
-                    else ->
-                        packageName ?: ""
-                }
+            else ->
+                packageName ?: ""
+        }
 
-                val classes = classComponents.joinToString("\n") { it.render() }
-                if (usedPackageName.isNotBlank()) {
-                    """
-package $usedPackageName {
-    $classes
-}
-"""
-                } else {
-                    classes
-                }
+        val classes = classComponents.joinToString("\n") { it.render() }
+        if (usedPackageName.isNotBlank()) {
+            """
+    package $usedPackageName {
+        $classes
+    }
+    """
+        } else {
+            classes
+        }
 
-            }.filter { it.isNotBlank() }.joinToString("\n")
+    }.filter { it.isNotBlank() }.joinToString("\n")
+
+    fun computeUMLClassDiagrams(options: Options): String {
+        return if (options.showPackages) {
+            computeUMLDiagramsWithPackages(options)
         } else {
             componentBuilder.mapNotNull { it.build() }.joinToString("\n") { it.render() }
         }
     }
 
     fun computeInheritanceRelations(): String {
-        componentBuilder.forEach {builder->
+        componentBuilder.forEach { builder ->
             builder.clazz.superTypes
                 .mapNotNull { it.resolve().declaration as? KSClassDeclaration }
                 .filterNot { it.packageName.asString().startsWith("kotlin") }

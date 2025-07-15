@@ -41,12 +41,16 @@ title Example for Inheritance
     }
 
 
+'Inheritance relations
 Room <|-- MagicRoom
 Room <|-- OrdinaryRoom
-MazeGame::makeRoom --* Room
 MazeGame <|-- MagicMazeGame
-MagicMazeGame::makeRoom --* MagicRoom
 MazeGame <|-- OrdinaryMazeGame
+'Property relations
+
+'Function relations
+MazeGame::makeRoom --* Room
+MagicMazeGame::makeRoom --* MagicRoom
 OrdinaryMazeGame::makeRoom --* OrdinaryRoom
  
 note as note_of_code

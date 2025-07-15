@@ -96,6 +96,25 @@ class FunctionRelationTest : CompilationTest() {
 
     @OptIn(ExperimentalCompilerApi::class)
     @Test
+    fun `create relations between classes but ignore inheritance`() {
+        val fileNames = listOf("Something.kt", "OneThing.kt", "OtherThing.kt")
+        val codes = listOf(somethingCode, onethingCode, otherthingCode)
+        val files = fileNames.zip(codes).map { (name, code) ->
+            SourceFile.kotlin(name, code)
+        }.toList()
+        val compilation = newCompilation(Options(showInheritance = false, showFunctionRelations = true), files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "com_Something::findAThing --* com_one_OneThing")
+        assertContains(generatedFile, "com_one_OneThing::findOtherThing --* com_other_OtherThing")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
     fun `Do not create a relations to itself`() {
         val fileNames = listOf("Something.kt", "OneThing.kt", "OtherThing.kt")
         val codes = listOf(somethingCode, onethingCode, otherthingCode)

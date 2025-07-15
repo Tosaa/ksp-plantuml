@@ -1,5 +1,6 @@
 ## 0.0.3 - unreleased
 - Fixed [issue #3](https://github.com/Tosaa/ksp-plantuml/issues/3): Add runCatching to prevent Kotlin IllegalStateException to crash puml generation
+- Fixed bug: Property relations are not shown when inheritance was disabled
 
 
 ## 0.0.2 - 2025-06-26

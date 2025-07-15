@@ -16,6 +16,8 @@ import kotlin.math.log
 class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = null) {
     val componentBuilder = mutableListOf<DiagramElement.Builder<*>>()
     val relationsBuilder = mutableListOf<ElementRelation.Builder>()
+    val renderedComponents: List<KSClassDeclaration>
+        get() = componentBuilder.map { it.clazz }
 
     fun addClass(classDeclaration: KSClassDeclaration) {
         if (!options.isValid(classDeclaration, logger)) {
@@ -29,15 +31,6 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             return
         }
 
-        if (options.showInheritance) {
-            classDeclaration.superTypes
-                .mapNotNull { it.resolve().declaration as? KSClassDeclaration }
-                .filterNot { it.packageName.asString().startsWith("kotlin") }
-                .filterNot { it.packageName.asString().startsWith("java") }
-                .forEach { parent ->
-                    addHierarchy(classDeclaration, parent)
-                }
-        }
         when (classDeclaration.classKind) {
             ClassKind.CLASS -> {
                 val builder = ClassElement.Builder(clazz = classDeclaration, options = options, logger = logger)
@@ -85,7 +78,16 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due to reference to itself is ignored" }
 
             else ->
-                relationsBuilder.add(ElementRelation.InheritanceBuilder(child, parent))
+                when{
+                    parent.fullQualifiedName !in renderedComponents.map { it.fullQualifiedName } ->
+                        logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due Superclass is a not rendered class" }
+
+                    child.fullQualifiedName !in renderedComponents.map { it.fullQualifiedName } ->
+                        logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due derived class is a not rendered class" }
+
+                    else->
+                        relationsBuilder.add(ElementRelation.InheritanceBuilder(child, parent))
+                }
         }
     }
 
@@ -120,7 +122,11 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                                 logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
 
                             else ->
-                                relationsBuilder.add(ElementRelation.PropertyBuilder(base, fieldOfClass))
+                                if (fieldOfClass.attributeType.fullQualifiedName !in renderedComponents.map { it.fullQualifiedName }) {
+                                    logger.v { "Property relation of method $fieldOfClass of class ${base.fullQualifiedName} excluded due to return type of not rendered class" }
+                                } else {
+                                    relationsBuilder.add(ElementRelation.PropertyBuilder(base, fieldOfClass))
+                                }
                         }
                     }
             }
@@ -158,8 +164,13 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                             base.fullQualifiedName == methodOfClass.returnType.fullQualifiedName ->
                                 logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
 
-                            else ->
-                                relationsBuilder.add(ElementRelation.FunctionBuilder(base, methodOfClass))
+                            else -> {
+                                if (methodOfClass.returnType.fullQualifiedName !in renderedComponents.map { it.fullQualifiedName }) {
+                                    logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to return type of not rendered class" }
+                                } else {
+                                    relationsBuilder.add(ElementRelation.FunctionBuilder(base, methodOfClass))
+                                }
+                            }
                         }
                     }
             }
@@ -219,6 +230,15 @@ package $usedPackageName {
     }
 
     fun computeInheritanceRelations(): String {
+        componentBuilder.forEach {builder->
+            builder.clazz.superTypes
+                .mapNotNull { it.resolve().declaration as? KSClassDeclaration }
+                .filterNot { it.packageName.asString().startsWith("kotlin") }
+                .filterNot { it.packageName.asString().startsWith("java") }
+                .forEach { parent ->
+                    addHierarchy(builder.clazz, parent)
+                }
+        }
         return relationsBuilder.filterIsInstance<ElementRelation.InheritanceBuilder>().joinToString("\n") { it.build().render() }.split("\n").distinct().joinToString("\n")
     }
 

@@ -50,7 +50,7 @@ $finalDiagram
         diagramBuilder.appendLine("@startuml")
         options.title.takeIf { it.isNotBlank() }?.let { diagramBuilder.appendLine("title $it") }
         options.prefix.takeIf { it.isNotBlank() }?.let { diagramBuilder.appendLine(it) }
-        diagramBuilder.appendLine(diagramCollection.computeUMLClassDiagrams(options))
+        diagramBuilder.appendLine(diagramCollection.computeUMLClassDiagrams())
         diagramBuilder.appendLine()
         if (options.showInheritance) {
             diagramBuilder.appendLine("'Inheritance relations")

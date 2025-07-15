@@ -4,6 +4,7 @@ import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.sun.org.apache.bcel.internal.Repository.addClass
 import uml.element.ClassElement
 import uml.DiagramElement
 import uml.element.EnumElement
@@ -18,52 +19,6 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
     val relationsBuilder = mutableListOf<ElementRelation.Builder>()
     val renderedComponents: List<KSClassDeclaration>
         get() = componentBuilder.map { it.clazz }
-
-    fun addClass(classDeclaration: KSClassDeclaration) {
-        if (!options.isValid(classDeclaration, logger)) {
-            logger.v { "Ignore ${classDeclaration.fullQualifiedName} since its not valid according the options" }
-            return
-        }
-
-        val existingBuilder = componentBuilder.find { it.clazz == classDeclaration }
-        if (existingBuilder != null) {
-            logger.v { "${classDeclaration.fullQualifiedName} was added previously" }
-            return
-        }
-
-        when (classDeclaration.classKind) {
-            ClassKind.CLASS -> {
-                val builder = ClassElement.Builder(clazz = classDeclaration, options = options, logger = logger)
-                componentBuilder.add(builder)
-                logger.v { "${classDeclaration.fullQualifiedName} added" }
-            }
-
-            ClassKind.INTERFACE -> {
-                val builder = InterfaceElement.Builder(clazz = classDeclaration, options = options, logger = logger)
-                componentBuilder.add(builder)
-                logger.v { "${classDeclaration.fullQualifiedName} added" }
-            }
-
-            ClassKind.ENUM_CLASS -> {
-                val builder = EnumElement.Builder(clazz = classDeclaration, options = options, logger = logger)
-                componentBuilder.add(builder)
-                logger.v { "${classDeclaration.fullQualifiedName} added" }
-            }
-
-            ClassKind.OBJECT -> {
-                val builder = ObjectElement.Builder(clazz = classDeclaration, options = options, logger = logger)
-                componentBuilder.add(builder)
-                logger.v { "${classDeclaration.fullQualifiedName} added" }
-            }
-
-            else -> Unit
-        }
-
-        val innerClasses = classDeclaration.declarations.mapNotNull { it as? KSClassDeclaration }.filter { !it.isCompanionObject }
-        innerClasses.forEach {
-            addClass(it)
-        }
-    }
 
     private fun addHierarchy(child: KSClassDeclaration, parent: KSClassDeclaration) {
         when {
@@ -177,7 +132,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         }
     }
 
-    private fun computeUMLDiagramsWithPackages(options: Options) = componentBuilder.groupBy {
+    private fun computeUMLDiagramsWithPackages() = componentBuilder.groupBy {
         (it as? InterfaceElement.Builder)?.clazz?.packageName?.asString()
             ?: (it as? ClassElement.Builder)?.clazz?.packageName?.asString()
             ?: (it as? EnumElement.Builder)?.clazz?.packageName?.asString()
@@ -223,45 +178,64 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
     }.filter { it.isNotBlank() }.joinToString("\n")
 
-    fun computeUMLClassDiagrams(options: Options): String {
-        return if (options.showPackages) {
-            computeUMLDiagramsWithPackages(options)
-        } else {
-            componentBuilder.mapNotNull { it.build() }.joinToString("\n") { it.render() }
+    /**
+     * Creates or updates [DiagramElement.Builder] for the given [KSClassDeclaration] and its inner classes, if the given [KSClassDeclaration] is valid.
+     * See also: [Options.isValid]
+     *
+     * @param classDeclaration The [KSClassDeclaration] that should be converted to a plantuml format conform description
+     */
+    fun addClass(classDeclaration: KSClassDeclaration) {
+        if (!options.isValid(classDeclaration, logger)) {
+            logger.v { "Ignore ${classDeclaration.fullQualifiedName} since its not valid according the options" }
+            return
+        }
+
+        val existingBuilder = componentBuilder.find { it.clazz == classDeclaration }
+        if (existingBuilder != null) {
+            logger.v { "${classDeclaration.fullQualifiedName} was added previously" }
+            return
+        }
+
+        when (classDeclaration.classKind) {
+            ClassKind.CLASS -> {
+                val builder = ClassElement.Builder(clazz = classDeclaration, options = options, logger = logger)
+                componentBuilder.add(builder)
+                logger.v { "${classDeclaration.fullQualifiedName} added" }
+            }
+
+            ClassKind.INTERFACE -> {
+                val builder = InterfaceElement.Builder(clazz = classDeclaration, options = options, logger = logger)
+                componentBuilder.add(builder)
+                logger.v { "${classDeclaration.fullQualifiedName} added" }
+            }
+
+            ClassKind.ENUM_CLASS -> {
+                val builder = EnumElement.Builder(clazz = classDeclaration, options = options, logger = logger)
+                componentBuilder.add(builder)
+                logger.v { "${classDeclaration.fullQualifiedName} added" }
+            }
+
+            ClassKind.OBJECT -> {
+                val builder = ObjectElement.Builder(clazz = classDeclaration, options = options, logger = logger)
+                componentBuilder.add(builder)
+                logger.v { "${classDeclaration.fullQualifiedName} added" }
+            }
+
+            else -> Unit
+        }
+
+        val innerClasses = classDeclaration.declarations.mapNotNull { it as? KSClassDeclaration }.filter { !it.isCompanionObject }
+        innerClasses.forEach {
+            addClass(it)
         }
     }
 
-    fun computeInheritanceRelations(): String {
-        componentBuilder.forEach { builder ->
-            builder.clazz.superTypes
-                .mapNotNull { it.resolve().declaration as? KSClassDeclaration }
-                .filterNot { it.packageName.asString().startsWith("kotlin") }
-                .filterNot { it.packageName.asString().startsWith("java") }
-                .forEach { parent ->
-                    addHierarchy(builder.clazz, parent)
-                }
-        }
-        return relationsBuilder.filterIsInstance<ElementRelation.InheritanceBuilder>().joinToString("\n") { it.build().render() }.split("\n").distinct().joinToString("\n")
-    }
-
-    fun computePropertyRelations(): String {
-        componentBuilder
-            .filterIsInstance<DiagramElement.Builder<DiagramElement>>()
-            .forEach { builder ->
-                addPropertyRelations(builder)
-            }
-        return relationsBuilder.filterIsInstance<ElementRelation.PropertyBuilder>().joinToString("\n") { it.build().render() }.split("\n").distinct().joinToString("\n")
-    }
-
-    fun computeFunctionRelations(): String {
-        componentBuilder
-            .filterIsInstance<DiagramElement.Builder<DiagramElement>>()
-            .forEach { builder ->
-                addFunctionRelations(builder)
-            }
-        return relationsBuilder.filterIsInstance<ElementRelation.FunctionBuilder>().joinToString("\n") { it.build().render() }.split("\n").distinct().joinToString("\n")
-    }
-
+    /**
+     * Creates or updates [DiagramElement.Builder] for the owner of the given [KSFunctionDeclaration], if the given [KSFunctionDeclaration] is valid.
+     * See also: [Options.isValid]
+     *
+     * @param function The [KSFunctionDeclaration] that should be visualized
+     */
     fun addFunction(function: KSFunctionDeclaration) {
         val classOfExtensionFunction = function.extensionReceiver?.resolve()?.declaration?.closestClassDeclaration()
         when {
@@ -291,6 +265,12 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         }
     }
 
+    /**
+     * Creates or updates [DiagramElement.Builder] for the owner of the given [KSPropertyDeclaration], if the given [KSPropertyDeclaration] is valid.
+     * See also: [Options.isValid]
+     *
+     * @param property The [KSPropertyDeclaration] that should be visualized
+     */
     fun addProperty(property: KSPropertyDeclaration) {
         val classOfExtensionVariable = property.extensionReceiver?.resolve()?.declaration?.closestClassDeclaration()
         when {
@@ -319,4 +299,64 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             }
         }
     }
+
+    /**
+     * Renders all classes that were added through [addClass] to a plantuml conform format.
+     *
+     * @return plantuml conform description of all added classes
+     */
+    fun computeUMLClassDiagrams(): String {
+        return if (options.showPackages) {
+            computeUMLDiagramsWithPackages()
+        } else {
+            componentBuilder.mapNotNull { it.build() }.joinToString("\n") { it.render() }
+        }
+    }
+
+    /**
+     * Renders all inheritances of all classes that were added through [addClass] to a plantuml conform format.
+     *
+     * @return plantuml conform arrows from derived classes to the super classes
+     */
+    fun computeInheritanceRelations(): String {
+        componentBuilder.forEach { builder ->
+            builder.clazz.superTypes
+                .mapNotNull { it.resolve().declaration as? KSClassDeclaration }
+                .filterNot { it.packageName.asString().startsWith("kotlin") }
+                .filterNot { it.packageName.asString().startsWith("java") }
+                .forEach { parent ->
+                    addHierarchy(builder.clazz, parent)
+                }
+        }
+        return relationsBuilder.filterIsInstance<ElementRelation.InheritanceBuilder>().joinToString("\n") { it.build().render() }.split("\n").distinct().joinToString("\n")
+    }
+
+    /**
+     * Renders all types of properties for all classes that were added through [addClass] to a plantuml conform format.
+     *
+     * @return plantuml conform arrows from properties of classes to the type classes
+     */
+    fun computePropertyRelations(): String {
+        componentBuilder
+            .filterIsInstance<DiagramElement.Builder<DiagramElement>>()
+            .forEach { builder ->
+                addPropertyRelations(builder)
+            }
+        return relationsBuilder.filterIsInstance<ElementRelation.PropertyBuilder>().joinToString("\n") { it.build().render() }.split("\n").distinct().joinToString("\n")
+    }
+
+    /**
+     * Renders all return types of functions for all classes that were added through [addClass] to a plantuml conform format.
+     *
+     * @return plantuml conform arrows from functions of classes to the return type classes
+     */
+    fun computeFunctionRelations(): String {
+        componentBuilder
+            .filterIsInstance<DiagramElement.Builder<DiagramElement>>()
+            .forEach { builder ->
+                addFunctionRelations(builder)
+            }
+        return relationsBuilder.filterIsInstance<ElementRelation.FunctionBuilder>().joinToString("\n") { it.build().render() }.split("\n").distinct().joinToString("\n")
+    }
+
 }

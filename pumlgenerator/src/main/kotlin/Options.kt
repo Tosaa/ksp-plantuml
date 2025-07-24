@@ -3,9 +3,14 @@ import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.Modifier
+import uml.isInheritedField
+import uml.isInheritedFunction
+import uml.isInheritedProperty
 
 // Active includes/excludes
 private const val KEY_INCLUDED_PACKAGES = "puml.includedPackages"
@@ -21,6 +26,10 @@ private const val KEY_MARK_EXTENSIONS = "puml.markExtensions"
 
 // Show/Hide kotlin specific information in diagram
 private const val KEY_SHOW_EXTENSIONS = "puml.showExtensions"
+
+// Show/Hide inherited information
+private const val KEY_SHOW_INHERITED_PROPERTIES = "puml.showInheritedProperties"
+private const val KEY_SHOW_INHERITED_FUNCTIONS = "puml.showInheritedFunctions"
 
 // Show/Hide information in diagram by visibility
 private const val KEY_SHOW_PUBLIC_CLASSES = "puml.showPublicClasses"
@@ -53,6 +62,8 @@ internal val ALL_KEYS: List<String>
         KEY_EXCLUDE_CLASS_NAMES,
         KEY_EXCLUDE_PROPERTY_NAMES,
         KEY_EXCLUDE_FUNCTION_NAMES,
+        KEY_SHOW_INHERITED_PROPERTIES,
+        KEY_SHOW_INHERITED_FUNCTIONS,
         KEY_SHOW_VISIBILITY_MODIFIERS,
         KEY_SHOW_EXTENSIONS,
         KEY_MARK_EXTENSIONS,
@@ -81,6 +92,8 @@ data class Options(
     val excludedClassNames: List<String> = emptyList(),
     val excludedPropertyNames: List<String> = emptyList(),
     val excludedFunctionNames: List<String> = DEFAULT_EXCLUDED_FUNCTIONS,
+    val showInheritedProperties: Boolean = false,
+    val showInheritedFunctions: Boolean = false,
     val showVisibilityModifiers: Boolean = true,
     val showExtensions: Boolean = true,
     val markExtensions: Boolean = true,
@@ -110,6 +123,8 @@ data class Options(
         excludedFunctionNames = kspProcessorOptions[KEY_EXCLUDE_FUNCTION_NAMES]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: DEFAULT_EXCLUDED_FUNCTIONS,
         showVisibilityModifiers = kspProcessorOptions[KEY_SHOW_VISIBILITY_MODIFIERS]?.equals("true", true) ?: true,
         markExtensions = kspProcessorOptions[KEY_MARK_EXTENSIONS]?.equals("true", true) ?: true,
+        showInheritedProperties = kspProcessorOptions[KEY_SHOW_INHERITED_PROPERTIES]?.equals("true", true) ?: false,
+        showInheritedFunctions = kspProcessorOptions[KEY_SHOW_INHERITED_FUNCTIONS]?.equals("true", true) ?: false,
         showExtensions = kspProcessorOptions[KEY_SHOW_EXTENSIONS]?.equals("true", true) ?: true,
         showPublicClasses = kspProcessorOptions[KEY_SHOW_PUBLIC_CLASSES]?.equals("true", true) ?: true,
         showPublicProperties = kspProcessorOptions[KEY_SHOW_PUBLIC_PROPERTIES]?.equals("true", true) ?: true,
@@ -138,6 +153,8 @@ data class Options(
             put(KEY_EXCLUDE_PROPERTY_NAMES, excludedPropertyNames.joinToString(", "))
             put(KEY_EXCLUDE_FUNCTION_NAMES, excludedFunctionNames.joinToString(", "))
             put(KEY_SHOW_VISIBILITY_MODIFIERS, if (showVisibilityModifiers) "true" else "false")
+            put(KEY_SHOW_INHERITED_PROPERTIES, if (showInheritedProperties) "true" else "false")
+            put(KEY_SHOW_INHERITED_FUNCTIONS, if (showInheritedFunctions) "true" else "false")
             put(KEY_MARK_EXTENSIONS, if (markExtensions) "true" else "false")
             put(KEY_SHOW_EXTENSIONS, if (showExtensions) "true" else "false")
             put(KEY_SHOW_PUBLIC_CLASSES, if (showPublicClasses) "true" else "false")
@@ -343,4 +360,28 @@ fun Options?.isValid(declaration: KSFunctionDeclaration, logger: KSPLogger? = nu
 }.getOrElse { throwable ->
     logger.w { "Exclude ${declaration.simpleName.asString()} due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
     false
+}
+
+fun Sequence<KSPropertyDeclaration>.filterPropertiesByOptions(clazz: KSClassDeclaration, options: Options, logger: KSPLogger?): Sequence<KSPropertyDeclaration> {
+    return if (!options.showInheritedProperties) {
+        this.filter { options.isValid(it, logger) }
+            .filter { property -> !property.isInheritedProperty(clazz, logger).also {
+                logger.v { "filterPropertiesByOptions(): Filtered ${clazz.simpleName.asString()}.${property.simpleName.asString()} based on inheritance: $it" }
+            } }
+    } else {
+        this.filter { options.isValid(it, logger) }
+    }
+}
+
+fun Sequence<KSFunctionDeclaration>.filterFunctionsByOptions(clazz: KSClassDeclaration, options: Options, logger: KSPLogger?): Sequence<KSFunctionDeclaration> {
+    return if (!options.showInheritedFunctions) {
+        this.filter { options.isValid(it, logger) }
+            .filter { function ->
+                !function.isInheritedFunction(clazz, logger).also {
+                    logger.v { "filterFunctionsByOptions(): Filtered ${clazz.simpleName.asString()}.${function.simpleName.asString()} based on inheritance: $it" }
+                }
+            }
+    } else {
+        this.filter { options.isValid(it, logger) }
+    }
 }

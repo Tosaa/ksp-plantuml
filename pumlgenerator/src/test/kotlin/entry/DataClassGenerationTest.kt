@@ -1,6 +1,7 @@
 package entry
 
 import CompilationTest
+import assertContainsNot
 import com.tschuchort.compiletesting.BuildConfig
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
@@ -43,5 +44,7 @@ class DataClassGenerationTest : CompilationTest() {
         expectedProperties.forEach {
             assertContains(generatedFile, it)
         }
+        assertContains(generatedFile, "component1() : Int")
+        assertContains(generatedFile, "component2() : String")
     }
 }

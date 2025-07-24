@@ -11,12 +11,14 @@ title Example for Enums
 		+ description : String
 		+ name : String
 		+ ordinal : Int
+		+ {static} entries : EnumEntries<TrafficLights>
 		+ canCrossSafely() : Boolean
-		+ compareTo(TrafficLights) : Int
 		# clone() : Any
 		+ getDeclaringClass() : Class<TrafficLights>
 		+ describeConstable() : Optional<EnumDesc<TrafficLights>>
 		# finalize() : Unit
+		+ {static} values() : Array<TrafficLights>
+		+ {static} valueOf(String) : TrafficLights
     }
 
 
@@ -26,7 +28,6 @@ title Example for Enums
 
 'Function relations
 
- 
 note as note_of_code
 Kotlin Code:
 
@@ -42,5 +43,5 @@ Kotlin Code:
     }  
     
 end note
-            
+
 @enduml

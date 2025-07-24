@@ -16,7 +16,6 @@ title Example for Interface
 
 'Function relations
 
- 
 note as note_of_code
 Kotlin Code:
 
@@ -29,5 +28,5 @@ Kotlin Code:
     }
     
 end note
-            
+
 @enduml

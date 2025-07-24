@@ -22,7 +22,8 @@ data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibili
     val modifiers = mutableListOf<String>().apply {
         val isParentCompanion = (originalKSProperty.parent as? KSClassDeclaration)?.isCompanionObject == true
         val isExtensionReceiverCompanion = (originalKSProperty.extensionReceiver?.resolve()?.declaration as? KSClassDeclaration)?.isCompanionObject == true
-        val isCompanionFunction = isParentCompanion || isExtensionReceiverCompanion
+        val isJVMStatic = originalKSProperty.modifiers.contains(Modifier.JAVA_STATIC)
+        val isCompanionFunction = isParentCompanion || isExtensionReceiverCompanion || isJVMStatic
         if (isCompanionFunction) {
             add("{static}")
         }

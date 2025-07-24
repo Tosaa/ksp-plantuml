@@ -5,7 +5,6 @@ title Example for SuspendFunctions
     'events.Event
     class "Event" as events_Event <<Data>>{
         + id : Int
-		+ component1() : Int
 		+ copy(Int) : Event
     }
 
@@ -23,7 +22,6 @@ title Example for SuspendFunctions
 
 'Function relations
 
- 
 note as note_of_code
 Kotlin Code:
 
@@ -35,5 +33,5 @@ Kotlin Code:
     }
     
 end note
-            
+
 @enduml

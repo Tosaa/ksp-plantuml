@@ -124,7 +124,6 @@ class GenerationForDoc : CompilationTest() {
     }
     """
 
-
     val sealedClassesCode = """
     package ui
     sealed class UIState {
@@ -138,23 +137,30 @@ class GenerationForDoc : CompilationTest() {
     @Test
     fun `generate Docs`() {
         listOf(
-            "DataClass" to dataClassCode,
-            "Interface" to interfaceCode,
-            "Extensions" to extensionFunctionsCode,
-            "Objects" to objectCode,
-            "CompanionObjects" to companionObjectCode,
-            "Enums" to enumsCode,
-            "Inheritance" to inheritanceCode,
-            "SuspendFunctions" to suspendCode,
-            "SealedClasses" to sealedClassesCode
-        ).forEach { (name, code) ->
-            val note = """ 
-note as note_of_code
-Kotlin Code:
-$code
-end note
-            """
-            newCompilation(DEFAULT_OPTIONS.copy(title = "Example for $name", prefix = GENERATION_REFERENCE_COMMENT, postfix = note), listOf(SourceFile.kotlin("$name.kt", code))).let {
+            Triple("DataClass", dataClassCode, DEFAULT_OPTIONS),
+            Triple("Interface", interfaceCode, DEFAULT_OPTIONS),
+            Triple("Extensions", extensionFunctionsCode, DEFAULT_OPTIONS),
+            Triple("Objects", objectCode, DEFAULT_OPTIONS),
+            Triple("CompanionObjects", companionObjectCode, DEFAULT_OPTIONS),
+            Triple("Enums", enumsCode, DEFAULT_OPTIONS),
+            Triple("Inheritance", inheritanceCode, DEFAULT_OPTIONS),
+            Triple("InheritanceWithInheritedFields", inheritanceCode, DEFAULT_OPTIONS.copy(showInheritedFunctions = true, showInheritedProperties = true)),
+            Triple("SuspendFunctions", suspendCode, DEFAULT_OPTIONS),
+            Triple("SealedClasses", sealedClassesCode, DEFAULT_OPTIONS),
+        ).forEach { (name, code, options) ->
+            val note = buildString {
+                appendLine("note as note_of_code")
+                val nonDefaultOptions = options.asMap().filter { DEFAULT_OPTIONS.asMap()[it.key] != it.value }.entries
+                if (nonDefaultOptions.isNotEmpty()){
+                    appendLine("Non default options:")
+                    appendLine(nonDefaultOptions.joinToString("\n") { "${it.key} = ${it.value}" })
+                    appendLine()
+                }
+                appendLine("Kotlin Code:")
+                appendLine(code)
+                appendLine("end note")
+            }
+            newCompilation(options.copy(title = "Example for $name", prefix = GENERATION_REFERENCE_COMMENT, postfix = note), listOf(SourceFile.kotlin("$name.kt", code))).let {
                 val result = it.compile()
                 saveUMLInDocs(result.sourcesGeneratedBySymbolProcessor.first(), name)
             }

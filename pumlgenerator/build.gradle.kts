@@ -1,13 +1,4 @@
 import com.vanniktech.maven.publish.SonatypeHost
-import okhttp3.WebSocket
-import okhttp3.internal.toHexString
-import okio.ByteString.Companion.encodeUtf8
-import java.io.BufferedReader
-import java.io.ByteArrayInputStream
-import java.io.FileOutputStream
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
 
 plugins {
     kotlin("jvm")

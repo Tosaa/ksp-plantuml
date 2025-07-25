@@ -1,16 +1,11 @@
 package entry
 
 import CompilationTest
-import assertContainsNot
-import com.tschuchort.compiletesting.BuildConfig
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.sourcesGeneratedBySymbolProcessor
-import generateClass
 import generateDataClass
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
-import org.jetbrains.kotlin.incremental.createDirectory
-import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals

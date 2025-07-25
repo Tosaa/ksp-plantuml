@@ -5,14 +5,13 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.sun.org.apache.bcel.internal.Repository.addClass
-import uml.element.ClassElement
 import uml.DiagramElement
+import uml.element.ClassElement
 import uml.element.EnumElement
 import uml.element.InterfaceElement
 import uml.element.ObjectElement
 import uml.fullQualifiedName
 import uml.relation.ElementRelation
-import kotlin.math.log
 
 class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = null) {
     val componentBuilder = mutableListOf<DiagramElement.Builder<*>>()

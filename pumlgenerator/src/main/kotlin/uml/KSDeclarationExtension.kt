@@ -1,13 +1,10 @@
 package uml
 
 import com.google.devtools.ksp.processing.KSPLogger
-import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.Modifier
-import v
 import w
 
 val KSClassDeclaration.fullQualifiedName: String
@@ -104,58 +101,5 @@ internal fun KSPropertyDeclaration.isInheritedProperty(declarationOwner: KSClass
                 else -> true
             }
         }
-    }
-}
-
-internal fun KSDeclaration.isInheritedField(declarationOwner: KSClassDeclaration, logger: KSPLogger? = null): Boolean {
-    if (declarationOwner.isCompanionObject) {
-        return (declarationOwner.parentDeclaration as? KSClassDeclaration)?.let {
-            logger.w { "isInheritedField(): owner was companion object -> resolve base class and call isInheritedField on it: $it" }
-            isInheritedField(it)
-        } ?: run {
-            logger.w { "isInheritedField(): owner was companion object but base class could not be resolved" }
-            false
-        }
-    }
-
-
-    val fieldType = when (this) {
-        is KSPropertyDeclaration -> "property"
-        is KSFunctionDeclaration -> "function"
-        else -> return false
-    }
-
-    val isCompanion = this.parentDeclaration is KSClassDeclaration && (this.parentDeclaration as? KSClassDeclaration)?.isCompanionObject == true
-    val owningClass = if (isCompanion) {
-        this.parentDeclaration?.parentDeclaration as? KSClassDeclaration
-    } else {
-        this.parentDeclaration as? KSClassDeclaration
-    }
-
-    val isDataField = (this.parentDeclaration as? KSClassDeclaration)?.modifiers?.contains(Modifier.DATA) == true
-    val isEnumField = (this.parentDeclaration as? KSClassDeclaration)?.classKind == ClassKind.ENUM_CLASS || owningClass?.qualifiedName?.asString() == "kotlin.Enum"
-
-    return when {
-        // Enums in Kotlin provide `name`, `ordinal` and also `Companion.entries`
-        isEnumField ->
-            false
-
-        // Data class provide functions for destruction 'component1', 'component2' ...
-        isDataField && this.simpleName.asString().contains("component") ->
-            false
-
-        this.modifiers.contains(Modifier.OVERRIDE) -> {
-            logger?.v { "Exclude inherited $fieldType ${this.qualifiedName?.asString()} due it is marked as 'override'" }
-            true
-        }
-
-        declarationOwner != owningClass -> {
-            logger?.v { "Exclude inherited $fieldType ${this.qualifiedName?.asString()} due to not fitting parent, expected ${declarationOwner.simpleName.asString()}, has ${owningClass?.simpleName?.asString()}" }
-            true
-        }
-
-
-        else ->
-            false
     }
 }

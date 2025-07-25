@@ -5,6 +5,7 @@ title Example for SuspendFunctions
     'events.Event
     class "Event" as events_Event <<Data>>{
         + id : Int
+		+ component1() : Int
 		+ copy(Int) : Event
     }
 

@@ -7,6 +7,9 @@ title Example for DataClass
         + x : String
 		+ y : String
 		+ z : Int
+		+ component1() : String
+		+ component2() : String
+		+ component3() : Int
 		+ copy(String, String, Int) : Foo
     }
 

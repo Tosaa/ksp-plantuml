@@ -1,6 +1,6 @@
-package com.animals
+package com.animals.pets
 
-class Cat: AbstractAnimal() {
+class Cat: Pet() {
     override val name : String = "CAT"
-    override fun makeSound():String  =""
+    override fun makeSound():String  ="Meowww"
 }

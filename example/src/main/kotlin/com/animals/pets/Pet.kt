@@ -1,7 +1,8 @@
-package com.animals
+package com.animals.pets
 
-abstract class AbstractAnimal {
-    abstract val name: String
-    val isExtinct: Boolean = false
-    open fun makeSound(): String = ""
+import com.animals.Animal
+
+abstract class Pet: Animal {
+    override val isExtinct: Boolean = false
+    override fun makeSound(): String = ""
 }

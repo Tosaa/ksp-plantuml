@@ -1,0 +1,26 @@
+@startuml
+'https://plantuml.com/component-diagram
+
+class Example{
+    field : Type
+    function(): Type
+}
+
+note as fieldNote
+If its a variable in Kotlin,
+in plantuml its named a field
+KSP will analyse a KSPropertyDeclaration.
+end note
+
+note as functionNote
+If its a method in Kotlin,
+in plantuml its named a function.
+KSP will analyse a KSFunctionDeclaration.
+end note
+
+
+
+Example::field - fieldNote
+functionNote - Example::function
+
+@enduml

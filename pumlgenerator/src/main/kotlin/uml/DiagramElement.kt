@@ -30,8 +30,11 @@ abstract class DiagramElement : Renderable {
     }
 
     interface Builder<T : DiagramElement> {
-        val properties: MutableList<KSPropertyDeclaration>
-        val functions: MutableList<KSFunctionDeclaration>
+        var isShell: Boolean
+        val allProperties: List<KSPropertyDeclaration>
+        val extensionProperties: MutableList<KSPropertyDeclaration>
+        val allFunctions: List<KSFunctionDeclaration>
+        val extensionFunctions: MutableList<KSFunctionDeclaration>
         val clazz: KSClassDeclaration
         val options: Options?
         fun build(): T?
@@ -42,5 +45,6 @@ abstract class DiagramElement : Renderable {
         val INDENT = "\t"
         val PROPERTY_INDENT = "\t\t"
         val FUNCTION_INDENT = "\t\t"
+        val shellString = "...\n=="
     }
 }

@@ -6,6 +6,7 @@ import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.sourcesGeneratedBySymbolProcessor
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.junit.jupiter.api.Test
+import uml.DiagramElement
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -42,5 +43,24 @@ class ExtensionsTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile,"isAlive : Boolean")
         assertContains(generatedFile,"describe() : String")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Extensions for classes in external packages works`() {
+        val files = listOf(
+            SourceFile.kotlin("StringExtension.kt","""
+package explorer.database            
+public fun String.withPrefix(prefix:String): String = "prefix$this"
+""".trimIndent())
+        )
+        val compilation = newCompilation(DEFAULT_OPTIONS, files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile,DiagramElement.shellString)
+        assertContains(generatedFile,"class \"String\" as kotlin_String")
+        assertContains(generatedFile,"<ext> withPrefix(String) : String")
     }
 }

@@ -182,8 +182,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
      * See also: [Options.isValid]
      *
      * @param classDeclaration The [KSClassDeclaration] that should be converted to a plantuml format conform description
+     * @param isShell Whether the created or updated [DiagramElement.Builder] for the given [classDeclaration] should render all fields and functions or just the exclusively added ones.
      */
-    fun addClass(classDeclaration: KSClassDeclaration) {
+    fun addClass(classDeclaration: KSClassDeclaration, isShell: Boolean = false) {
         if (!options.isValid(classDeclaration, logger)) {
             logger.v { "Ignore ${classDeclaration.fullQualifiedName} since its not valid according the options" }
             return
@@ -191,31 +192,40 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
         val existingBuilder = componentBuilder.find { it.clazz == classDeclaration }
         if (existingBuilder != null) {
-            logger.v { "${classDeclaration.fullQualifiedName} was added previously" }
+            when {
+                !existingBuilder.isShell -> {
+                    logger.v { "${classDeclaration.fullQualifiedName} was added previously" }
+                }
+
+                !isShell -> {
+                    logger.v { "${classDeclaration.fullQualifiedName} was added previously as shell, now its marked as complete" }
+                    existingBuilder.isShell = false
+                }
+            }
             return
         }
 
         when (classDeclaration.classKind) {
             ClassKind.CLASS -> {
-                val builder = ClassElement.Builder(clazz = classDeclaration, options = options, logger = logger)
+                val builder = ClassElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
                 componentBuilder.add(builder)
                 logger.v { "${classDeclaration.fullQualifiedName} added" }
             }
 
             ClassKind.INTERFACE -> {
-                val builder = InterfaceElement.Builder(clazz = classDeclaration, options = options, logger = logger)
+                val builder = InterfaceElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
                 componentBuilder.add(builder)
                 logger.v { "${classDeclaration.fullQualifiedName} added" }
             }
 
             ClassKind.ENUM_CLASS -> {
-                val builder = EnumElement.Builder(clazz = classDeclaration, options = options, logger = logger)
+                val builder = EnumElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
                 componentBuilder.add(builder)
                 logger.v { "${classDeclaration.fullQualifiedName} added" }
             }
 
             ClassKind.OBJECT -> {
-                val builder = ObjectElement.Builder(clazz = classDeclaration, options = options, logger = logger)
+                val builder = ObjectElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
                 componentBuilder.add(builder)
                 logger.v { "${classDeclaration.fullQualifiedName} added" }
             }
@@ -225,7 +235,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
         val innerClasses = classDeclaration.declarations.mapNotNull { it as? KSClassDeclaration }.filter { !it.isCompanionObject }
         innerClasses.forEach {
-            addClass(it)
+            addClass(it, isShell)
         }
     }
 
@@ -254,11 +264,12 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 }
                 val builder = componentBuilder.find { it.clazz == functionOwningClass }
                 if (builder != null) {
-                    builder.functions.add(function)
+                    logger.w { "Add extension function $function to builder of $functionOwningClass" }
+                    builder.extensionFunctions.add(function)
                 } else {
-                    logger.w { "No builder found for class $functionOwningClass -> addClass first then add extension function" }
-                    addClass(classOfExtensionFunction)
-                    componentBuilder.find { it.clazz == functionOwningClass }?.functions?.add(function)
+                    logger.w { "No builder found for class $functionOwningClass -> add class as shell first then add extension function $function" }
+                    addClass(classOfExtensionFunction,true)
+                    componentBuilder.find { it.clazz == functionOwningClass }?.extensionFunctions?.add(function)
                 }
             }
         }
@@ -289,11 +300,12 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 }
                 val builder = componentBuilder.find { it.clazz == classOfExtensionVariable }
                 if (builder != null) {
-                    builder.properties.add(property)
+                    logger.w { "Add extension property $property to builder of $variableOwningClass" }
+                    builder.extensionProperties.add(property)
                 } else {
-                    logger.w { "No builder found for class $variableOwningClass -> addClass first then add extension property" }
-                    addClass(variableOwningClass)
-                    componentBuilder.find { it.clazz == variableOwningClass }?.properties?.add(property)
+                    logger.w { "No builder found for class $variableOwningClass -> add Class as shell first then add extension property $property" }
+                    addClass(variableOwningClass, true)
+                    componentBuilder.find { it.clazz == variableOwningClass }?.extensionProperties?.add(property)
                 }
             }
         }

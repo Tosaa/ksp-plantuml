@@ -1,3 +1,9 @@
+## 0.0.4 - unreleased
+- Changed default behaviour to hide inherited properties and functions by default
+- Added 'KEY_SHOW_INHERITED_PROPERTIES' property to reduce or increase the shown properties
+- Added 'KEY_SHOW_INHERITED_FUNCTIONS' property to reduce or increase the shown functions
+
+
 ## 0.0.3 - 2025-07-15
 - Fixed [issue #3](https://github.com/Tosaa/ksp-plantuml/issues/3): Add runCatching to prevent Kotlin IllegalStateException to crash puml generation
 - Fixed bug: Property relations are not shown when inheritance was disabled

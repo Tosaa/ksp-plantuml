@@ -1,7 +1,3 @@
-import com.google.devtools.ksp.gradle.KspTaskJvm
-import org.gradle.kotlin.dsl.support.kotlinCompilerOptions
-import java.io.File
-
 plugins {
     // Apply the shared build logic from a convention plugin.
     // The shared code is located in `buildSrc/src/main/kotlin/kotlin-jvm.gradle.kts`.
@@ -86,15 +82,42 @@ tasks {
         }
         dependsOn(findByName("kspKotlin"))
     }
+
+}
+
+val animalExampleConfiguration = mutableMapOf<String, String>().apply {
+    put("puml.title", "Animals")
+    put(
+        "puml.prefix", """
+skinparam class {
+    BackgroundColor #fdf0d5
+    classFontSize 16
+    ArrowColor 003049
+    BorderColor 003049
+    FontColor 003049
+    FontSize 20
+}
+    """.trimMargin()
+    )
+    put("puml.includedPackages", "com.animals")
+}
+
+
+tasks {
+    register("animalExample") {
+        ksp {
+            animalExampleConfiguration.forEach {
+                arg(it.key, it.value)
+            }
+        }
+        dependsOn(findByName("kspKotlin"))
+    }
 }
 
 dependencies {
-    // Project "app" depends on project "utils". (Project paths are separated with ":", so ":utils" refers to the top-level "utils" project.)
-    ksp("io.github.tosaa.puml.ksp:ksp-plantuml-generator:0.0.2")
+    ksp("io.github.tosaa.puml.ksp:ksp-plantuml-generator:0.0.+")
 }
 
 application {
-    // Define the Fully Qualified Name for the application main class
-    // (Note that Kotlin compiles `App.kt` to a class with FQN `com.example.app.AppKt`.)
     mainClass = "app.AppKt"
 }

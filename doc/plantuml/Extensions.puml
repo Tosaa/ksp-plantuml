@@ -17,7 +17,6 @@ title Example for Extensions
 
 'Function relations
 
- 
 note as note_of_code
 Kotlin Code:
 
@@ -32,5 +31,5 @@ Kotlin Code:
     fun Color.Companion.byRGBInt(alpha : Int, red : Int, green : Int, blue : Int) : Color = Color(alpha.toString(16)+red.toString(16)+green.toString(16)+blue.toString(16))
     
 end note
-            
+
 @enduml

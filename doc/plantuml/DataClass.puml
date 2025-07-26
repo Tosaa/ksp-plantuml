@@ -20,7 +20,6 @@ title Example for DataClass
 
 'Function relations
 
- 
 note as note_of_code
 Kotlin Code:
 
@@ -28,5 +27,5 @@ Kotlin Code:
     data class Foo(val x: String, val y: String, val z : Int)
     
 end note
-            
+
 @enduml

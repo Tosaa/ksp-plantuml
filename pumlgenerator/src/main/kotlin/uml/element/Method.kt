@@ -4,8 +4,7 @@ import Options
 import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.google.devtools.ksp.symbol.KSType
-import com.google.devtools.ksp.symbol.KSTypeReference
+import com.google.devtools.ksp.symbol.Modifier
 
 data class Method(val originalKSFunctionDeclaration: KSFunctionDeclaration, val showVisibility: Boolean, val markExtension: Boolean) {
     val uniqueIdentifier: String
@@ -21,7 +20,8 @@ data class Method(val originalKSFunctionDeclaration: KSFunctionDeclaration, val 
         val isExtensionFunction = originalKSFunctionDeclaration.extensionReceiver != null
         val isParentCompanion = (originalKSFunctionDeclaration.parent as? KSClassDeclaration)?.isCompanionObject == true
         val isExtensionReceiverCompanion = (originalKSFunctionDeclaration.extensionReceiver?.resolve()?.declaration as? KSClassDeclaration)?.isCompanionObject == true
-        val isCompanionFunction = isParentCompanion || isExtensionReceiverCompanion
+        val isJVMStatic = originalKSFunctionDeclaration.modifiers.contains(Modifier.JAVA_STATIC)
+        val isCompanionFunction = isParentCompanion || isExtensionReceiverCompanion || isJVMStatic
         if (isCompanionFunction) {
             add("{static}")
         }

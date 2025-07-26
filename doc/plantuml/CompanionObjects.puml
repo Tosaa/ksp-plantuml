@@ -16,7 +16,6 @@ title Example for CompanionObjects
 
 'Function relations
 
- 
 note as note_of_code
 Kotlin Code:
 
@@ -30,5 +29,5 @@ Kotlin Code:
     }  
     
 end note
-            
+
 @enduml

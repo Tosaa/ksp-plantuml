@@ -104,4 +104,31 @@ class EnumGenerationTest : CompilationTest() {
         }
     }
 
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `enum default properties and functions are shown`() {
+        val expectedClassName = "ABC"
+        val packageName = "test.a.b.c"
+        val expectedAlias = "test_a_b_c_ABC"
+        val classDefinition = "enum \"$expectedClassName\" as $expectedAlias"
+        val entries = listOf("A", "B", "C")
+        val kotlinSource = SourceFile.kotlin(
+            "ABC.kt", generateEnum(packageName, expectedClassName, entries, emptyList(), emptyList())
+        )
+        val compilation = newCompilation(DEFAULT_OPTIONS, listOf(kotlinSource))
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, classDefinition)
+        entries.forEach {
+            assertContains(generatedFile, it)
+        }
+        assertContains(generatedFile,"name : String")
+        assertContains(generatedFile,"ordinal : Int")
+        assertContains(generatedFile,"{static} entries : EnumEntries<ABC>")
+    }
+
 }

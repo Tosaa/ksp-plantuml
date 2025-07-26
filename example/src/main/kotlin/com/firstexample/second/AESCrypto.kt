@@ -1,7 +1,5 @@
 package com.firstexample.second
 
-import javax.crypto.Cipher
-
 class AESCrypto(val key: ByteArray) {
     fun encrypt(bytes: ByteArray): ByteArray {
         return ByteArray(0)

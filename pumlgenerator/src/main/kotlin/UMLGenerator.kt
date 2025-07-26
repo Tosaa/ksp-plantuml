@@ -1,4 +1,3 @@
-import com.google.devtools.ksp.closestClassDeclaration
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile

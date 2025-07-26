@@ -38,7 +38,6 @@ ui_UIState <|-- ui_UIState_Error
 
 'Function relations
 
- 
 note as note_of_code
 Kotlin Code:
 
@@ -50,5 +49,5 @@ Kotlin Code:
     }
     
 end note
-            
+
 @enduml

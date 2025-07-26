@@ -362,9 +362,13 @@ fun Options?.isValid(declaration: KSFunctionDeclaration, logger: KSPLogger? = nu
 fun Sequence<KSPropertyDeclaration>.filterPropertiesByOptions(clazz: KSClassDeclaration, options: Options, logger: KSPLogger?): Sequence<KSPropertyDeclaration> {
     return if (!options.showInheritedProperties) {
         this.filter { options.isValid(it, logger) }
-            .filter { property -> !property.isInheritedProperty(clazz, logger).also {
-                logger.v { "filterPropertiesByOptions(): Filtered ${clazz.simpleName.asString()}.${property.simpleName.asString()} based on inheritance: $it" }
-            } }
+            .filter { property ->
+                !property.isInheritedProperty(clazz, logger).also {
+                    if (it) {
+                        logger.v { "filterPropertiesByOptions(): Filtered inherited property ${clazz.simpleName.asString()}.${property.simpleName.asString()}" }
+                    }
+                }
+            }
     } else {
         this.filter { options.isValid(it, logger) }
     }
@@ -375,7 +379,9 @@ fun Sequence<KSFunctionDeclaration>.filterFunctionsByOptions(clazz: KSClassDecla
         this.filter { options.isValid(it, logger) }
             .filter { function ->
                 !function.isInheritedFunction(clazz, logger).also {
-                    logger.v { "filterFunctionsByOptions(): Filtered ${clazz.simpleName.asString()}.${function.simpleName.asString()} based on inheritance: $it" }
+                    if (it) {
+                        logger.v { "filterFunctionsByOptions(): Filtered inherited function ${clazz.simpleName.asString()}.${function.simpleName.asString()}" }
+                    }
                 }
             }
     } else {

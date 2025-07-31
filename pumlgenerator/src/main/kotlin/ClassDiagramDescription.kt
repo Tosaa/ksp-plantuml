@@ -246,7 +246,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
      * @param function The [KSFunctionDeclaration] that should be visualized
      */
     fun addFunction(function: KSFunctionDeclaration) {
-        val classOfExtensionFunction = function.extensionReceiver?.resolve()?.declaration?.closestClassDeclaration()
+        val classOfExtensionFunction = function.extensionReceiver?.resolve()?.declaration as? KSClassDeclaration
         when {
             classOfExtensionFunction == null -> {
                 logger.w { "addFunction(): Could not resolve Class for extension function $function" }
@@ -268,7 +268,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     builder.extensionFunctions.add(function)
                 } else {
                     logger.w { "No builder found for class $functionOwningClass -> add class as shell first then add extension function $function" }
-                    addClass(classOfExtensionFunction,true)
+                    addClass(functionOwningClass,true)
                     componentBuilder.find { it.clazz == functionOwningClass }?.extensionFunctions?.add(function)
                 }
             }
@@ -282,7 +282,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
      * @param property The [KSPropertyDeclaration] that should be visualized
      */
     fun addProperty(property: KSPropertyDeclaration) {
-        val classOfExtensionVariable = property.extensionReceiver?.resolve()?.declaration?.closestClassDeclaration()
+        val classOfExtensionVariable = property.extensionReceiver?.resolve()?.declaration as? KSClassDeclaration
         when {
             classOfExtensionVariable == null -> {
                 logger.w { "addFunction(): Could not resolve Class for extension variable $property" }

@@ -55,14 +55,16 @@ $functionsString
 
         override val allProperties: MutableList<KSPropertyDeclaration>
             get() = buildList {
-                val validCompanionObjectProperties = companionObject?.getAllProperties()?.filterPropertiesByOptions(clazz, options, logger) ?: emptySequence()
-                addAll(validCompanionObjectProperties)
+                if (!isShell) {
+                    val validCompanionObjectProperties = companionObject?.getAllProperties()?.filterPropertiesByOptions(clazz, options, logger) ?: emptySequence()
+                    addAll(validCompanionObjectProperties)
 
-                val validProperties = clazz.getAllProperties().filterPropertiesByOptions(clazz, options, logger)
-                addAll(validProperties)
+                    val validProperties = clazz.getAllProperties().filterPropertiesByOptions(clazz, options, logger)
+                    addAll(validProperties)
 
-                val otherProperties = clazz.declarations.filterIsInstance<KSPropertyDeclaration>().filterNot { it in clazz.getAllProperties() }.filterPropertiesByOptions(clazz, options, logger)
-                addAll(otherProperties)
+                    val otherProperties = clazz.declarations.filterIsInstance<KSPropertyDeclaration>().filterNot { it in clazz.getAllProperties() }.filterPropertiesByOptions(clazz, options, logger)
+                    addAll(otherProperties)
+                }
 
                 addAll(extensionProperties)
             }.toMutableList()
@@ -71,15 +73,16 @@ $functionsString
 
         override val allFunctions: MutableList<KSFunctionDeclaration>
             get() = buildList {
-                val validCompanionObjectFunctions = companionObject?.getAllFunctions()?.filterFunctionsByOptions(clazz, options, logger) ?: emptySequence()
-                addAll(validCompanionObjectFunctions)
+                if (!isShell) {
+                    val validCompanionObjectFunctions = companionObject?.getAllFunctions()?.filterFunctionsByOptions(clazz, options, logger) ?: emptySequence()
+                    addAll(validCompanionObjectFunctions)
 
-                val validFunctions = clazz.getAllFunctions().filterFunctionsByOptions(clazz, options, logger)
-                addAll(validFunctions)
+                    val validFunctions = clazz.getAllFunctions().filterFunctionsByOptions(clazz, options, logger)
+                    addAll(validFunctions)
 
-                val otherFunctions = clazz.declarations.filterIsInstance<KSFunctionDeclaration>().filterNot { it in clazz.getAllFunctions() }.filterFunctionsByOptions(clazz, options, logger)
-                addAll(otherFunctions)
-
+                    val otherFunctions = clazz.declarations.filterIsInstance<KSFunctionDeclaration>().filterNot { it in clazz.getAllFunctions() }.filterFunctionsByOptions(clazz, options, logger)
+                    addAll(otherFunctions)
+                }
                 addAll(extensionFunctions)
             }.toMutableList()
 

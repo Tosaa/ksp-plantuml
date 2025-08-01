@@ -14,63 +14,18 @@ import uml.ElementKind
 import uml.className
 import uml.fullQualifiedName
 
-data class InterfaceElement(val uniqueIdentifier: String, override val elementName: String, override val elementAlias: String, val attributes: List<Field>, val functions: List<Method>, val isSealedClass: Boolean, val isShell: Boolean) : DiagramElement() {
-    override val comment: String = "'$uniqueIdentifier"
+class InterfaceElement(
+    uniqueIdentifier: String,
+    elementName: String,
+    elementAlias: String,
+    attributes: List<Field>,
+    functions: List<Method>,
+    isSealedClass: Boolean,
+    isShell: Boolean
+) : AbstractElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
     override val elementKind: ElementKind = ElementKind.INTERFACE(isSealedClass)
-    override fun getContent(indent: String): String {
-        val shellString = if (isShell) DiagramElement.shellString else ""
-        val attributesString = attributes
-            .takeIf { it.isNotEmpty() }
-            ?.let { it.joinToString(separator = "\n") { "$indent${it.render()}" } }
-            ?: ""
-        val functionsString = functions
-            .takeIf { it.isNotEmpty() }
-            ?.let { it.joinToString(separator = "\n") { "$indent${it.render()}" } }
-            ?: ""
-        return """
-$shellString
-$attributesString
-$functionsString
-"""
-    }
 
-    class Builder(override val clazz: KSClassDeclaration, override var isShell: Boolean, override val options: Options, val logger: KSPLogger?) : DiagramElement.Builder<InterfaceElement> {
-        val companionObject = clazz.declarations.filter { it is KSClassDeclaration && it.isCompanionObject }.map { it as? KSClassDeclaration }.firstOrNull()
-
-        override val extensionProperties: MutableList<KSPropertyDeclaration> = mutableListOf()
-
-
-        override val allProperties: MutableList<KSPropertyDeclaration>
-            get() = buildList {
-                if (!isShell) {
-                    val validCompanionObjectProperties = companionObject?.getAllProperties()?.filterPropertiesByOptions(clazz, options, logger) ?: emptySequence()
-                    addAll(validCompanionObjectProperties)
-
-                    val validProperties = clazz.getAllProperties().filterPropertiesByOptions(clazz, options, logger)
-                    addAll(validProperties)
-
-                    val otherProperties = clazz.declarations.filterIsInstance<KSPropertyDeclaration>().filterNot { it in clazz.getAllProperties() }.filterPropertiesByOptions(clazz, options, logger)
-                    addAll(otherProperties)
-                }
-                addAll(extensionProperties)
-            }.toMutableList()
-
-        override val extensionFunctions: MutableList<KSFunctionDeclaration> = mutableListOf()
-
-        override val allFunctions: MutableList<KSFunctionDeclaration>
-            get() = buildList {
-                if (!isShell) {
-                    val validCompanionObjectFunctions = companionObject?.getAllFunctions()?.filterFunctionsByOptions(clazz, options, logger) ?: emptySequence()
-                    addAll(validCompanionObjectFunctions)
-
-                    val validFunctions = clazz.getAllFunctions().filterFunctionsByOptions(clazz, options, logger)
-                    addAll(validFunctions)
-
-                    val otherFunctions = clazz.declarations.filterIsInstance<KSFunctionDeclaration>().filterNot { it in clazz.getAllFunctions() }.filterFunctionsByOptions(clazz, options, logger)
-                    addAll(otherFunctions)
-                }
-                addAll(extensionFunctions)
-            }.toMutableList()
+    class Builder( clazz: KSClassDeclaration, isShell: Boolean,  options: Options, logger: KSPLogger?) : AbstractElementBuilder(clazz, isShell, options, logger) {
 
         override fun build(): InterfaceElement? {
             return if (options.isValid(clazz, logger)) {
@@ -87,7 +42,6 @@ $functionsString
                 null
             }
         }
-
 
         override fun toString(): String {
             return "InterfaceBuilder(clazz=${clazz.fullQualifiedName})"

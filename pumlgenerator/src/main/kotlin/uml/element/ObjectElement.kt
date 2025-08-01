@@ -3,12 +3,7 @@ package uml.element
 import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.google.devtools.ksp.symbol.KSPropertyDeclaration
-import filterFunctionsByOptions
-import filterPropertiesByOptions
 import isValid
-import uml.DiagramElement
 import uml.ElementKind
 import uml.className
 import uml.fullQualifiedName

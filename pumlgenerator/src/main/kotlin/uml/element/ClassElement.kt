@@ -26,7 +26,7 @@ class ClassElement(
     isShell: Boolean
 ) : AbstractElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
 
-    override val elementKind: ElementKind = ElementKind.CLAZZ(isSealedClass, isData = isDataClass)
+    override val elementKind: ElementKind = ElementKind.CLAZZ(isSealed = isSealedClass, isData = isDataClass)
 
     class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger? = null) : AbstractElementBuilder(clazz, isShell, options, logger) {
 

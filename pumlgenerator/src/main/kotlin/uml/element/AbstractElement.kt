@@ -23,6 +23,6 @@ $functionsString
     }
 
     override fun toString(): String {
-        return "AbstractElement(elementName=$elementName, elementAlias=$elementAlias, uniqueIdentifier=$uniqueIdentifier, attributes=${attributes.map { it.uniqueIdentifier }}, functions=${functions.map { it.uniqueIdentifier }}, isShell=$isShell)"
+        return "AbstractElement(elementName=$elementName, elementAlias=$elementAlias, uniqueIdentifier=$uniqueIdentifier, attributes=${attributes.map { it.uniqueIdentifier }}, functions=${functions.map { it.uniqueIdentifier }}, isShell=$isShell, elementKind=$elementKind)"
     }
 }

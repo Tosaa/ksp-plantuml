@@ -23,6 +23,7 @@ class InterfaceElement(
     isSealedClass: Boolean,
     isShell: Boolean
 ) : AbstractElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
+
     override val elementKind: ElementKind = ElementKind.INTERFACE(isSealedClass)
 
     class Builder( clazz: KSClassDeclaration, isShell: Boolean,  options: Options, logger: KSPLogger?) : AbstractElementBuilder(clazz, isShell, options, logger) {

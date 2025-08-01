@@ -20,7 +20,9 @@ class EnumElement(
     val members: List<String>,
     isShell: Boolean
 ) : AbstractElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
+
     override val elementKind: ElementKind = ElementKind.ENUM
+
     override fun getContent(indent: String): String {
         val shellString = if (isShell) DiagramElement.shellString else ""
         val membersString = members

@@ -200,6 +200,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 !isShell -> {
                     logger.v { "${classDeclaration.fullQualifiedName} was added previously as shell, now its marked as complete" }
                     existingBuilder.isShell = false
+                    addInnerClasses(classDeclaration)
                 }
             }
             return
@@ -233,9 +234,15 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             else -> Unit
         }
 
+        if (!isShell) {
+            addInnerClasses(classDeclaration)
+        }
+    }
+
+    private fun addInnerClasses(classDeclaration: KSClassDeclaration) {
         val innerClasses = classDeclaration.declarations.mapNotNull { it as? KSClassDeclaration }.filter { !it.isCompanionObject }
         innerClasses.forEach {
-            addClass(it, isShell)
+            addClass(it, false)
         }
     }
 

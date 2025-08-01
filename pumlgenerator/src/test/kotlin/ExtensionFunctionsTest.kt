@@ -214,4 +214,34 @@ fun Regex.Companion.hasSomething() : Boolean = false
         assertContainsNot(generatedFile,"matches") // Regex should be just a shell and not contain any normal variables / functions
         assertContainsNot(generatedFile,"pattern : String") // Regex should be just a shell and not contain any normal variables / functions
     }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Extension function for File works`() {
+        val files = listOf(
+            SourceFile.kotlin("RegexExtension.kt","""
+package plantuml.utils
+import java.io.File
+
+data class PlantumlTemplate(val content: String)
+
+fun File.writePlantuml(plantumlTemplate: PlantumlTemplate): Unit {
+    this.writeText("startuml\n" + plantumlTemplate.content + "\nenduml")
+}
+
+val File.isPlantumlDiagram: Boolean
+    get() = this.isFile && this.exists() && listOf("startuml", "enduml").all { it in this.readText() }
+    
+""".trimIndent())
+        )
+        val compilation = newCompilation(DEFAULT_OPTIONS, files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, DiagramElement.shellString)
+        assertContains(generatedFile,"class \"File\" as java_io_File")
+        assertContains(generatedFile,"<ext> writePlantuml(PlantumlTemplate) : Unit")
+        assertContains(generatedFile,"<ext> isPlantumlDiagram : Boolean")
+    }
 }

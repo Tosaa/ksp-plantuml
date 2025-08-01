@@ -1,4 +1,5 @@
-## 0.0.4 - unreleased
+## 0.0.4 - 2025-08-01
+- classes from dependencies are displayed in a concise format, if extension variables and extension functions are defined
 - Changed default behaviour to hide inherited properties and functions by default
 - Added 'KEY_SHOW_INHERITED_PROPERTIES' property to reduce or increase the shown properties
 - Added 'KEY_SHOW_INHERITED_FUNCTIONS' property to reduce or increase the shown functions

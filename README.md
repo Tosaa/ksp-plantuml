@@ -94,6 +94,11 @@ Extension variables and functions can be marked as `<ext>`. Extensions of the Co
 
 ![example of how the uml looks like if an extension variable or function is defined in Kotlin](doc/plantuml/Extensions.png)
 
+If extension variables and extension functions of classes from dependencies are implemented, their classes are displayed in a concise format.
+This approach prevents the diagram from becoming cluttered by including all variables, methods, and inner classes from dependency classes.
+
+![example of how the uml looks like if an extension variable or function is defined on an class in a dependency](doc/plantuml/ExtensionsOfExternalClasses.png)
+
 ### Interface example
 
 ![example of how the uml looks like if an interface is defined in Kotlin](doc/plantuml/Interface.png)

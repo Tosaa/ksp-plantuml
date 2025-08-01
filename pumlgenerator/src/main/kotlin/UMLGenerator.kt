@@ -14,7 +14,7 @@ class UMLGenerator(val logger: KSPLogger, val diagrams: ClassDiagramDescription,
         }
 
         logger.v { "${file.fileName} -> ${file.declarations.joinToString()}" }
-        val ignoredDeclarations = file.declarations.filterNot { it is KSClassDeclaration || it is KSFunctionDeclaration }.toList()
+        val ignoredDeclarations = file.declarations.filter { it !is KSClassDeclaration && it !is KSFunctionDeclaration && it !is KSPropertyDeclaration }.toList()
         if (ignoredDeclarations.isNotEmpty()) {
             logger.w { "The following declarations were ignored since only class declarations are considered: ${ignoredDeclarations.joinToString()}" }
         }

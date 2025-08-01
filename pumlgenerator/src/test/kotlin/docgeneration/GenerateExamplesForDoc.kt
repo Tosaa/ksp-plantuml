@@ -133,6 +133,20 @@ class GenerationForDoc : CompilationTest() {
     }
     """
 
+    val shellForExtensionCode = """
+    package plantuml.utils
+    import java.io.File
+    
+    data class PlantumlTemplate(val content: String)
+    
+    fun File.writePlantuml(plantumlTemplate: PlantumlTemplate): Unit {
+        this.writeText("startuml\n" + plantumlTemplate.content + "\nenduml")
+    }
+    
+    val File.isPlantumlDiagram: Boolean
+        get() = this.isFile && this.exists() && listOf("startuml", "enduml").all { it in this.readText() }
+    """
+
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `generate Docs`() {
@@ -140,6 +154,7 @@ class GenerationForDoc : CompilationTest() {
             Triple("DataClass", dataClassCode, DEFAULT_OPTIONS),
             Triple("Interface", interfaceCode, DEFAULT_OPTIONS),
             Triple("Extensions", extensionFunctionsCode, DEFAULT_OPTIONS),
+            Triple("ExtensionsOfExternalClasses", shellForExtensionCode, DEFAULT_OPTIONS),
             Triple("Objects", objectCode, DEFAULT_OPTIONS),
             Triple("CompanionObjects", companionObjectCode, DEFAULT_OPTIONS),
             Triple("Enums", enumsCode, DEFAULT_OPTIONS),

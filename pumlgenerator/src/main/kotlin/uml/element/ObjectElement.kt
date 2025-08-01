@@ -18,11 +18,13 @@ data class ObjectElement(
     override val elementName: String,
     override val elementAlias: String,
     val attributes: List<Field>,
-    val functions: List<Method>
+    val functions: List<Method>,
+    val isShell: Boolean
 ) : DiagramElement() {
     override val comment: String = "'$uniqueIdentifier"
     override val elementKind: ElementKind = ElementKind.OBJECT
     override fun getContent(indent: String): String {
+        val shellString = if (isShell) DiagramElement.shellString else ""
         val attributesString = attributes
             .takeIf { it.isNotEmpty() }
             ?.let { it.joinToString(separator = "\n") { "$indent${it.render()}" } }
@@ -32,35 +34,50 @@ data class ObjectElement(
             ?.let { it.joinToString(separator = "\n") { "$indent${it.render()}" } }
             ?: ""
         return """
+$shellString
 $attributesString
 $functionsString
 """
     }
 
-    class Builder(override val clazz: KSClassDeclaration, override val options: Options, val logger: KSPLogger?) : DiagramElement.Builder<ObjectElement> {
+    class Builder(override val clazz: KSClassDeclaration, override var isShell: Boolean, override val options: Options, val logger: KSPLogger?) : DiagramElement.Builder<ObjectElement> {
         val companionObject = clazz.declarations.filter { it is KSClassDeclaration && it.isCompanionObject }.map { it as? KSClassDeclaration }.firstOrNull()
 
-        override val properties: MutableList<KSPropertyDeclaration> = buildList {
-            val validCompanionObjectProperties = companionObject?.getAllProperties()?.filterPropertiesByOptions(clazz, options, logger) ?: emptySequence()
-            addAll(validCompanionObjectProperties)
+        override val extensionProperties: MutableList<KSPropertyDeclaration> = mutableListOf()
 
-            val validProperties = clazz.getAllProperties().filterPropertiesByOptions(clazz, options, logger)
-            addAll(validProperties)
+        override val allProperties: MutableList<KSPropertyDeclaration>
+            get() = buildList {
+                if (!isShell) {
 
-            val otherProperties = clazz.declarations.filterIsInstance<KSPropertyDeclaration>().filterNot { it in clazz.getAllProperties() }.filterPropertiesByOptions(clazz, options, logger)
-            addAll(otherProperties)
-        }.toMutableList()
+                    val validCompanionObjectProperties = companionObject?.getAllProperties()?.filterPropertiesByOptions(clazz, options, logger) ?: emptySequence()
+                    addAll(validCompanionObjectProperties)
 
-        override val functions: MutableList<KSFunctionDeclaration> = buildList {
-            val validCompanionObjectFunctions = companionObject?.getAllFunctions()?.filterFunctionsByOptions(clazz, options, logger) ?: emptySequence()
-            addAll(validCompanionObjectFunctions)
+                    val validProperties = clazz.getAllProperties().filterPropertiesByOptions(clazz, options, logger)
+                    addAll(validProperties)
 
-            val validFunctions = clazz.getAllFunctions().filterFunctionsByOptions(clazz, options, logger)
-            addAll(validFunctions)
+                    val otherProperties = clazz.declarations.filterIsInstance<KSPropertyDeclaration>().filterNot { it in clazz.getAllProperties() }.filterPropertiesByOptions(clazz, options, logger)
+                    addAll(otherProperties)
+                }
+                addAll(extensionProperties)
+            }.toMutableList()
 
-            val otherFunctions = clazz.declarations.filterIsInstance<KSFunctionDeclaration>().filterNot { it in clazz.getAllFunctions() }.filterFunctionsByOptions(clazz, options, logger)
-            addAll(otherFunctions)
-        }.toMutableList()
+        override val extensionFunctions: MutableList<KSFunctionDeclaration> = mutableListOf()
+
+        override val allFunctions: MutableList<KSFunctionDeclaration>
+            get() = buildList {
+                if (!isShell) {
+
+                    val validCompanionObjectFunctions = companionObject?.getAllFunctions()?.filterFunctionsByOptions(clazz, options, logger) ?: emptySequence()
+                    addAll(validCompanionObjectFunctions)
+
+                    val validFunctions = clazz.getAllFunctions().filterFunctionsByOptions(clazz, options, logger)
+                    addAll(validFunctions)
+
+                    val otherFunctions = clazz.declarations.filterIsInstance<KSFunctionDeclaration>().filterNot { it in clazz.getAllFunctions() }.filterFunctionsByOptions(clazz, options, logger)
+                    addAll(otherFunctions)
+                }
+                addAll(extensionFunctions)
+            }.toMutableList()
 
         override fun build(): ObjectElement? {
             return if (options.isValid(clazz, logger)) {
@@ -68,8 +85,9 @@ $functionsString
                     uniqueIdentifier = clazz.fullQualifiedName,
                     elementName = clazz.className,
                     elementAlias = clazz.fullQualifiedName.replace(".", "_").trim('_'),
-                    attributes = properties.map { it.toField(options) },
-                    functions = functions.map { it.toMethod(options) },
+                    attributes = allProperties.map { it.toField(options) },
+                    functions = allFunctions.map { it.toMethod(options) },
+                    isShell = isShell
                 )
             } else {
                 null

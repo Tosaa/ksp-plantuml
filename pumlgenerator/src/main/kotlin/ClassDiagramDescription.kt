@@ -63,11 +63,12 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 attributes
                     .forEach { fieldOfClass ->
                         when {
-                            fieldOfClass.attributeType.fullQualifiedName.startsWith("kotlin") ->
-                                logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due kotlin std classes are ignored" }
+
+                            fieldOfClass.isPrimitive ->
+                                logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due kotlin primitive classes are ignored" }
 
                             fieldOfClass.attributeType.fullQualifiedName.startsWith("java") ->
-                                logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored" }
+                                logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored (${fieldOfClass.attributeType.fullQualifiedName})" }
 
                             !options.isValid(fieldOfClass.originalKSProperty, logger) || !options.isValid(fieldOfClass.attributeType.originalKSType, logger) ->
                                 Unit // Reason is logged in the isValid invocation
@@ -76,11 +77,12 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                                 logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
 
                             else ->
-                                if (fieldOfClass.attributeType.fullQualifiedName !in renderedComponents.map { it.fullQualifiedName }) {
+                                    relationsBuilder.add(ElementRelation.PropertyBuilder(base, fieldOfClass))
+                                /*if (fieldOfClass.attributeType.fullQualifiedName !in renderedComponents.map { it.fullQualifiedName }) {
                                     logger.v { "Property relation of method $fieldOfClass of class ${base.fullQualifiedName} excluded due to return type of not rendered class" }
                                 } else {
                                     relationsBuilder.add(ElementRelation.PropertyBuilder(base, fieldOfClass))
-                                }
+                                }*/
                         }
                     }
             }

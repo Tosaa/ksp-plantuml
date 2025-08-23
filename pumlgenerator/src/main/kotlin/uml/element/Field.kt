@@ -1,22 +1,46 @@
 package uml.element
 
 import Options
+import com.google.devtools.ksp.closestClassDeclaration
 import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Modifier
+import jdk.internal.net.http.frame.Http2Frame.asString
+
+val PRIMITIVE_NAMES: List<String> = listOf(
+    "String",
+    "Int",
+    "Long",
+    "Short",
+    "Boolean",
+    "Byte",
+)
 
 data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibility: Boolean = true, val markExtension: Boolean) {
     val uniqueIdentifier: String
         get() = originalKSProperty.qualifiedName?.getQualifier() ?: (originalKSProperty.packageName.asString() + originalKSProperty.simpleName.asString())
+
+    val isCollection = originalKSProperty.packageName.asString().startsWith("kotlin.collections")
+
+    val isPrimitive = originalKSProperty.type.resolve().declaration.let {
+        it.packageName.asString().contentEquals("kotlin") &&
+                it.simpleName.asString() in PRIMITIVE_NAMES
+    }
+
     val attributeName: String
         get() = originalKSProperty.simpleName.asString()
+
     val attributeType: Type
         get() = originalKSProperty.type.resolve().toType()
+
     val attributeModifiers: List<String>
         get() = originalKSProperty.modifiers.map { it.toString() }
+
     val visibility = if (showVisibility) "${originalKSProperty.getVisibility().pumlVisibility} " else ""
 
+    val genericTypes = attributeType.originalKSType?.arguments ?: emptyList()
 
     val modifiers = mutableListOf<String>().apply {
         val isParentCompanion = (originalKSProperty.parent as? KSClassDeclaration)?.isCompanionObject == true

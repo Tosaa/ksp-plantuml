@@ -13,6 +13,8 @@ data class Type(
             "${originalKSType.declaration.qualifiedName?.getQualifier() ?: originalKSType.declaration.packageName.asString()}.${originalKSType.declaration.simpleName.asString()}"
         }
 
+    val isGeneric = (originalKSType?.arguments?.size ?: 0) > 0
+    val genericTypes = originalKSType?.arguments?.mapNotNull { it.type?.resolve()?.toType() } ?: emptyList()
 
     companion object {
         val Unit: Type = Type(null, "Unit")

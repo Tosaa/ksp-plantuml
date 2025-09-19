@@ -1,3 +1,7 @@
+## 0.0.5 - unreleased
+- When a Variable links a class/interface that makes use of a generic type, like a Collection, the generic type is resolved as well. 
+
+
 ## 0.0.4 - 2025-08-01
 - classes from dependencies are displayed in a concise format, if extension variables and extension functions are defined
 - Changed default behaviour to hide inherited properties and functions by default

@@ -39,15 +39,12 @@ title Example for Inheritance
     }
 
 
-'Inheritance relations
-Room <|-- MagicRoom
-Room <|-- OrdinaryRoom
-MazeGame <|-- MagicMazeGame
+MazeGame --> Room
 MazeGame <|-- OrdinaryMazeGame
-'Property relations
+MazeGame <|-- MagicMazeGame
+Room <|-- OrdinaryRoom
+Room <|-- MagicRoom
 
-'Function relations
-MazeGame::makeRoom --* Room
 note as note_of_code
 Kotlin Code:
 

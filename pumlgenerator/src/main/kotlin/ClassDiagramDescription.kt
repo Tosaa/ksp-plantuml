@@ -12,6 +12,7 @@ import graph.PropertyRelation
 import graph.Relation
 import graph.RelationGraph
 import graph.RelationKind
+import jdk.javadoc.internal.doclets.toolkit.util.DocPath.parent
 import uml.DiagramElement
 import uml.element.ClassElement
 import uml.element.EnumElement
@@ -33,6 +34,8 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
     private fun addHierarchy(child: KSClassDeclaration, parent: KSClassDeclaration) {
         when {
+            !options.showInheritance ->
+                logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due to option ${OptionConstants.KEY_SHOW_INHERITANCE}=false" }
 
             !options.isValid(child, logger) ->
                 logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due to invalid child" }
@@ -77,6 +80,8 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 attributes
                     .forEach { fieldOfClass ->
                         when {
+                            !options.showPropertyRelations ->
+                                logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to option ${OptionConstants.KEY_SHOW_PROPERTY_RELATIONS}=false" }
 
                             fieldOfClass.isPrimitive ->
                                 logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due kotlin primitive classes are ignored" }
@@ -149,6 +154,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 functions
                     .forEach { methodOfClass ->
                         when {
+                            !options.showFunctionRelations ->
+                                logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to option ${OptionConstants.KEY_SHOW_PROPERTY_RELATIONS}=false" }
+
                             methodOfClass.returnType.isPrimitive ->
                                 logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due kotlin primitives are ignored" }
 
@@ -493,10 +501,11 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         return buildString {
             val blacklistedVertices = mutableListOf<String>()
             val allEdges = mutableMapOf<Pair<String, String>, Relation>()
+            // Todo: Read max relations from options
             blacklistedVertices.addAll(relationGraph.vertices.filter { relationGraph.inDegreeOf(it) > MAX_RELATIONS || relationGraph.outDegreeOf(it) > MAX_RELATIONS })
             blacklistedVertices.forEach {
                 appendLine(
-"""
+                    """
 note top of $it
 Relations of $it cannot be shown
 based on to many relations
@@ -504,25 +513,35 @@ end note
 """.trimIndent()
                 )
             }
+            // Start with vertices with most edges & End with vertices with least edges
             relationGraph.vertices.sortedBy { relationGraph.inDegreeOf(it) + relationGraph.outDegreeOf(it) }.reversed().forEach {
-                appendLine("' $it :${relationGraph.inDegreeOf(it) + relationGraph.outDegreeOf(it)}")
+                // Start with edges to vertices with most out edges & End with vertices with least out edges
                 val outRelations = relationGraph.outEdgesOf(it).sortedBy { edge -> relationGraph.outDegreeOf(edge.toAlias) }.reversed()
                 outRelations.forEachIndexed { index, relation ->
-                    if (!allEdges.containsKey(relation.fromAlias to relation.toAlias) && relation.fromAlias !in blacklistedVertices && relation.toAlias !in blacklistedVertices) {
-                        allEdges[relation.fromAlias to relation.toAlias] = relation
-                        val from = relation.fromAlias
-                        if (relation.relationKind == RelationKind.Inheritance) {
-                            appendLine("${relation.toAlias} ${relation.relationKind.reversedArrow} $from")
-                        } else {
-                            appendLine("' $relation, ${relationGraph.outDegreeOf(from)} - ${relationGraph.outDegreeOf(relation.toAlias)}")
-                            if (relationGraph.outDegreeOf(relation.toAlias) > 1 && index == 0) {
-                                appendLine("$from ${relation.relationKind.arrowWithLevel(0)} ${relation.toAlias}")
+                    // Avoid adding edge multiple times
+                    when {
+                        allEdges.containsKey(relation.fromAlias to relation.toAlias) ->
+                            logger.v { "Edge for $relation exists already" }
+
+                        relation.relationKind == RelationKind.Inheritance ->
+                            appendLine("${relation.toAlias} ${relation.relationKind.reversedArrow} ${relation.fromAlias}")
+
+                        relation.fromAlias in blacklistedVertices ->
+                            logger.v { "Edges for ${relation.fromAlias} are blacklisted by the amount of allowed edges" }
+
+                        relation.toAlias in blacklistedVertices ->
+                            logger.v { "Edges for ${relation.toAlias} are blacklisted by the amount of allowed edges" }
+
+                        else -> {
+                            allEdges[relation.fromAlias to relation.toAlias] = relation
+                            // Todo: Filter if generic relations should be drawn too based on options
+                            appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}")
+                            /*if (relationGraph.outDegreeOf(relation.toAlias) > 1 && index == 0) {
+                                appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(0)} ${relation.toAlias}")
                             } else {
-                                appendLine("$from ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}")
-                            }
+                                appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}")
+                            }*/
                         }
-                    } else {
-                        logger.v { "Edge for $relation exists already" }
                     }
                 }
             }

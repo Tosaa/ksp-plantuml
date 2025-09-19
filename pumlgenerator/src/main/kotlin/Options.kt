@@ -9,6 +9,8 @@ import com.google.devtools.ksp.symbol.KSType
 import uml.isInheritedFunction
 import uml.isInheritedProperty
 
+// Todo: Add Boolean for showRelationsOfGenerics
+// Todo: Add Int for maxRelationsPerClass
 data class Options(
     val includedPackages: List<String> = emptyList(),
     val excludedPackages: List<String> = emptyList(),

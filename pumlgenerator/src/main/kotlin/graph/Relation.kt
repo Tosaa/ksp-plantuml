@@ -95,7 +95,7 @@ class FunctionRelation(val classDeclaration: KSClassDeclaration, val classMethod
     override val toAlias: String
         get() = returnType.fullQualifiedName.replace(".", "_").trim('_')
     override val relationKind: RelationKind
-        get() = RelationKind.Property
+        get() = RelationKind.Function
 }
 
 class IndirectFunctionRelation(val classDeclaration: KSClassDeclaration, val classMethod: Method, val returnType: Type = classMethod.returnType, override val options: Options? = null, val logger: KSPLogger? = null) : Relation() {
@@ -109,5 +109,5 @@ class IndirectFunctionRelation(val classDeclaration: KSClassDeclaration, val cla
     override val toAlias: String
         get() = returnType.fullQualifiedName.replace(".", "_").trim('_')
     override val relationKind: RelationKind
-        get() = RelationKind.Property
+        get() = RelationKind.IndirectFunction
 }

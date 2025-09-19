@@ -110,6 +110,8 @@ fun Options?.isValid(packageName: String, logger: KSPLogger? = null): Boolean = 
         this == null ->
             true
 
+        packageName.equals("kotlin.collections") -> true
+
         packageName.isBlank() && !this.allowEmptyPackage -> {
             logger.v { "Exclude $packageName since empty Package deactivated by the options" }
             false

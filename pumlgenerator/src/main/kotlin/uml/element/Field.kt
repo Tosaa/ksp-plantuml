@@ -9,25 +9,14 @@ import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Modifier
 import jdk.internal.net.http.frame.Http2Frame.asString
 
-val PRIMITIVE_NAMES: List<String> = listOf(
-    "String",
-    "Int",
-    "Long",
-    "Short",
-    "Boolean",
-    "Byte",
-)
 
 data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibility: Boolean = true, val markExtension: Boolean) {
     val uniqueIdentifier: String
         get() = originalKSProperty.qualifiedName?.getQualifier() ?: (originalKSProperty.packageName.asString() + originalKSProperty.simpleName.asString())
 
-    val isCollection = originalKSProperty.packageName.asString().startsWith("kotlin.collections")
+    val isCollection = attributeType.isCollection
 
-    val isPrimitive = originalKSProperty.type.resolve().declaration.let {
-        it.packageName.asString().contentEquals("kotlin") &&
-                it.simpleName.asString() in PRIMITIVE_NAMES
-    }
+    val isPrimitive = attributeType.isPrimitive
 
     val attributeName: String
         get() = originalKSProperty.simpleName.asString()

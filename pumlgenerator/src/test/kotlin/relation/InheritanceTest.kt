@@ -119,9 +119,9 @@ class InheritanceTest : CompilationTest() {
         assertContains(generatedFile, "\"Cat\" as explorer_database_pets_Cat")
         assertContains(generatedFile, "\"Dog\" as explorer_database_pets_Dog")
         assertContains(generatedFile, "\"TRex\" as explorer_database_forensic_TRex")
-        assertContains(generatedFile, "explorer_database_Animal <|-- explorer_database_pets_Cat")
-        assertContains(generatedFile, "explorer_database_Animal <|-- explorer_database_pets_Dog")
-        assertContains(generatedFile, "explorer_database_Animal <|-- explorer_database_forensic_TRex")
+        assertContains(generatedFile, "explorer_database_pets_Cat --|> explorer_database_Animal")
+        assertContains(generatedFile, "explorer_database_pets_Dog --|> explorer_database_Animal")
+        assertContains(generatedFile, "explorer_database_forensic_TRex --|> explorer_database_Animal")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -270,7 +270,7 @@ class InheritanceTest : CompilationTest() {
         assertContains(generatedFile, "\"AbstractAnimal\" as explorer_database_AbstractAnimal")
         assertContains(generatedFile, "\"Cat\" as explorer_database_pets_Cat")
         assertContains(generatedFile, "\"Dog\" as explorer_database_pets_Dog")
-        assertContains(generatedFile, "explorer_database_AbstractAnimal <|-- explorer_database_pets_Cat")
-        assertContains(generatedFile, "explorer_database_AbstractAnimal <|-- explorer_database_pets_Dog")
+        assertContains(generatedFile, "explorer_database_pets_Cat --|> explorer_database_AbstractAnimal")
+        assertContains(generatedFile, "explorer_database_pets_Dog --|> explorer_database_AbstractAnimal")
     }
 }

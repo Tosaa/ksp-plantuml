@@ -55,9 +55,9 @@ class PropertyRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile, "com_Something::a --* com_one_OneThing")
-        assertContains(generatedFile, "com_Something::b --* com_other_OtherThing")
-        assertContains(generatedFile, "com_one_OneThing::otherThing --* com_other_OtherThing")
+        assertContains(generatedFile, "com_Something --* com_one_OneThing")
+        assertContains(generatedFile, "com_Something --* com_other_OtherThing")
+        assertContains(generatedFile, "com_one_OneThing --* com_other_OtherThing")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -75,9 +75,9 @@ class PropertyRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile, "com_Something::a --* com_one_OneThing")
-        assertContainsNot(generatedFile, "com_Something::b --* com_other_OtherThing")
-        assertContainsNot(generatedFile, "com_one_OneThing::otherThing --* com_other_OtherThing")
+        assertContains(generatedFile, "com_Something --* com_one_OneThing")
+        assertContainsNot(generatedFile, "com_Something --* com_other_OtherThing")
+        assertContainsNot(generatedFile, "com_one_OneThing --* com_other_OtherThing")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -95,9 +95,9 @@ class PropertyRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContainsNot(generatedFile, "com_Something::a --* com_one_OneThing")
-        assertContainsNot(generatedFile, "com_Something::b --* com_other_OtherThing")
-        assertContainsNot(generatedFile, "com_one_OneThing::otherThing --* com_other_OtherThing")
+        assertContainsNot(generatedFile, "com_Something --* com_one_OneThing")
+        assertContainsNot(generatedFile, "com_Something --* com_other_OtherThing")
+        assertContainsNot(generatedFile, "com_one_OneThing --* com_other_OtherThing")
     }
     @OptIn(ExperimentalCompilerApi::class)
     @Test
@@ -114,7 +114,7 @@ class PropertyRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContainsNot(generatedFile, "com_Something::d --* com_Something")
-        assertContainsNot(generatedFile, "com_Something::e --* com_Something")
+        assertContainsNot(generatedFile, "com_Something --* com_Something")
+        assertContainsNot(generatedFile, "com_Something --* com_Something")
     }
 }

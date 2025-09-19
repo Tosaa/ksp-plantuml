@@ -39,6 +39,8 @@ data class Type(
 
     companion object {
         val Unit: Type = Type(null, "Unit")
+        val Any: Type = Type(null, "Any")
+        val Exception: Type = Type(null, "Exception")
     }
 }
 
@@ -71,7 +73,7 @@ fun Type.flatResolve(logger: KSPLogger? = null): Set<Type> {
             }
         }
     }
-    return resolved
+    return resolved.filterNot { it in listOf(Type.Unit, Type.Any, Type.Exception) || it.isPrimitive }.toSet()
 }
 
 fun KSType.toType(): Type {
@@ -81,6 +83,15 @@ fun KSType.toType(): Type {
         "?"
     } else {
         ""
+    }
+    if (this.declaration.qualifiedName?.asString()?.contentEquals("kotlin.Unit") == true) {
+        return Type.Unit
+    }
+    if (this.declaration.qualifiedName?.asString()?.contentEquals("kotlin.Any") == true) {
+        return Type.Any
+    }
+    if (this.declaration.qualifiedName?.asString()?.contentEquals("kotlin.Exception") == true) {
+        return Type.Exception
     }
     return Type(
         this,

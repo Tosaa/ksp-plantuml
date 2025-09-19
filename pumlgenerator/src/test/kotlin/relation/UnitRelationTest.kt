@@ -1,6 +1,7 @@
 package relation
 
 import CompilationTest
+import assertContainsNot
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.sourcesGeneratedBySymbolProcessor
@@ -10,22 +11,21 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class GenericRelationsTest : CompilationTest() {
+class UnitRelationTest : CompilationTest() {
+
     val code = """
-    package explorer.database
-    data class Item(val index : Int)
-    data class Text(val text: String)
+    package box
     public interface Box {
-        val description: Text
-        val label : Pair<Text, Text>
-        val items : List<Item>
-        val legend : List<Pair<Int, Item>>
+        val foo : Unit
+        val openingFunction : (Box)->Unit
+        fun open(): Unit
     }
     """
 
+
     @OptIn(ExperimentalCompilerApi::class)
     @Test
-    fun `Generics are resolved and shown correcly`() {
+    fun `Unit is not a referenced class nor relations are created`() {
         val files = listOf(SourceFile.kotlin("Code.kt", code))
         val compilation = newCompilation(DEFAULT_OPTIONS, files)
         val result = compilation.compile()
@@ -34,12 +34,9 @@ class GenericRelationsTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile, "description : Text")
-        assertContains(generatedFile, "label : Pair<Text,Text>")
-        assertContains(generatedFile, "items : List<Item>")
-        assertContains(generatedFile, "legend : List<Pair<Int,Item>>")
-        assertContains(generatedFile,"explorer_database_Box --* explorer_database_Text")
-        assertContains(generatedFile,"explorer_database_Box ..* explorer_database_Item")
+        assertContains(generatedFile, "foo : Unit")
+        assertContains(generatedFile, "openingFunction : ")
+        assertContains(generatedFile, "open() : Unit")
+        assertContainsNot(generatedFile, "box_Box --* kotlin_Unit")
     }
-
 }

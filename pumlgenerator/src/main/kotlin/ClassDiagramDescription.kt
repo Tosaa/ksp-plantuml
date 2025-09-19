@@ -107,8 +107,13 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
                                         if (types.isNotEmpty()) {
                                             types.forEach {
-                                                logger.i { "Add Relation ${IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = it)}" }
-                                                relationGraph.addRelation(IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = it))
+                                                val relation = IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = it)
+                                                if (base.fullQualifiedName == it.fullQualifiedName) {
+                                                    logger.v { "Ignore Relation to itself: $relation" }
+                                                } else {
+                                                    logger.i { "Add Relation $relation" }
+                                                    relationGraph.addRelation(relation)
+                                                }
                                             }
                                         } else {
                                             logger.w { "$fieldOfClass collection resolved no types" }
@@ -120,8 +125,13 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
                                         if (types.isNotEmpty()) {
                                             types.forEach {
-                                                logger.i { "Add Relation ${IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = it)}" }
-                                                relationGraph.addRelation(IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = it))
+                                                val relation = IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = it)
+                                                if (base.fullQualifiedName == it.fullQualifiedName) {
+                                                    logger.v { "Ignore Relation to itself: $relation" }
+                                                } else {
+                                                    logger.i { "Add Relation $relation" }
+                                                    relationGraph.addRelation(relation)
+                                                }
                                             }
                                         } else {
                                             logger.w { "$fieldOfClass resolved no types" }
@@ -180,7 +190,13 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
                                         if (types.isNotEmpty()) {
                                             types.forEach {
-                                                relationGraph.addRelation(IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = it))
+                                                val relation = IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = it)
+                                                if (base.fullQualifiedName == it.fullQualifiedName) {
+                                                    logger.v { "Ignore Relation to itself: $relation" }
+                                                } else {
+                                                    logger.i { "Add Relation $relation" }
+                                                    relationGraph.addRelation(relation)
+                                                }
                                             }
                                         } else {
                                             logger.w { "$methodOfClass returned collection resolved no types" }
@@ -192,7 +208,13 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
                                         if (types.isNotEmpty()) {
                                             types.forEach {
-                                                relationGraph.addRelation(IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = it))
+                                                val relation = IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = it)
+                                                if (base.fullQualifiedName == it.fullQualifiedName) {
+                                                    logger.v { "Ignore Relation to itself: $relation" }
+                                                } else {
+                                                    logger.i { "Add Relation $relation" }
+                                                    relationGraph.addRelation(relation)
+                                                }
                                             }
                                         } else {
                                             logger.w { "$methodOfClass resolved no types" }
@@ -516,7 +538,11 @@ end note
             // Start with vertices with most edges & End with vertices with least edges
             relationGraph.vertices.sortedBy { relationGraph.inDegreeOf(it) + relationGraph.outDegreeOf(it) }.reversed().forEach {
                 // Start with edges to vertices with most out edges & End with vertices with least out edges
-                val outRelations = relationGraph.outEdgesOf(it).sortedBy { edge -> relationGraph.outDegreeOf(edge.toAlias) }.reversed()
+                val outRelations = relationGraph.outEdgesOf(it).sortedWith(
+                    compareBy(
+                        { edge -> edge.relationKind },
+                        { edge -> relationGraph.outDegreeOf(edge.toAlias) * (-1) })
+                )
                 outRelations.forEachIndexed { index, relation ->
                     // Avoid adding edge multiple times
                     when {

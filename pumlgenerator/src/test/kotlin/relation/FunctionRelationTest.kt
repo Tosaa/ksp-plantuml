@@ -52,8 +52,8 @@ class FunctionRelationTest : CompilationTest() {
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
 
-        assertContains(generatedFile, "com_Something::findAThing --* com_one_OneThing")
-        assertContains(generatedFile, "com_one_OneThing::findOtherThing --* com_other_OtherThing")
+        assertContains(generatedFile, "com_Something --> com_one_OneThing")
+        assertContains(generatedFile, "com_one_OneThing --> com_other_OtherThing")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -71,8 +71,8 @@ class FunctionRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile, "com_Something::findAThing --* com_one_OneThing")
-        assertContainsNot(generatedFile, "com_one_OneThing::findOtherThing --* com_other_OtherThing")
+        assertContains(generatedFile, "com_Something --> com_one_OneThing")
+        assertContainsNot(generatedFile, "com_one_OneThing --> com_other_OtherThing")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -90,8 +90,8 @@ class FunctionRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContainsNot(generatedFile, "com_Something::findAThing --* com_one_OneThing")
-        assertContainsNot(generatedFile, "com_one_OneThing::findOtherThing --* com_other_OtherThing")
+        assertContainsNot(generatedFile, "com_Something --> com_one_OneThing")
+        assertContainsNot(generatedFile, "com_one_OneThing --> com_other_OtherThing")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -109,8 +109,8 @@ class FunctionRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile, "com_Something::findAThing --* com_one_OneThing")
-        assertContains(generatedFile, "com_one_OneThing::findOtherThing --* com_other_OtherThing")
+        assertContains(generatedFile, "com_Something --> com_one_OneThing")
+        assertContains(generatedFile, "com_one_OneThing --> com_other_OtherThing")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -128,6 +128,6 @@ class FunctionRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContainsNot(generatedFile, "com_other_OtherThing::copy --* com_other_OtherThing")
+        assertContainsNot(generatedFile, "com_other_OtherThing --> com_other_OtherThing")
     }
 }

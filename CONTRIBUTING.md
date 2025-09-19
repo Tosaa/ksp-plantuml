@@ -40,7 +40,10 @@ e.g.:
 ```
 ./gradlew :module:kspDebug -i
 ```
-
+This can be helpful when publishing the ksp-processor locally and testing it on another project.
+```
+./gradlew publishToMavenLocal
+```
 
 ## Implementation
 

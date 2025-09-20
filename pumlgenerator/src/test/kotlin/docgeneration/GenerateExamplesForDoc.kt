@@ -147,6 +147,49 @@ class GenerationForDoc : CompilationTest() {
         get() = this.isFile && this.exists() && listOf("startuml", "enduml").all { it in this.readText() }
     """
 
+    val indirectRelationsCode = """
+    package person
+    class Age(val value: Int)
+    class Name(val firstName: String, val secondName: String)
+    interface Company {
+        val name: String
+    }
+    
+    class Job<T : Company>()
+    class Date(val day: Int, val month: Int, val year: Int)
+    class Person(val birthday: Date, val name: Name, val peopleIKnow: List<Name>, val job: Job<Company>) {
+        fun computeAge(): Result<Age> {
+            return Result.success(Age(2025 - birthday.year))
+        }
+    }
+    """
+
+    val manyRelationsCode = """
+    package problem
+    data class Error(val description : String)
+    interface OperationA {
+        fun run(): Error?
+    }
+    interface OperationB {
+        fun run(): Error?
+    }
+    interface OperationC {
+        fun run(): Error?
+    }
+    interface OperationD {
+        fun run(): Error?
+    }
+    interface OperationE {
+        fun run(): Error?
+    }
+    interface OperationF {
+        fun run(): Error?
+    }
+    interface OperationG {
+        fun run(): Error?
+    }
+    """
+
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `generate Docs`() {
@@ -162,6 +205,8 @@ class GenerationForDoc : CompilationTest() {
             Triple("InheritanceWithInheritedFields", inheritanceCode, DEFAULT_OPTIONS.copy(showInheritedFunctions = true, showInheritedProperties = true)),
             Triple("SuspendFunctions", suspendCode, DEFAULT_OPTIONS),
             Triple("SealedClasses", sealedClassesCode, DEFAULT_OPTIONS),
+            Triple("IndirectRelations", indirectRelationsCode, DEFAULT_OPTIONS),
+            Triple("ManyRelations", manyRelationsCode, DEFAULT_OPTIONS),
         ).forEach { (name, code, options) ->
             val note = buildString {
                 appendLine("note as note_of_code")

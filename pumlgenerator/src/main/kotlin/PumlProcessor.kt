@@ -19,7 +19,6 @@ class PumlProcessor(
 ) : SymbolProcessor {
     override fun finish() {
         val finalDiagram = generateFinalDiagram(diagramCollection)
-        logger.i { diagramCollection.relationGraph.graphAsText() }
         logger.i {
             """
 finish():

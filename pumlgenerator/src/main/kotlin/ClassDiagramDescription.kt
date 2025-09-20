@@ -27,7 +27,6 @@ import uml.fullQualifiedName
 class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = null) {
     val componentBuilder = mutableListOf<DiagramElement.Builder<*>>()
 
-    //    val relationsBuilder = mutableListOf<ElementRelation.Builder>()
     val renderedComponents: List<KSClassDeclaration>
         get() = componentBuilder.map { it.clazz }
 
@@ -77,7 +76,6 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     is EnumElement.Builder -> builder.build()?.attributes
                     else -> emptyList()
                 } ?: emptyList()
-                logger.i { "properties: $attributes of $base" }
                 attributes
                     .forEach { fieldOfClass ->
                         when {
@@ -412,7 +410,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
     /*
     Rules:
-    Inheritance always from bottom to top
+    Inheritance always from bottom to top (child below parent)
     First neighbor with more than 0 out relation = same layer
     Every other neighbor = layer below
     Every neighbor with exact 0 out relation = layer below

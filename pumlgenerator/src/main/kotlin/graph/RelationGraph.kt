@@ -1,45 +1,36 @@
 package graph
 
+private typealias Vertex = String
+private typealias Edge = Pair<Vertex, Vertex>
+
 class RelationGraph {
     val relations = mutableSetOf<Relation>()
 
-    val edges: List<Pair<String, String>>
+    val edges: List<Edge>
         get() = this.relations.map { it.fromAlias to it.toAlias }
 
-    val vertices: Set<String>
+    val vertices: Set<Vertex>
         get() = (this.relations.map { it.fromAlias } + this.relations.map { it.toAlias }).toSet()
 
     fun addRelation(relation: Relation) {
         this.relations.add(relation)
     }
 
-    fun graphAsText(): String {
-        return buildString {
-            appendLine("Vertices: ${vertices.size}, Edges: ${edges.size}")
-            vertices.forEach {
-                appendLine("$it: out-degree=${outDegreeOf(it)}, in-degree=${inDegreeOf(it)}")
-            }
-            edges.forEach {
-                appendLine("${it.first} -- ${it.second}")
-            }
-        }
+    fun outDegreeOf(vertex: Vertex): Int {
+        return this.edges.count { it.first == vertex }
     }
 
-    fun outDegreeOf(alias: String): Int {
-        return this.edges.count { it.first == alias }
-    }
-
-    fun inDegreeOf(alias: String): Int {
-        return this.edges.count { it.second == alias }
+    fun inDegreeOf(vertex: Vertex): Int {
+        return this.edges.count { it.second == vertex }
     }
 
 
-    fun outEdgesOf(alias: String): List<Relation> {
-        return this.relations.filter { it.fromAlias == alias }
+    fun outEdgesOf(vertex: Vertex): List<Relation> {
+        return this.relations.filter { it.fromAlias == vertex }
     }
 
-    fun inEdgesOf(alias: String): List<Relation> {
-        return this.relations.filter { it.toAlias == alias }
+    fun inEdgesOf(vertex: Vertex): List<Relation> {
+        return this.relations.filter { it.toAlias == vertex }
     }
 
 

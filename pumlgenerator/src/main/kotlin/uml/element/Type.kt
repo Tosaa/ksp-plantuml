@@ -37,12 +37,6 @@ open class Type(
 
     val isGeneric = (originalKSType?.arguments?.size ?: 0) > 0
     val genericTypes = originalKSType?.arguments?.mapNotNull { it.type?.resolve()?.toType() } ?: emptyList()
-
-    companion object {
-        val Unit: ReservedType = ReservedType(null, "Unit")
-        val Any: ReservedType = ReservedType(null, "Any")
-        val Exception: ReservedType = ReservedType(null, "Exception")
-    }
 }
 
 class ReservedType(
@@ -50,6 +44,15 @@ class ReservedType(
     typeName: String
 ) : Type(originalKSType, typeName)
 
+/**
+ * flatResolve is used to resolve all referenced types of a type.
+ * E.g.
+ * Result<Pair<Int,String> consists of types: Result, Pair, Int and String.
+ * Result is the first level type and holds Pair as second level type. Int and String are third level types.
+ * E.g.
+ * List<Foo> consists of types: List, Foo.
+ * List is the first level type and holds Foo as second level type.
+ */
 fun Type.flatResolve(options: Options, logger: KSPLogger? = null, level: Int = 0): Set<Pair<Type, Int>> {
     logger.i { "flatResolve(): $this" }
     val resolved = buildSet {
@@ -101,15 +104,6 @@ fun KSType.toType(): Type {
         )
     }
 
-    if (this.declaration.qualifiedName?.asString()?.contentEquals("kotlin.Unit") == true) {
-        return Type.Unit
-    }
-    if (this.declaration.qualifiedName?.asString()?.contentEquals("kotlin.Any") == true) {
-        return Type.Any
-    }
-    if (this.declaration.qualifiedName?.asString()?.contentEquals("kotlin.Exception") == true) {
-        return Type.Exception
-    }
     if (this.declaration.qualifiedName?.asString()?.contentEquals("kotlin.Result") == true) {
         return ReservedType(
             this,

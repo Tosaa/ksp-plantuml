@@ -18,6 +18,7 @@ import uml.element.ClassElement
 import uml.element.EnumElement
 import uml.element.InterfaceElement
 import uml.element.ObjectElement
+import uml.element.ReservedType
 import uml.element.flatResolve
 import uml.fullQualifiedName
 
@@ -97,7 +98,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
                             else -> {
                                 when {
-                                    !fieldOfClass.attributeType.isGeneric && !fieldOfClass.attributeType.isCollection -> {
+                                    !fieldOfClass.attributeType.isGeneric && !fieldOfClass.attributeType.isCollection && fieldOfClass.attributeType !is ReservedType -> {
                                         logger.i { "Add Relation ${PropertyRelation(base, fieldOfClass)}" }
                                         relationGraph.addRelation(PropertyRelation(base, fieldOfClass))
                                     }
@@ -189,7 +190,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
                             else -> {
                                 when {
-                                    !methodOfClass.returnType.isGeneric && !methodOfClass.returnType.isCollection -> {
+                                    !methodOfClass.returnType.isGeneric && !methodOfClass.returnType.isCollection && methodOfClass.returnType !is ReservedType -> {
                                         relationGraph.addRelation(FunctionRelation(base, methodOfClass))
                                     }
 
@@ -546,7 +547,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     """
 note top of $it
 Relations of $it cannot be shown
-based on to many relations
+based on to many relations (in ${relationGraph.inDegreeOf(it)}/out ${relationGraph.outDegreeOf(it)})
 end note
 """.trimIndent()
                 )

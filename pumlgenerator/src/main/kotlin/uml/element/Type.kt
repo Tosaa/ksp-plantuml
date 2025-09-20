@@ -5,7 +5,6 @@ import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSType
 import i
 import isValid
-import java.util.Collections.addAll
 
 val PRIMITIVE_NAMES: List<String> = listOf(
     "String",
@@ -16,7 +15,7 @@ val PRIMITIVE_NAMES: List<String> = listOf(
     "Byte",
 )
 
-data class Type(
+open class Type(
     val originalKSType: KSType? = null,
     val typeName: String
 ) {
@@ -40,11 +39,16 @@ data class Type(
     val genericTypes = originalKSType?.arguments?.mapNotNull { it.type?.resolve()?.toType() } ?: emptyList()
 
     companion object {
-        val Unit: Type = Type(null, "Unit")
-        val Any: Type = Type(null, "Any")
-        val Exception: Type = Type(null, "Exception")
+        val Unit: ReservedType = ReservedType(null, "Unit")
+        val Any: ReservedType = ReservedType(null, "Any")
+        val Exception: ReservedType = ReservedType(null, "Exception")
     }
 }
+
+class ReservedType(
+    originalKSType: KSType? = null,
+    typeName: String
+) : Type(originalKSType, typeName)
 
 fun Type.flatResolve(options: Options, logger: KSPLogger? = null, level: Int = 0): Set<Pair<Type, Int>> {
     logger.i { "flatResolve(): $this" }
@@ -78,7 +82,7 @@ fun Type.flatResolve(options: Options, logger: KSPLogger? = null, level: Int = 0
             }
         }
     }
-    return resolved.filterNot { it.first in listOf(Type.Unit, Type.Any, Type.Exception) || it.first.isPrimitive }.toSet()
+    return resolved.filterNot { it.first is ReservedType || it.first.isPrimitive }.toSet()
 }
 
 fun KSType.toType(): Type {
@@ -89,6 +93,14 @@ fun KSType.toType(): Type {
     } else {
         ""
     }
+
+    if (this.declaration.qualifiedName?.asString()?.startsWith("kotlin") == true){
+        return ReservedType(
+            this,
+            "${this.declaration.simpleName.asString()}$generic$optionalIndicator"
+        )
+    }
+
     if (this.declaration.qualifiedName?.asString()?.contentEquals("kotlin.Unit") == true) {
         return Type.Unit
     }
@@ -98,6 +110,13 @@ fun KSType.toType(): Type {
     if (this.declaration.qualifiedName?.asString()?.contentEquals("kotlin.Exception") == true) {
         return Type.Exception
     }
+    if (this.declaration.qualifiedName?.asString()?.contentEquals("kotlin.Result") == true) {
+        return ReservedType(
+            this,
+            "${this.declaration.simpleName.asString()}$generic$optionalIndicator"
+        )
+    }
+
     return Type(
         this,
         "${this.declaration.simpleName.asString()}$generic$optionalIndicator"

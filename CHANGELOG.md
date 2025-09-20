@@ -1,5 +1,15 @@
-## 0.0.5 - unreleased
-- When a Variable links a class/interface that makes use of a generic type, like a Collection, the generic type is resolved as well. 
+## 0.0.5 - 2025-09-20
+- Added generic type resolution. 
+  - When a Variable links a class/interface that makes use of a generic type, like a Collection, the generic type is resolved as well.
+  - Generic Types like collections of `kotlin.collections` are displayed as indirect dependencies now. Same applies for example to Result<T>.
+- Updated visualisation
+  - Indirect dependencies are represented by a dotted line. 
+  - Function dependencies are represented with an sharp arrow instead of an diamond arrow.
+  - If a Class has a property and a function dependency, the function dependency will not be shown. Property dependencies have higher priority.
+- Limited the maximum amount of relations that can be visualized.
+  - If a Class has more than n (Default value is 6) relations with other classes, its relations will be hidden and there will be a note on top of the class, that classes with more than n relations cannot be drawn. Reason for this is that entries in the diagram with a lot of dependencies tend to make the diagram less readable. Due to the fact that the class is used very often its purpose should be declared explicitly.
+- Added 'KEY_SHOW_INDIRECT_RELATIONS' property to enable or disable visualisation of indirect properties and return types of functions 
+- Added 'KEY_MAX_RELATIONS' property set the maximum number of relations of a class that can be shown in the diagram
 
 
 ## 0.0.4 - 2025-08-01

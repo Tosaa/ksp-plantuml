@@ -1,3 +1,4 @@
+import OptionConstants.ALL_KEYS
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.KSPLogger

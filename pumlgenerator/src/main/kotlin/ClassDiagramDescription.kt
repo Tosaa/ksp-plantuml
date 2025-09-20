@@ -1,3 +1,5 @@
+import OptionConstants.KEY_SHOW_INDIRECT_RELATIONS
+import OptionConstants.MAX_RELATIONS
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -21,8 +23,6 @@ import uml.element.ObjectElement
 import uml.element.ReservedType
 import uml.element.flatResolve
 import uml.fullQualifiedName
-
-private const val MAX_RELATIONS = 6
 
 class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = null) {
     val componentBuilder = mutableListOf<DiagramElement.Builder<*>>()
@@ -97,22 +97,26 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                                 logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
 
                             else -> {
-                                when {
-                                    !fieldOfClass.attributeType.isGeneric && !fieldOfClass.attributeType.isCollection && fieldOfClass.attributeType !is ReservedType -> {
-                                        logger.i { "Add Relation ${PropertyRelation(base, fieldOfClass)}" }
-                                        relationGraph.addRelation(PropertyRelation(base, fieldOfClass))
-                                    }
+                                if (!fieldOfClass.attributeType.isGeneric && !fieldOfClass.attributeType.isCollection && fieldOfClass.attributeType !is ReservedType) {
+                                    logger.i { "Add Relation ${PropertyRelation(base, fieldOfClass)}" }
+                                    relationGraph.addRelation(PropertyRelation(base, fieldOfClass))
+                                } else {
+                                    val types = fieldOfClass.attributeType.flatResolve(options = options, logger = logger)
 
-                                    fieldOfClass.isCollection -> {
-                                        val types = fieldOfClass.attributeType.flatResolve(options = options, logger = logger)
-
-                                        if (types.isNotEmpty()) {
-                                            types.forEach { (type, level) ->
-                                                val relation = if (level > 0) {
-                                                    IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
-                                                } else {
+                                    if (types.isNotEmpty()) {
+                                        types.forEach { (type, level) ->
+                                            when {
+                                                level == 0 ->
                                                     PropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
+
+                                                level > 0 && options.showIndirectRelations ->
+                                                    IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
+
+                                                else -> {
+                                                    logger.v { "Ignore Relation of $fieldOfClass due to $KEY_SHOW_INDIRECT_RELATIONS=false" }
+                                                    null
                                                 }
+                                            }?.let { relation ->
                                                 if (base.fullQualifiedName == type.fullQualifiedName) {
                                                     logger.v { "Ignore Relation to itself: $relation" }
                                                 } else {
@@ -120,31 +124,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                                                     relationGraph.addRelation(relation)
                                                 }
                                             }
-                                        } else {
-                                            logger.w { "$fieldOfClass collection resolved no types" }
                                         }
-                                    }
-
-                                    else -> {
-                                        val types = fieldOfClass.attributeType.flatResolve(options = options, logger = logger)
-
-                                        if (types.isNotEmpty()) {
-                                            types.forEach { (type, level) ->
-                                                val relation = if (level > 0) {
-                                                    IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
-                                                } else {
-                                                    PropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
-                                                }
-                                                if (base.fullQualifiedName == type.fullQualifiedName) {
-                                                    logger.v { "Ignore Relation to itself: $relation" }
-                                                } else {
-                                                    logger.i { "Add Relation $relation" }
-                                                    relationGraph.addRelation(relation)
-                                                }
-                                            }
-                                        } else {
-                                            logger.w { "$fieldOfClass resolved no types" }
-                                        }
+                                    } else {
+                                        logger.w { "$fieldOfClass resolved no types" }
                                     }
                                 }
                             }
@@ -189,21 +171,26 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                                 logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
 
                             else -> {
-                                when {
-                                    !methodOfClass.returnType.isGeneric && !methodOfClass.returnType.isCollection && methodOfClass.returnType !is ReservedType -> {
-                                        relationGraph.addRelation(FunctionRelation(base, methodOfClass))
-                                    }
+                                if (!methodOfClass.returnType.isGeneric && !methodOfClass.returnType.isCollection && methodOfClass.returnType !is ReservedType) {
+                                    logger.i { "Add Relation ${FunctionRelation(base, methodOfClass)}" }
+                                    relationGraph.addRelation(FunctionRelation(base, methodOfClass))
+                                } else {
+                                    val types = methodOfClass.returnType.flatResolve(options = options, logger = logger)
 
-                                    methodOfClass.returnType.isCollection -> {
-                                        val types = methodOfClass.returnType.flatResolve(options = options, logger = logger)
-
-                                        if (types.isNotEmpty()) {
-                                            types.forEach { (type, level) ->
-                                                val relation = if (level > 0) {
-                                                    IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
-                                                } else {
+                                    if (types.isNotEmpty()) {
+                                        types.forEach { (type, level) ->
+                                            when {
+                                                level == 0 ->
                                                     FunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
+
+                                                level > 0 && options.showIndirectRelations ->
+                                                    IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
+
+                                                else -> {
+                                                    logger.v { "Ignore Relation of $methodOfClass due to $KEY_SHOW_INDIRECT_RELATIONS=false" }
+                                                    null
                                                 }
+                                            }?.let { relation ->
                                                 if (base.fullQualifiedName == type.fullQualifiedName) {
                                                     logger.v { "Ignore Relation to itself: $relation" }
                                                 } else {
@@ -211,31 +198,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                                                     relationGraph.addRelation(relation)
                                                 }
                                             }
-                                        } else {
-                                            logger.w { "$methodOfClass returned collection resolved no types" }
                                         }
-                                    }
-
-                                    else -> {
-                                        val types = methodOfClass.returnType.flatResolve(options = options, logger = logger)
-
-                                        if (types.isNotEmpty()) {
-                                            types.forEach { (type, level) ->
-                                                val relation = if (level > 0) {
-                                                    IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
-                                                } else {
-                                                    FunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
-                                                }
-                                                if (base.fullQualifiedName == type.fullQualifiedName) {
-                                                    logger.v { "Ignore Relation to itself: $relation" }
-                                                } else {
-                                                    logger.i { "Add Relation $relation" }
-                                                    relationGraph.addRelation(relation)
-                                                }
-                                            }
-                                        } else {
-                                            logger.w { "$methodOfClass resolved no types" }
-                                        }
+                                    } else {
+                                        logger.w { "$methodOfClass resolved no return types" }
                                     }
                                 }
                             }
@@ -540,8 +505,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         return buildString {
             val blacklistedVertices = mutableListOf<String>()
             val allEdges = mutableMapOf<Pair<String, String>, Relation>()
-            // Todo: Read max relations from options
-            blacklistedVertices.addAll(relationGraph.vertices.filter { relationGraph.inDegreeOf(it) > MAX_RELATIONS || relationGraph.outDegreeOf(it) > MAX_RELATIONS })
+            blacklistedVertices.addAll(relationGraph.vertices.filter { relationGraph.inDegreeOf(it) > options.maxRelations || relationGraph.outDegreeOf(it) > options.maxRelations })
             blacklistedVertices.forEach {
                 appendLine(
                     """
@@ -577,13 +541,7 @@ end note
 
                         else -> {
                             allEdges[relation.fromAlias to relation.toAlias] = relation
-                            // Todo: Filter if generic relations should be drawn too based on options
                             appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}")
-                            /*if (relationGraph.outDegreeOf(relation.toAlias) > 1 && index == 0) {
-                                appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(0)} ${relation.toAlias}")
-                            } else {
-                                appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}")
-                            }*/
                         }
                     }
                 }

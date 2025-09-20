@@ -1,3 +1,4 @@
+import OptionConstants.MAX_RELATIONS
 import com.google.devtools.ksp.isInternal
 import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.isPublic
@@ -9,9 +10,6 @@ import com.google.devtools.ksp.symbol.KSType
 import uml.isInheritedFunction
 import uml.isInheritedProperty
 
-
-// Todo: Add Boolean for showRelationsOfGenerics
-// Todo: Add Int for maxRelationsPerClass
 data class Options(
     val includedPackages: List<String> = emptyList(),
     val excludedPackages: List<String> = emptyList(),
@@ -35,6 +33,8 @@ data class Options(
     val showInheritance: Boolean = true,
     val showPropertyRelations: Boolean = true,
     val showFunctionRelations: Boolean = true,
+    val showIndirectRelations: Boolean = true,
+    val maxRelations: Int = MAX_RELATIONS,
     val showPackages: Boolean = false,
     val allowEmptyPackage: Boolean = true,
     val prefix: String = "",
@@ -64,6 +64,8 @@ data class Options(
         showInheritance = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITANCE]?.equals("true", true) ?: true,
         showPropertyRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_PROPERTY_RELATIONS]?.equals("true", true) ?: true,
         showFunctionRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_FUNCTION_RELATIONS]?.equals("true", true) ?: true,
+        showIndirectRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_INDIRECT_RELATIONS]?.equals("true", true) ?: true,
+        maxRelations = kspProcessorOptions[OptionConstants.KEY_MAX_RELATIONS]?.toIntOrNull() ?: MAX_RELATIONS,
         showPackages = kspProcessorOptions[OptionConstants.KEY_SHOW_PACKAGES]?.equals("true", true) ?: false,
         allowEmptyPackage = kspProcessorOptions[OptionConstants.KEY_ALLOW_EMPTY_PACKAGE]?.equals("true", true) ?: false,
         prefix = kspProcessorOptions[OptionConstants.KEY_PREFIX] ?: "",
@@ -95,6 +97,8 @@ data class Options(
             put(OptionConstants.KEY_SHOW_INHERITANCE, if (showInheritance) "true" else "false")
             put(OptionConstants.KEY_SHOW_PROPERTY_RELATIONS, if (showPropertyRelations) "true" else "false")
             put(OptionConstants.KEY_SHOW_FUNCTION_RELATIONS, if (showFunctionRelations) "true" else "false")
+            put(OptionConstants.KEY_SHOW_INDIRECT_RELATIONS, if (showIndirectRelations) "true" else "false")
+            put(OptionConstants.KEY_MAX_RELATIONS, maxRelations.toString())
             put(OptionConstants.KEY_SHOW_PACKAGES, if (showPackages) "true" else "false")
             put(OptionConstants.KEY_ALLOW_EMPTY_PACKAGE, if (allowEmptyPackage) "true" else "false")
             put(OptionConstants.KEY_PREFIX, prefix)

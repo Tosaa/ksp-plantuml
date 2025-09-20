@@ -34,13 +34,22 @@ class FunctionRelationTest : CompilationTest() {
     package com.other
     public data class OtherThing(val name:String, val isKnown:Boolean)
     """
+    val thingBox = """
+    package com.other
+    import com.one.OneThing
+    public class ThingBox(){
+        fun get() : Result<OneThing> {
+            return Result.failure(IllegalStateException("Failed to retrieve OneThing"))
+        }
+    }
+    """
 
 
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Create relations in functions between classes`() {
-        val fileNames = listOf("Something.kt", "OneThing.kt", "OtherThing.kt")
-        val codes = listOf(somethingCode, onethingCode, otherthingCode)
+        val fileNames = listOf("Something.kt", "OneThing.kt", "OtherThing.kt", "ThingBox.kt")
+        val codes = listOf(somethingCode, onethingCode, otherthingCode, thingBox)
         val files = fileNames.zip(codes).map { (name, code) ->
             SourceFile.kotlin(name, code)
         }.toList()
@@ -54,6 +63,7 @@ class FunctionRelationTest : CompilationTest() {
 
         assertContains(generatedFile, "com_Something --> com_one_OneThing")
         assertContains(generatedFile, "com_one_OneThing --> com_other_OtherThing")
+        assertContains(generatedFile, "com_other_ThingBox ..> com_one_OneThing")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -129,5 +139,25 @@ class FunctionRelationTest : CompilationTest() {
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContainsNot(generatedFile, "com_other_OtherThing --> com_other_OtherThing")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Do not create indirect relations if disabled`() {
+        val fileNames = listOf("Something.kt", "OneThing.kt", "OtherThing.kt", "ThingBox.kt")
+        val codes = listOf(somethingCode, onethingCode, otherthingCode, thingBox)
+        val files = fileNames.zip(codes).map { (name, code) ->
+            SourceFile.kotlin(name, code)
+        }.toList()
+        val compilation = newCompilation(Options(showIndirectRelations = false), files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "com_Something --> com_one_OneThing")
+        assertContains(generatedFile, "com_one_OneThing --> com_other_OtherThing")
+        assertContainsNot(generatedFile, "com_other_ThingBox ..> com_one_OneThing")
     }
 }

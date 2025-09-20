@@ -54,7 +54,7 @@ title Example for ManyRelations
 
 note top of problem_Error
 Relations of problem_Error cannot be shown
-based on to many relations (in 7/out 0)
+based on to many relations
 end note
 
 note as note_of_code

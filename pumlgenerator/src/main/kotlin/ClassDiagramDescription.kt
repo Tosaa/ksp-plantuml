@@ -443,7 +443,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     """
 note top of $it
 Relations of $it cannot be shown
-based on to many relations (in ${relationGraph.inDegreeOf(it)}/out ${relationGraph.outDegreeOf(it)})
+based on to many relations
 end note
 """.trimIndent()
                 )
@@ -496,7 +496,7 @@ end note
                     """
 note top of $it
 Relations of $it cannot be shown
-based on to many relations (in ${relationGraph.inDegreeOf(it)}/out ${relationGraph.outDegreeOf(it)})
+based on to many relations
 end note
 """.trimIndent()
                 )

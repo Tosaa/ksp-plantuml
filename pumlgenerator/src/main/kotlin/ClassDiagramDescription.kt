@@ -406,13 +406,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         }
     }
 
-    /*
-    Rules:
-    Inheritance always from bottom to top (child below parent)
-    First neighbor with more than 0 out relation = same layer
-    Every other neighbor = layer below
-    Every neighbor with exact 0 out relation = layer below
-     */
+
     fun computeAllRelations(): String {
         componentBuilder.forEach { builder ->
             builder.clazz.superTypes
@@ -429,11 +423,21 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 addFunctionRelations(builder)
                 addPropertyRelations(builder)
             }
+        val blacklistedVertices = mutableListOf<String>()
+        val allEdges = mutableMapOf<Pair<String, String>, Relation>()
+        blacklistedVertices.addAll(relationGraph.vertices.filter { relationGraph.inDegreeOf(it) > options.maxRelations || relationGraph.outDegreeOf(it) > options.maxRelations })
+        return computationVariant2(allEdges, blacklistedVertices)
+    }
 
+    /*
+    Rules:
+    Relations are sorted by their relationKind (Inheritance first, Indirect relation last)
+    Relations are also sorted by their outgoing edges (many dependencies first, the least dependencies last)
+    Inheritance always from bottom to top (child below parent)
+    Every dependency relation 1 layer below
+     */
+    private fun computationVariant1(allEdges: MutableMap<Pair<String, String>, Relation>, blacklistedVertices: MutableList<String>): String {
         return buildString {
-            val blacklistedVertices = mutableListOf<String>()
-            val allEdges = mutableMapOf<Pair<String, String>, Relation>()
-            blacklistedVertices.addAll(relationGraph.vertices.filter { relationGraph.inDegreeOf(it) > options.maxRelations || relationGraph.outDegreeOf(it) > options.maxRelations })
             blacklistedVertices.forEach {
                 appendLine(
                     """
@@ -444,7 +448,7 @@ end note
 """.trimIndent()
                 )
             }
-            // Start with vertices with most edges & End with vertices with least edges
+            // Start with vertices with most edges & End with vertices with the least edges
             relationGraph.vertices.sortedBy { relationGraph.inDegreeOf(it) + relationGraph.outDegreeOf(it) }.reversed().forEach {
                 // Start with edges to vertices with most out edges & End with vertices with least out edges
                 val outRelations = relationGraph.outEdgesOf(it).sortedWith(
@@ -470,6 +474,60 @@ end note
                         else -> {
                             allEdges[relation.fromAlias to relation.toAlias] = relation
                             appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+    Rules:
+    Relations are sorted by their relationKind (Inheritance first, Indirect relation last)
+    Relations are also sorted by their outgoing edges (many dependencies first, the least dependencies last)
+    Inheritance always from bottom to top (child below parent)
+    If a Relation exists from A to B and B to A, the same layer will be used
+    Otherwise A is below B
+     */
+    private fun computationVariant2(allEdges: MutableMap<Pair<String, String>, Relation>, blacklistedVertices: MutableList<String>): String {
+        return buildString {
+            blacklistedVertices.forEach {
+                appendLine(
+                    """
+note top of $it
+Relations of $it cannot be shown
+based on to many relations (in ${relationGraph.inDegreeOf(it)}/out ${relationGraph.outDegreeOf(it)})
+end note
+""".trimIndent()
+                )
+            }
+            // Start with vertices with most edges & End with vertices with the least edges
+            relationGraph.vertices.sortedBy { relationGraph.inDegreeOf(it) + relationGraph.outDegreeOf(it) }.forEach {
+                relationGraph.outEdgesOf(it).sortedWith(
+                    compareBy(
+                        { edge -> edge.relationKind },
+                        { edge -> relationGraph.outDegreeOf(edge.toAlias) * (-1) })
+                ).forEachIndexed { index, relation ->
+                    when {
+                        allEdges.containsKey(relation.fromAlias to relation.toAlias) ->
+                            logger.v { "Edge for $relation exists already" }
+
+                        relation.relationKind == RelationKind.Inheritance ->
+                            appendLine("${relation.toAlias} ${relation.relationKind.reversedArrow} ${relation.fromAlias}")
+
+                        relation.fromAlias in blacklistedVertices ->
+                            logger.v { "Edges for ${relation.fromAlias} are blacklisted by the amount of allowed edges" }
+
+                        relation.toAlias in blacklistedVertices ->
+                            logger.v { "Edges for ${relation.toAlias} are blacklisted by the amount of allowed edges" }
+
+                        else -> {
+                            allEdges[relation.fromAlias to relation.toAlias] = relation
+                            if (relationGraph.hasEdge(relation.toAlias, relation.fromAlias) && relationGraph.hasEdge(relation.fromAlias, relation.toAlias)) {
+                                appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(0)} ${relation.toAlias}")
+                            } else {
+                                appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}")
+                            }
                         }
                     }
                 }

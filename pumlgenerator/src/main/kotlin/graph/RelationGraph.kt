@@ -33,5 +33,9 @@ class RelationGraph {
         return this.relations.filter { it.toAlias == vertex }
     }
 
+    fun hasEdge(fromVertex: Vertex, toVertex: Vertex): Boolean {
+        return edges.contains(fromVertex to toVertex)
+    }
+
 
 }

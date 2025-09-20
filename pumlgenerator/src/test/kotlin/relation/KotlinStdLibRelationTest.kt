@@ -11,21 +11,23 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class UnitRelationTest : CompilationTest() {
+class KotlinStdLibRelationTest : CompilationTest() {
 
     val code = """
     package box
+    public interface Item
     public interface Box {
         val foo : Unit
-        val openingFunction : (Box)->Unit
+        val openingFunction : (Box) -> Unit
         fun open(): Unit
+        fun putInto():Result<Item>
     }
     """
 
 
     @OptIn(ExperimentalCompilerApi::class)
     @Test
-    fun `Unit is not a referenced class nor relations are created`() {
+    fun `Unit & Result is not a referenced class nor relations are created`() {
         val files = listOf(SourceFile.kotlin("Code.kt", code))
         val compilation = newCompilation(DEFAULT_OPTIONS, files)
         val result = compilation.compile()
@@ -37,6 +39,10 @@ class UnitRelationTest : CompilationTest() {
         assertContains(generatedFile, "foo : Unit")
         assertContains(generatedFile, "openingFunction : ")
         assertContains(generatedFile, "open() : Unit")
+        assertContains(generatedFile, "putInto() : Result<Item>")
         assertContainsNot(generatedFile, "box_Box --* kotlin_Unit")
+        assertContainsNot(generatedFile, "box_Box --* kotlin_Result")
+        assertContains(generatedFile, "box_Box ..> box_Item")
     }
+
 }

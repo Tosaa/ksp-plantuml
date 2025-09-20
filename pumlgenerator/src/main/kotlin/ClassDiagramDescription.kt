@@ -410,12 +410,14 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         }
     }
 
-    /**
-     * Renders all inheritances of all classes that were added through [addClass] to a plantuml conform format.
-     *
-     * @return plantuml conform arrows from derived classes to the super classes
+    /*
+    Rules:
+    Inheritance always from bottom to top
+    First neighbor with more than 0 out relation = same layer
+    Every other neighbor = layer below
+    Every neighbor with exact 0 out relation = layer below
      */
-    fun computeInheritanceRelations(): String {
+    fun computeAllRelations(): String {
         componentBuilder.forEach { builder ->
             builder.clazz.superTypes
                 .mapNotNull { it.resolve().declaration as? KSClassDeclaration }
@@ -425,83 +427,13 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     addHierarchy(builder.clazz, parent)
                 }
         }
-        return relationGraph.relations.filterIsInstance<InheritanceRelation>().joinToString("\n") { it.render() }.split("\n").distinct().joinToString("\n")
-    }
-
-    /**
-     * Renders all types of properties for all classes that were added through [addClass] to a plantuml conform format.
-     *
-     * @return plantuml conform arrows from properties of classes to the type classes
-     */
-    fun computePropertyRelations(): String {
-        componentBuilder
-            .filterIsInstance<DiagramElement.Builder<DiagramElement>>()
-            .forEach { builder ->
-                addPropertyRelations(builder)
-            }
-        return (relationGraph.relations.filterIsInstance<PropertyRelation>() + relationGraph.relations.filterIsInstance<IndirectPropertyRelation>())
-            .asSequence()
-            .distinct()
-            .groupBy { it.fromAlias }
-            .flatMap {
-                it.value.sortedBy { relationGraph.inDegreeOf(it.toAlias) }.mapIndexed { index, relation ->
-                    val from = if (relation.fromAliasDetail.isNotEmpty()) {
-                        "${relation.fromAlias}::${relation.fromAliasDetail}"
-                    } else {
-                        relation.fromAlias
-                    }
-                    if (index == 0) {
-                        "$from ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}"
-                    } else {
-                        "$from ${relation.relationKind.arrowWithLevel(0)} ${relation.toAlias}"
-                    }
-                }
-            }
-            .distinct()
-            .joinToString("\n")
-    }
-
-    /**
-     * Renders all return types of functions for all classes that were added through [addClass] to a plantuml conform format.
-     *
-     * @return plantuml conform arrows from functions of classes to the return type classes
-     */
-    fun computeFunctionRelations(): String {
         componentBuilder
             .filterIsInstance<DiagramElement.Builder<DiagramElement>>()
             .forEach { builder ->
                 addFunctionRelations(builder)
+                addPropertyRelations(builder)
             }
-        return relationGraph.relations.filterIsInstance<FunctionRelation>()
-            .asSequence()
-            .distinct()
-            .groupBy { it.fromAlias }
-            .flatMap {
-                it.value.sortedBy { relationGraph.inDegreeOf(it.toAlias) }.mapIndexed { index, relation ->
-                    val from = if (relation.fromAliasDetail.isNotEmpty()) {
-                        "${relation.fromAlias}::${relation.fromAliasDetail}"
-                    } else {
-                        relation.fromAlias
-                    }
-                    if (index == 0) {
-                        "$from ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}"
-                    } else {
-                        "$from ${relation.relationKind.arrowWithLevel(0)} ${relation.toAlias}"
-                    }
-                }
-            }
-            .distinct()
-            .joinToString("\n")
-    }
 
-    /*
-    Rules:
-    Inheritance always from bottom to top
-    First neighbor with more than 0 out relation = same layer
-    Every other neighbor = layer below
-    Every neighbor with exact 0 out relation = layer below
-     */
-    fun computeAllRelations(): String {
         return buildString {
             val blacklistedVertices = mutableListOf<String>()
             val allEdges = mutableMapOf<Pair<String, String>, Relation>()

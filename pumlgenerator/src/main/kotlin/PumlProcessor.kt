@@ -54,24 +54,7 @@ $finalDiagram
         options.prefix.takeIf { it.isNotBlank() }?.let { diagramBuilder.appendLine(it) }
         diagramBuilder.appendLine(diagramCollection.computeUMLClassDiagrams())
         diagramBuilder.appendLine()
-        diagramCollection.computeInheritanceRelations()
-        diagramCollection.computePropertyRelations()
-        diagramCollection.computeFunctionRelations()
         diagramBuilder.appendLine(diagramCollection.computeAllRelations())
-        /*
-        if (options.showInheritance) {
-            diagramBuilder.appendLine("'Inheritance relations")
-            diagramBuilder.appendLine(diagramCollection.computeInheritanceRelations())
-        }
-        if (options.showPropertyRelations) {
-            diagramBuilder.appendLine("'Property relations")
-            diagramBuilder.appendLine(diagramCollection.computePropertyRelations())
-        }
-        if (options.showFunctionRelations) {
-            diagramBuilder.appendLine("'Function relations")
-            diagramBuilder.appendLine(diagramCollection.computeFunctionRelations())
-        }
-         */
         options.postfix.takeIf { it.isNotBlank() }?.let { diagramBuilder.appendLine(it) }
         diagramBuilder.appendLine("@enduml")
         return diagramBuilder.toString()

@@ -114,6 +114,36 @@ tasks {
     }
 }
 
+
+val cityExampleConfiguration = mutableMapOf<String, String>().apply {
+    put("puml.includedPackages", "com.city")
+    put("puml.showPublicClasses", "true")
+    put("puml.showPublicProperties", "true")
+    put("puml.showPublicFunctions", "true")
+    put("puml.showInternalClasses", "true")
+    put("puml.showInternalProperties", "true")
+    put("puml.showInternalFunctions", "true")
+    put("puml.showPrivateClasses", "true")
+    put("puml.showPrivateProperties", "true")
+    put("puml.showPrivateFunctions", "true")
+    put("puml.showInheritance", "true")
+    put("puml.showPropertyRelations", "true")
+    put("puml.showFunctionRelations", "true")
+    put("puml.showPackages", "false")
+    put("puml.allowEmptyPackage", "true")
+}
+
+tasks {
+    register("kspExampleCity") {
+        ksp {
+            cityExampleConfiguration.forEach {
+                arg(it.key, it.value)
+            }
+        }
+        dependsOn(findByName("kspKotlin"))
+    }
+}
+
 dependencies {
     ksp("io.github.tosaa.puml.ksp:ksp-plantuml-generator:0.0.+")
 }

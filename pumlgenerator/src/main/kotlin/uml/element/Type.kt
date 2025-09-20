@@ -97,7 +97,7 @@ fun KSType.toType(): Type {
         ""
     }
 
-    if (this.declaration.qualifiedName?.asString()?.startsWith("kotlin") == true){
+    if (this.declaration.qualifiedName?.asString()?.startsWith("kotlin") == true) {
         return ReservedType(
             this,
             "${this.declaration.simpleName.asString()}$generic$optionalIndicator"

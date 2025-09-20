@@ -1,13 +1,10 @@
 package uml.element
 
 import Options
-import com.google.devtools.ksp.closestClassDeclaration
 import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
-import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Modifier
-import jdk.internal.net.http.frame.Http2Frame.asString
 
 
 data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibility: Boolean = true, val markExtension: Boolean) {

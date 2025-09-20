@@ -126,9 +126,9 @@ class EnumGenerationTest : CompilationTest() {
         entries.forEach {
             assertContains(generatedFile, it)
         }
-        assertContains(generatedFile,"name : String")
-        assertContains(generatedFile,"ordinal : Int")
-        assertContains(generatedFile,"{static} entries : EnumEntries<ABC>")
+        assertContains(generatedFile, "name : String")
+        assertContains(generatedFile, "ordinal : Int")
+        assertContains(generatedFile, "{static} entries : EnumEntries<ABC>")
     }
 
 }

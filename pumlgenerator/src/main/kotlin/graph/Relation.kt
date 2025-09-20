@@ -1,6 +1,5 @@
 package graph
 
-import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import uml.element.Field
@@ -14,7 +13,7 @@ abstract class Relation {
     abstract val toAlias: String
     open val toAliasDetail: String = "" // Mostly unused but interesting for debugging 
     abstract val relationKind: RelationKind
-    
+
     override fun toString(): String {
         return "Relation(fromAlias=$fromAlias, fromAliasDetail=$fromAliasDetail, toAlias=$toAlias, toAliasDetail=$toAliasDetail, relationKind=$relationKind)"
     }

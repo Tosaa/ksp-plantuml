@@ -1,5 +1,4 @@
 import OptionConstants.KEY_SHOW_INDIRECT_RELATIONS
-import OptionConstants.MAX_RELATIONS
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -8,13 +7,12 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.sun.org.apache.bcel.internal.Repository.addClass
 import graph.FunctionRelation
 import graph.IndirectFunctionRelation
-import graph.InheritanceRelation
 import graph.IndirectPropertyRelation
+import graph.InheritanceRelation
 import graph.PropertyRelation
 import graph.Relation
 import graph.RelationGraph
 import graph.RelationKind
-import jdk.javadoc.internal.doclets.toolkit.util.DocPath.parent
 import uml.DiagramElement
 import uml.element.ClassElement
 import uml.element.EnumElement

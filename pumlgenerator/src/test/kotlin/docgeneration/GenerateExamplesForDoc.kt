@@ -166,7 +166,7 @@ class GenerationForDoc : CompilationTest() {
             val note = buildString {
                 appendLine("note as note_of_code")
                 val nonDefaultOptions = options.asMap().filter { DEFAULT_OPTIONS.asMap()[it.key] != it.value }.entries
-                if (nonDefaultOptions.isNotEmpty()){
+                if (nonDefaultOptions.isNotEmpty()) {
                     appendLine("Non default options:")
                     appendLine(nonDefaultOptions.joinToString("\n") { "${it.key} = ${it.value}" })
                     appendLine()

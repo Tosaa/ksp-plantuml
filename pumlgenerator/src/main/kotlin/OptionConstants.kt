@@ -34,6 +34,9 @@ public object OptionConstants {
     public const val KEY_SHOW_INHERITANCE = "puml.showInheritance"
     public const val KEY_SHOW_PROPERTY_RELATIONS = "puml.showPropertyRelations"
     public const val KEY_SHOW_FUNCTION_RELATIONS = "puml.showFunctionRelations"
+    public const val KEY_SHOW_INDIRECT_RELATIONS = "puml.showIndirectRelations"
+    public const val KEY_MAX_RELATIONS = "puml.maxRelations"
+    public const val MAX_RELATIONS = 6
 
     // Others
     public const val KEY_SHOW_PACKAGES = "puml.showPackages"
@@ -67,6 +70,8 @@ public object OptionConstants {
             KEY_SHOW_INHERITANCE,
             KEY_SHOW_PROPERTY_RELATIONS,
             KEY_SHOW_FUNCTION_RELATIONS,
+            KEY_SHOW_INDIRECT_RELATIONS,
+            KEY_MAX_RELATIONS,
             KEY_SHOW_PACKAGES,
             KEY_ALLOW_EMPTY_PACKAGE,
             KEY_PREFIX,

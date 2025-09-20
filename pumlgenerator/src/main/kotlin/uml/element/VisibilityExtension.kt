@@ -3,7 +3,7 @@ package uml.element
 import com.google.devtools.ksp.symbol.Visibility
 
 val Visibility.pumlVisibility: String
-    get() = when(this){
+    get() = when (this) {
         Visibility.PUBLIC -> "+"
         Visibility.PRIVATE -> "-"
         Visibility.PROTECTED -> "#"

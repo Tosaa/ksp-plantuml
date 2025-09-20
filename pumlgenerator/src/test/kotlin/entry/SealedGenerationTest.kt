@@ -33,10 +33,10 @@ class SealedGenerationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertTrue { generatedFile.contains(Regex("class \"ABC\" as test_letters_ABC.*Sealed>>" ))}
-        assertTrue { generatedFile.contains(Regex("class \"ABC.A\" as test_letters_ABC_A.*object>>" ))}
-        assertTrue { generatedFile.contains(Regex("class \"ABC.B\" as test_letters_ABC_B" ))}
-        assertTrue { generatedFile.contains(Regex("class \"ABC.C\" as test_letters_ABC_C" ))}
+        assertTrue { generatedFile.contains(Regex("class \"ABC\" as test_letters_ABC.*Sealed>>")) }
+        assertTrue { generatedFile.contains(Regex("class \"ABC.A\" as test_letters_ABC_A.*object>>")) }
+        assertTrue { generatedFile.contains(Regex("class \"ABC.B\" as test_letters_ABC_B")) }
+        assertTrue { generatedFile.contains(Regex("class \"ABC.C\" as test_letters_ABC_C")) }
     }
 
 }

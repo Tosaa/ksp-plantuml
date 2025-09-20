@@ -17,11 +17,7 @@ title Example for SuspendFunctions
     }
 
 
-'Inheritance relations
-
-'Property relations
-
-'Function relations
+events_EventsRepository ..* events_Event
 
 note as note_of_code
 Kotlin Code:

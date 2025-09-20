@@ -91,12 +91,12 @@ class PackageOptionsTest : OptionsTest() {
                 kotlinClassCode("public", "IncludedSubSubPackageTestClass", "package com.test.still.included"),
             )
         )
-        assertContains(puml,"class \"NoPackageTestClass\"")
-        assertContainsNot(puml,"class \"ExcludedPackageTestClass\"")
-        assertContainsNot(puml,"class \"ExcludedSubPackageTestClass\"")
-        assertContains(puml,"class \"IncludedPackageTestClass\"")
-        assertContains(puml,"class \"IncludedSubPackageTestClass\"")
-        assertContains(puml,"class \"IncludedSubSubPackageTestClass\"")
+        assertContains(puml, "class \"NoPackageTestClass\"")
+        assertContainsNot(puml, "class \"ExcludedPackageTestClass\"")
+        assertContainsNot(puml, "class \"ExcludedSubPackageTestClass\"")
+        assertContains(puml, "class \"IncludedPackageTestClass\"")
+        assertContains(puml, "class \"IncludedSubPackageTestClass\"")
+        assertContains(puml, "class \"IncludedSubSubPackageTestClass\"")
     }
 
 }

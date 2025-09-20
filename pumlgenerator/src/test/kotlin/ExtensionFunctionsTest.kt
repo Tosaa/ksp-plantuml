@@ -103,18 +103,20 @@ class ExtensionFunctionsTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
-        assertContains(generatedFile,"isAlive : Boolean")
-        assertContains(generatedFile,"describe() : String")
+        assertContains(generatedFile, "isAlive : Boolean")
+        assertContains(generatedFile, "describe() : String")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Extensions for primitive types works`() {
         val files = listOf(
-            SourceFile.kotlin("StringExtension.kt","""
+            SourceFile.kotlin(
+                "StringExtension.kt", """
 package explorer.database            
 public fun String.withPrefix(prefix:String): String = "prefix$this"
-""".trimIndent())
+""".trimIndent()
+            )
         )
         val compilation = newCompilation(DEFAULT_OPTIONS, files)
         val result = compilation.compile()
@@ -122,20 +124,22 @@ public fun String.withPrefix(prefix:String): String = "prefix$this"
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, DiagramElement.shellString)
-        assertContains(generatedFile,"class \"String\" as kotlin_String")
-        assertContains(generatedFile,"<ext> withPrefix(String) : String")
+        assertContains(generatedFile, "class \"String\" as kotlin_String")
+        assertContains(generatedFile, "<ext> withPrefix(String) : String")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Extension variable for classes in external packages works`() {
         val files = listOf(
-            SourceFile.kotlin("RegexExtension.kt","""
+            SourceFile.kotlin(
+                "RegexExtension.kt", """
 package explorer.database
 import kotlin.text.Regex
 val Regex.hasSomething :Boolean
     get() = this.pattern.isNotEmpty()
-""".trimIndent())
+""".trimIndent()
+            )
         )
         val compilation = newCompilation(DEFAULT_OPTIONS, files)
         val result = compilation.compile()
@@ -143,21 +147,23 @@ val Regex.hasSomething :Boolean
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, DiagramElement.shellString)
-        assertContains(generatedFile,"class \"Regex\" as kotlin_text_Regex")
-        assertContains(generatedFile,"<ext> hasSomething : Boolean")
-        assertContainsNot(generatedFile,"matches") // Regex should be just a shell and not contain any normal variables / functions
-        assertContainsNot(generatedFile,"pattern : String") // Regex should be just a shell and not contain any normal variables / functions
+        assertContains(generatedFile, "class \"Regex\" as kotlin_text_Regex")
+        assertContains(generatedFile, "<ext> hasSomething : Boolean")
+        assertContainsNot(generatedFile, "matches") // Regex should be just a shell and not contain any normal variables / functions
+        assertContainsNot(generatedFile, "pattern : String") // Regex should be just a shell and not contain any normal variables / functions
     }
 
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Extension function for classes in external packages works`() {
         val files = listOf(
-            SourceFile.kotlin("RegexExtension.kt","""
+            SourceFile.kotlin(
+                "RegexExtension.kt", """
 package explorer.database
 import kotlin.text.Regex
 fun Regex.hasSomething() : Boolean = this.pattern.isNotEmpty()
-""".trimIndent())
+""".trimIndent()
+            )
         )
         val compilation = newCompilation(DEFAULT_OPTIONS, files)
         val result = compilation.compile()
@@ -165,22 +171,24 @@ fun Regex.hasSomething() : Boolean = this.pattern.isNotEmpty()
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, DiagramElement.shellString)
-        assertContains(generatedFile,"class \"Regex\" as kotlin_text_Regex")
-        assertContains(generatedFile,"<ext> hasSomething() : Boolean")
-        assertContainsNot(generatedFile,"matches") // Regex should be just a shell and not contain any normal variables / functions
-        assertContainsNot(generatedFile,"pattern : String") // Regex should be just a shell and not contain any normal variables / functions
+        assertContains(generatedFile, "class \"Regex\" as kotlin_text_Regex")
+        assertContains(generatedFile, "<ext> hasSomething() : Boolean")
+        assertContainsNot(generatedFile, "matches") // Regex should be just a shell and not contain any normal variables / functions
+        assertContainsNot(generatedFile, "pattern : String") // Regex should be just a shell and not contain any normal variables / functions
     }
 
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Extension variable for companion objects of classes in external packages works`() {
         val files = listOf(
-            SourceFile.kotlin("RegexExtension.kt","""
+            SourceFile.kotlin(
+                "RegexExtension.kt", """
 package explorer.database
 import kotlin.text.Regex
 val Regex.Companion.startsWithFoo : Regex 
     get () = Regex("Foo.*")
-""".trimIndent())
+""".trimIndent()
+            )
         )
         val compilation = newCompilation(DEFAULT_OPTIONS, files)
         val result = compilation.compile()
@@ -188,20 +196,23 @@ val Regex.Companion.startsWithFoo : Regex
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, DiagramElement.shellString)
-        assertContains(generatedFile,"class \"Regex\" as kotlin_text_Regex")
-        assertContains(generatedFile,"{static} <ext> startsWithFoo : Regex")
-        assertContainsNot(generatedFile,"matches") // Regex should be just a shell and not contain any normal variables / functions
-        assertContainsNot(generatedFile,"pattern : String") // Regex should be just a shell and not contain any normal variables / functions
+        assertContains(generatedFile, "class \"Regex\" as kotlin_text_Regex")
+        assertContains(generatedFile, "{static} <ext> startsWithFoo : Regex")
+        assertContainsNot(generatedFile, "matches") // Regex should be just a shell and not contain any normal variables / functions
+        assertContainsNot(generatedFile, "pattern : String") // Regex should be just a shell and not contain any normal variables / functions
     }
+
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Extension function for companion objects of classes in external packages works`() {
         val files = listOf(
-            SourceFile.kotlin("RegexExtension.kt","""
+            SourceFile.kotlin(
+                "RegexExtension.kt", """
 package explorer.database
 import kotlin.text.Regex
 fun Regex.Companion.hasSomething() : Boolean = false
-""".trimIndent())
+""".trimIndent()
+            )
         )
         val compilation = newCompilation(DEFAULT_OPTIONS, files)
         val result = compilation.compile()
@@ -209,17 +220,18 @@ fun Regex.Companion.hasSomething() : Boolean = false
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, DiagramElement.shellString)
-        assertContains(generatedFile,"class \"Regex\" as kotlin_text_Regex")
-        assertContains(generatedFile,"{static} <ext> hasSomething() : Boolean")
-        assertContainsNot(generatedFile,"matches") // Regex should be just a shell and not contain any normal variables / functions
-        assertContainsNot(generatedFile,"pattern : String") // Regex should be just a shell and not contain any normal variables / functions
+        assertContains(generatedFile, "class \"Regex\" as kotlin_text_Regex")
+        assertContains(generatedFile, "{static} <ext> hasSomething() : Boolean")
+        assertContainsNot(generatedFile, "matches") // Regex should be just a shell and not contain any normal variables / functions
+        assertContainsNot(generatedFile, "pattern : String") // Regex should be just a shell and not contain any normal variables / functions
     }
 
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Extension function for File works`() {
         val files = listOf(
-            SourceFile.kotlin("RegexExtension.kt","""
+            SourceFile.kotlin(
+                "RegexExtension.kt", """
 package plantuml.utils
 import java.io.File
 
@@ -232,7 +244,8 @@ fun File.writePlantuml(plantumlTemplate: PlantumlTemplate): Unit {
 val File.isPlantumlDiagram: Boolean
     get() = this.isFile && this.exists() && listOf("startuml", "enduml").all { it in this.readText() }
     
-""".trimIndent())
+""".trimIndent()
+            )
         )
         val compilation = newCompilation(DEFAULT_OPTIONS, files)
         val result = compilation.compile()
@@ -240,8 +253,8 @@ val File.isPlantumlDiagram: Boolean
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, DiagramElement.shellString)
-        assertContains(generatedFile,"class \"File\" as java_io_File")
-        assertContains(generatedFile,"<ext> writePlantuml(PlantumlTemplate) : Unit")
-        assertContains(generatedFile,"<ext> isPlantumlDiagram : Boolean")
+        assertContains(generatedFile, "class \"File\" as java_io_File")
+        assertContains(generatedFile, "<ext> writePlantuml(PlantumlTemplate) : Unit")
+        assertContains(generatedFile, "<ext> isPlantumlDiagram : Boolean")
     }
 }

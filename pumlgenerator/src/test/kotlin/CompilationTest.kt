@@ -29,5 +29,5 @@ open class CompilationTest {
 }
 
 internal fun assertContainsNot(charSequence: CharSequence, other: CharSequence, ignoreCase: Boolean = false, message: String? = null) {
-    assertFalse(charSequence.contains(other, ignoreCase = ignoreCase),  "\"Expected the char sequence to not contain the substring.\nCharSequence <$charSequence>, substring <$other>, ignoreCase <$ignoreCase>.\"")
+    assertFalse(charSequence.contains(other, ignoreCase = ignoreCase), "\"Expected the char sequence to not contain the substring.\nCharSequence <$charSequence>, substring <$other>, ignoreCase <$ignoreCase>.\"")
 }

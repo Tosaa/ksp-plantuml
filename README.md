@@ -203,8 +203,9 @@ skinparam class {
     put("puml.showPrivateFunctions", "false")
     // Actively show inheritance but skip property/function relations
     put("puml.showInheritance", "true")
-    put("puml.showPropertyRelations", "false")
+    put("puml.showPropertyRelations", "true")
     put("puml.showFunctionRelations", "false")
+    put("puml.showIndirectRelations", "true")
     // Show packages since they might be helpful for the API consumer
     put("puml.showPackages", "true")
     put("puml.allowEmptyPackage", "false")

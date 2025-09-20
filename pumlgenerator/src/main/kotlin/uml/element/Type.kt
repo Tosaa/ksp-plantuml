@@ -1,8 +1,10 @@
 package uml.element
 
+import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSType
 import i
+import isValid
 import java.util.Collections.addAll
 
 val PRIMITIVE_NAMES: List<String> = listOf(
@@ -44,21 +46,24 @@ data class Type(
     }
 }
 
-fun Type.flatResolve(logger: KSPLogger? = null): Set<Type> {
+fun Type.flatResolve(options: Options, logger: KSPLogger? = null, level: Int = 0): Set<Pair<Type, Int>> {
     logger.i { "flatResolve(): $this" }
     val resolved = buildSet {
         when {
-            genericTypes.isNotEmpty() -> {
-                logger.i { "flatResolve(): resolve and add: ${genericTypes.joinToString()}" }
-                genericTypes.forEach {
-                    addAll(it.flatResolve(logger))
-                }
-            }
-
             isCollection -> {
                 logger.i { "flatResolve(): resolve collection: ${genericTypes.joinToString()}" }
                 genericTypes.forEach {
-                    addAll(it.flatResolve(logger))
+                    addAll(it.flatResolve(options = options, logger = logger, level + 1))
+                }
+            }
+
+            genericTypes.isNotEmpty() -> {
+                logger.i { "flatResolve(): resolve and add: ${genericTypes.joinToString()}" }
+                if (options.isValid(type = this@flatResolve.originalKSType, logger = logger)) {
+                    add(this@flatResolve to level)
+                }
+                genericTypes.forEach {
+                    addAll(it.flatResolve(options = options, logger = logger, level + 1))
                 }
             }
 
@@ -69,11 +74,11 @@ fun Type.flatResolve(logger: KSPLogger? = null): Set<Type> {
 
             else -> {
                 logger.i { "flatResolve(): resolved: $this" }
-                add(this@flatResolve)
+                add(this@flatResolve to level)
             }
         }
     }
-    return resolved.filterNot { it in listOf(Type.Unit, Type.Any, Type.Exception) || it.isPrimitive }.toSet()
+    return resolved.filterNot { it.first in listOf(Type.Unit, Type.Any, Type.Exception) || it.first.isPrimitive }.toSet()
 }
 
 fun KSType.toType(): Type {

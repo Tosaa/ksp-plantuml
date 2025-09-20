@@ -103,12 +103,16 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                                     }
 
                                     fieldOfClass.isCollection -> {
-                                        val types = fieldOfClass.attributeType.flatResolve(logger)
+                                        val types = fieldOfClass.attributeType.flatResolve(options = options, logger = logger)
 
                                         if (types.isNotEmpty()) {
-                                            types.forEach {
-                                                val relation = IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = it)
-                                                if (base.fullQualifiedName == it.fullQualifiedName) {
+                                            types.forEach { (type, level) ->
+                                                val relation = if (level > 0) {
+                                                    IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
+                                                } else {
+                                                    PropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
+                                                }
+                                                if (base.fullQualifiedName == type.fullQualifiedName) {
                                                     logger.v { "Ignore Relation to itself: $relation" }
                                                 } else {
                                                     logger.i { "Add Relation $relation" }
@@ -121,12 +125,16 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                                     }
 
                                     else -> {
-                                        val types = fieldOfClass.attributeType.flatResolve(logger)
+                                        val types = fieldOfClass.attributeType.flatResolve(options = options, logger = logger)
 
                                         if (types.isNotEmpty()) {
-                                            types.forEach {
-                                                val relation = IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = it)
-                                                if (base.fullQualifiedName == it.fullQualifiedName) {
+                                            types.forEach { (type, level) ->
+                                                val relation = if (level > 0) {
+                                                    IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
+                                                } else {
+                                                    PropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
+                                                }
+                                                if (base.fullQualifiedName == type.fullQualifiedName) {
                                                     logger.v { "Ignore Relation to itself: $relation" }
                                                 } else {
                                                     logger.i { "Add Relation $relation" }
@@ -186,12 +194,16 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                                     }
 
                                     methodOfClass.returnType.isCollection -> {
-                                        val types = methodOfClass.returnType.flatResolve(logger)
+                                        val types = methodOfClass.returnType.flatResolve(options = options, logger = logger)
 
                                         if (types.isNotEmpty()) {
-                                            types.forEach {
-                                                val relation = IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = it)
-                                                if (base.fullQualifiedName == it.fullQualifiedName) {
+                                            types.forEach { (type, level) ->
+                                                val relation = if (level > 0) {
+                                                    IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
+                                                } else {
+                                                    FunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
+                                                }
+                                                if (base.fullQualifiedName == type.fullQualifiedName) {
                                                     logger.v { "Ignore Relation to itself: $relation" }
                                                 } else {
                                                     logger.i { "Add Relation $relation" }
@@ -204,12 +216,16 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                                     }
 
                                     else -> {
-                                        val types = methodOfClass.returnType.flatResolve(logger)
+                                        val types = methodOfClass.returnType.flatResolve(options = options, logger = logger)
 
                                         if (types.isNotEmpty()) {
-                                            types.forEach {
-                                                val relation = IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = it)
-                                                if (base.fullQualifiedName == it.fullQualifiedName) {
+                                            types.forEach { (type, level) ->
+                                                val relation = if (level > 0) {
+                                                    IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
+                                                } else {
+                                                    FunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
+                                                }
+                                                if (base.fullQualifiedName == type.fullQualifiedName) {
                                                     logger.v { "Ignore Relation to itself: $relation" }
                                                 } else {
                                                     logger.i { "Add Relation $relation" }

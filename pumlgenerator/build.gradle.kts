@@ -46,11 +46,9 @@ tasks.test {
 tasks {
     register("docsToPNG") {
         val directory = file(layout.projectDirectory.file("../doc/plantuml/"))
-        doLast {
             directory.listFiles()?.forEach {
                 createImageByServer(it)
             }
-        }
     }
 }
 
@@ -97,8 +95,6 @@ val plantumlAlphabet = (('0'..'9') + ('A'..'Z') + ('a'..'z') + "-_").joinToStrin
 val base64Alphabet = (('A'..'Z') + ('a'..'z') + ('0'..'9') + "+/").joinToString("")
 val b64ToPlantuml: Map<Char, Char> = base64Alphabet.zip(plantumlAlphabet).associate { it.first to it.second }
 
-
-@OptIn(ExperimentalEncodingApi::class)
 fun compress(inputBytes: ByteArray): ByteArray {
 
     // Create Deflater instance with default compression level
@@ -109,9 +105,6 @@ fun compress(inputBytes: ByteArray): ByteArray {
     // Output buffer for compressed data
     val outputStream = ByteArrayOutputStream()
     var len: Int = inputBytes.size * 2
-    if (len < 1000) {
-        len = 1000
-    }
     val buffer = ByteArray(len)
 
     // Perform compression
@@ -143,7 +136,6 @@ fun deflateAndEncode(text: String): String {
             line
         }
     }.joinToString("\n")
-    println(optimized)
     // Convert string to bytes using UTF-8
     val inputBytes = optimized.toByteArray(Charsets.UTF_8)
     val compressedBytes = compress(inputBytes)

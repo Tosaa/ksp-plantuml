@@ -33,8 +33,8 @@ internal fun KSFunctionDeclaration.isInheritedFunction(declarationOwner: KSClass
         }
     }
 
-    if (declarationOwner.modifiers.contains(Modifier.DATA)){
-        if (this.simpleName.asString().contains(Regex("component\\d"))){
+    if (declarationOwner.modifiers.contains(Modifier.DATA)) {
+        if (this.simpleName.asString().contains(Regex("component\\d"))) {
             // For Data class destruction `componentN()` functions are generated and marked as Override, therefore this special case has to be handled here
             return false
         }

@@ -38,13 +38,19 @@ class PropertyRelationTest : CompilationTest() {
     package com.other
     public data class OtherThing(val name:String, val isKnown:Boolean)
     """
-
+    val thingBox = """
+    package com.other
+    import com.one.OneThing
+    public class ThingBox(){
+        val things : List<OneThing> = emptyList()
+    }
+    """
 
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Create relations between classes`() {
-        val fileNames = listOf("Something.kt", "OneThing.kt", "OtherThing.kt")
-        val codes = listOf(somethingCode, onethingCode, otherthingCode)
+        val fileNames = listOf("Something.kt", "OneThing.kt", "OtherThing.kt", "ThingBox.kt")
+        val codes = listOf(somethingCode, onethingCode, otherthingCode, thingBox)
         val files = fileNames.zip(codes).map { (name, code) ->
             SourceFile.kotlin(name, code)
         }.toList()
@@ -55,9 +61,10 @@ class PropertyRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile, "com_Something::a --* com_one_OneThing")
-        assertContains(generatedFile, "com_Something::b --* com_other_OtherThing")
-        assertContains(generatedFile, "com_one_OneThing::otherThing --* com_other_OtherThing")
+        assertContains(generatedFile, "com_Something --* com_one_OneThing")
+        assertContains(generatedFile, "com_Something --* com_other_OtherThing")
+        assertContains(generatedFile, "com_one_OneThing --* com_other_OtherThing")
+        assertContains(generatedFile, "com_other_ThingBox ..* com_one_OneThing")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -75,9 +82,9 @@ class PropertyRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile, "com_Something::a --* com_one_OneThing")
-        assertContainsNot(generatedFile, "com_Something::b --* com_other_OtherThing")
-        assertContainsNot(generatedFile, "com_one_OneThing::otherThing --* com_other_OtherThing")
+        assertContains(generatedFile, "com_Something --* com_one_OneThing")
+        assertContainsNot(generatedFile, "com_Something --* com_other_OtherThing")
+        assertContainsNot(generatedFile, "com_one_OneThing --* com_other_OtherThing")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -95,10 +102,11 @@ class PropertyRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContainsNot(generatedFile, "com_Something::a --* com_one_OneThing")
-        assertContainsNot(generatedFile, "com_Something::b --* com_other_OtherThing")
-        assertContainsNot(generatedFile, "com_one_OneThing::otherThing --* com_other_OtherThing")
+        assertContainsNot(generatedFile, "com_Something --* com_one_OneThing")
+        assertContainsNot(generatedFile, "com_Something --* com_other_OtherThing")
+        assertContainsNot(generatedFile, "com_one_OneThing --* com_other_OtherThing")
     }
+
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Do not create a relations to itself`() {
@@ -114,7 +122,28 @@ class PropertyRelationTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContainsNot(generatedFile, "com_Something::d --* com_Something")
-        assertContainsNot(generatedFile, "com_Something::e --* com_Something")
+        assertContainsNot(generatedFile, "com_Something --* com_Something")
+        assertContainsNot(generatedFile, "com_Something --* com_Something")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Do not create indirect relations if disabled`() {
+        val fileNames = listOf("Something.kt", "OneThing.kt", "OtherThing.kt", "ThingBox.kt")
+        val codes = listOf(somethingCode, onethingCode, otherthingCode, thingBox)
+        val files = fileNames.zip(codes).map { (name, code) ->
+            SourceFile.kotlin(name, code)
+        }.toList()
+        val compilation = newCompilation(Options(showIndirectRelations = false), files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "com_Something --* com_one_OneThing")
+        assertContains(generatedFile, "com_Something --* com_other_OtherThing")
+        assertContains(generatedFile, "com_one_OneThing --* com_other_OtherThing")
+        assertContainsNot(generatedFile, "com_other_ThingBox ..* com_one_OneThing")
     }
 }

@@ -133,9 +133,9 @@ class InterfaceGenerationTest : CompilationTest() {
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, outerClassDefinition)
-        assertContains(generatedFile,"process")
-        assertContains(generatedFile,"finish")
-        assertContains(generatedFile,"onError")
+        assertContains(generatedFile, "process")
+        assertContains(generatedFile, "finish")
+        assertContains(generatedFile, "onError")
     }
 
 }

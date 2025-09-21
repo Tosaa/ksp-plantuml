@@ -121,6 +121,21 @@ Since coroutines and the concept of `suspend` functions is a very important deta
 
 ![example of how the uml looks like if a suspend function is defined in Kotlin](doc/plantuml/SuspendFunctions.png)
 
+### Many types of relations example
+Indirect relations like the Type of elements in a List or the Type of Result can be resolved too.
+- Direct properties are visualized as solid line ending with a diamond.
+- Indirect properties are visualized as dotted line ending with a diamond.
+- Direct Function return types are visualized as solid line ending with an arrow.
+- Indirect Function return types are visualized as dotted line ending with an arrow.
+
+![Example of indirect and direct relations of properties and functions](doc/plantuml/IndirectRelations.png)
+
+If a class has to many relations the diagram can get very hard to read.
+Instead all relations will be hidden and a note will be added.
+
+![Example of to many relations](doc/plantuml/ManyRelations.png)
+
+
 ***
 
 ## Configuration options
@@ -149,6 +164,8 @@ Key | Default                                              | Description
 `puml.showInheritance` | `true`                                               | Show Inheritance of classes by drawing Arrows
 `puml.showPropertyRelations` | `true`                                               | Show Relations of variables by drawing Arrows when the type could be resolved and is shown as class in the diagram
 `puml.showFunctionRelations` | `false`                                              | Show Relations of functions by drawing Arrows when the return type of the function could be resolved and is shown as class in the diagram. Parameters of the function are not drawn.
+`puml.showIndirectRelations` | `true`                                               | Show Relations of functions and properties that are resolved indirectly. E.g. The the type of elements contained in a list is shown as dotted line if the option is activated.
+`puml.maxRelations` | `6`                                                  | Sets the limit when relations of a class should not be drawn anymore. If a class has more relations that the given value, the classes relations will not be shown. The default value is set to 6.
 `puml.showPackages` | `false`                                              | Group classes that are in the same package
 `puml.prefix` | ``                                                   | Add a custom prefix to the plantuml diagram
 `puml.postfix` | ``                                                   | Add a custom postfix to the plantuml diagram
@@ -186,8 +203,9 @@ skinparam class {
     put("puml.showPrivateFunctions", "false")
     // Actively show inheritance but skip property/function relations
     put("puml.showInheritance", "true")
-    put("puml.showPropertyRelations", "false")
+    put("puml.showPropertyRelations", "true")
     put("puml.showFunctionRelations", "false")
+    put("puml.showIndirectRelations", "true")
     // Show packages since they might be helpful for the API consumer
     put("puml.showPackages", "true")
     put("puml.allowEmptyPackage", "false")

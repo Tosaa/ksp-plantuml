@@ -14,7 +14,7 @@ data class Method(val originalKSFunctionDeclaration: KSFunctionDeclaration, val 
     val parameter: List<Type>
         get() = originalKSFunctionDeclaration.parameters.map { it.type.resolve().toType() }
     val returnType: Type
-        get() = originalKSFunctionDeclaration.returnType?.resolve()?.toType() ?: Type.Unit
+        get() = originalKSFunctionDeclaration.returnType?.resolve()?.toType() ?: ReservedType(null, "Unresolved")
 
     val modifiers = mutableListOf<String>().apply {
         val isExtensionFunction = originalKSFunctionDeclaration.extensionReceiver != null

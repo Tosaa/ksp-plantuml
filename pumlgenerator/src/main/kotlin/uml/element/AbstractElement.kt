@@ -1,7 +1,6 @@
 package uml.element
 
 import uml.DiagramElement
-import uml.ElementKind
 
 abstract class AbstractElement(override val elementName: String, override val elementAlias: String, val uniqueIdentifier: String, val attributes: List<Field>, val functions: List<Method>, val isShell: Boolean) : DiagramElement() {
     override val comment: String = "'$uniqueIdentifier"

@@ -132,7 +132,7 @@ class ClassGenerationTest : CompilationTest() {
         expectedProperties.forEach {
             assertContains(generatedFile, it)
         }
-        assertContainsNot(generatedFile,"bar2")
+        assertContainsNot(generatedFile, "bar2")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -161,6 +161,6 @@ class ClassGenerationTest : CompilationTest() {
         expectedProperties.forEach {
             assertContains(generatedFile, it)
         }
-        assertContainsNot(generatedFile,"foo2")
+        assertContainsNot(generatedFile, "foo2")
     }
 }

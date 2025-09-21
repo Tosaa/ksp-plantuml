@@ -36,9 +36,9 @@ class TypeResolveTest : CompilationTest() {
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile,"uniqueIdentifier : String")
-        assertContains(generatedFile,"optionalShortcut : String?")
-        assertContains(generatedFile,"optionalValue : Definitely?")
+        assertContains(generatedFile, "uniqueIdentifier : String")
+        assertContains(generatedFile, "optionalShortcut : String?")
+        assertContains(generatedFile, "optionalValue : Definitely?")
     }
 
 }

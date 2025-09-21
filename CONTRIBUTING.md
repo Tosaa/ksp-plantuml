@@ -34,6 +34,17 @@ Login on the [maven central repository](https://central.sonatype.com/).
 Publish -> Select the new version -> Publish component
 ```
 
+## Debug
+The logs that are attached within this project can be written to the console by adding `-i` flag to the gradle task.
+e.g.:
+```
+./gradlew :module:kspDebug -i
+```
+This can be helpful when publishing the ksp-processor locally and testing it on another project.
+```
+./gradlew publishToMavenLocal
+```
+
 ## Implementation
 
 ### Terminology

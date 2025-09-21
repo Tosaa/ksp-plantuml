@@ -41,17 +41,16 @@ title Example for InheritanceWithInheritedFields
     }
 
 
-'Inheritance relations
 Room <|-- MagicRoom
 Room <|-- OrdinaryRoom
+MagicMazeGame --> MagicRoom
+MagicMazeGame ..* Room
 MazeGame <|-- MagicMazeGame
+OrdinaryMazeGame --> OrdinaryRoom
+OrdinaryMazeGame ..* Room
 MazeGame <|-- OrdinaryMazeGame
-'Property relations
+MazeGame --> Room
 
-'Function relations
-MazeGame::makeRoom --* Room
-MagicMazeGame::makeRoom --* MagicRoom
-OrdinaryMazeGame::makeRoom --* OrdinaryRoom
 note as note_of_code
 Non default options:
 puml.showInheritedProperties = true

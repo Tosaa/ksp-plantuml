@@ -124,39 +124,8 @@ tasks {
 
 ## 📚 Configuration Guide
 
-### Configuration Options
+### Configruation Templates
 
-The following options can be set using ksp.
-
-Key | Default                                              | Description
---|------------------------------------------------------|--
-`puml.includedPackages` | `emptyList`                                          | If nothing is specified, all packages are taken into account for the generation.
-`puml.excludedPackages` | `emptyList`                                          | Exclude packages that would be included otherwise.
-`puml.excludedClassNames` | `emptyList`                                          | Exclude classes by name
-`puml.excludedPropertyNames` | `emptyList`                                          | Exclude variables by name
-`puml.excludedFunctionNames` | `listOf("<init>", "toString", "equals", "hashCode")` | Exclude functions by name
-`puml.allowEmptyPackage` | `false`                                              | Allow/Deny classes without a package
-`puml.showVisibilityModifiers` | `true`                                               | Show/Hide visiblity modifiers indicated by +/#/-
-`puml.markExtensions` | `true`                                               | Show/Hide information that a variable/function is an extension variable / function
-`puml.showExtensions` | `true`                                               | Show/Hide extension variables / function
-`puml.showPublicClasses` | `true`                                               | Allow/Ignore public classes
-`puml.showPublicProperties` | `true`                                               | Allow/Ignore public variables
-`puml.showPublicFunctions` | `true`                                               | Allow/Ignore public functions
-`puml.showInternalClasses` | `true`                                               | Allow/Ignore internal classes
-`puml.showInternalProperties` | `true`                                               | Allow/Ignore internal variables
-`puml.showInternalFunctions` | `true`                                               | Allow/Ignore internal functions
-`puml.showPrivateClasses` | `true`                                               | Allow/Ignore private classes
-`puml.showPrivateProperties` | `true`                                               | Allow/Ignore private variables
-`puml.showPrivateFunctions` | `true`                                               | Allow/Ignore private functions
-`puml.showInheritance` | `true`                                               | Show Inheritance of classes by drawing Arrows
-`puml.showPropertyRelations` | `true`                                               | Show Relations of variables by drawing Arrows when the type could be resolved and is shown as class in the diagram
-`puml.showFunctionRelations` | `false`                                              | Show Relations of functions by drawing Arrows when the return type of the function could be resolved and is shown as class in the diagram. Parameters of the function are not drawn.
-`puml.showIndirectRelations` | `true`                                               | Show Relations of functions and properties that are resolved indirectly. E.g. The the type of elements contained in a list is shown as dotted line if the option is activated.
-`puml.maxRelations` | `6`                                                  | Sets the limit when relations of a class should not be drawn anymore. If a class has more relations that the given value, the classes relations will not be shown. The default value is set to 6.
-`puml.showPackages` | `false`                                              | Group classes that are in the same package
-`puml.prefix` | ``                                                   | Add a custom prefix to the plantuml diagram
-`puml.postfix` | ``                                                   | Add a custom postfix to the plantuml diagram
-`puml.title` | ``                                                   | Add a custom title to the plantuml diagram
 
 <details>
 <summary>KSP configuration for public API</summary>
@@ -212,6 +181,40 @@ ksp {
 
 
 </details>
+
+### Configuration Options
+
+The following options can be set using ksp.
+
+Key | Default                                              | Description
+--|------------------------------------------------------|--
+`puml.includedPackages` | `emptyList`                                          | If nothing is specified, all packages are taken into account for the generation.
+`puml.excludedPackages` | `emptyList`                                          | Exclude packages that would be included otherwise.
+`puml.excludedClassNames` | `emptyList`                                          | Exclude classes by name
+`puml.excludedPropertyNames` | `emptyList`                                          | Exclude variables by name
+`puml.excludedFunctionNames` | `listOf("<init>", "toString", "equals", "hashCode")` | Exclude functions by name
+`puml.allowEmptyPackage` | `false`                                              | Allow/Deny classes without a package
+`puml.showVisibilityModifiers` | `true`                                               | Show/Hide visiblity modifiers indicated by +/#/-
+`puml.markExtensions` | `true`                                               | Show/Hide information that a variable/function is an extension variable / function
+`puml.showExtensions` | `true`                                               | Show/Hide extension variables / function
+`puml.showPublicClasses` | `true`                                               | Allow/Ignore public classes
+`puml.showPublicProperties` | `true`                                               | Allow/Ignore public variables
+`puml.showPublicFunctions` | `true`                                               | Allow/Ignore public functions
+`puml.showInternalClasses` | `true`                                               | Allow/Ignore internal classes
+`puml.showInternalProperties` | `true`                                               | Allow/Ignore internal variables
+`puml.showInternalFunctions` | `true`                                               | Allow/Ignore internal functions
+`puml.showPrivateClasses` | `true`                                               | Allow/Ignore private classes
+`puml.showPrivateProperties` | `true`                                               | Allow/Ignore private variables
+`puml.showPrivateFunctions` | `true`                                               | Allow/Ignore private functions
+`puml.showInheritance` | `true`                                               | Show Inheritance of classes by drawing Arrows
+`puml.showPropertyRelations` | `true`                                               | Show Relations of variables by drawing Arrows when the type could be resolved and is shown as class in the diagram
+`puml.showFunctionRelations` | `false`                                              | Show Relations of functions by drawing Arrows when the return type of the function could be resolved and is shown as class in the diagram. Parameters of the function are not drawn.
+`puml.showIndirectRelations` | `true`                                               | Show Relations of functions and properties that are resolved indirectly. E.g. The the type of elements contained in a list is shown as dotted line if the option is activated.
+`puml.maxRelations` | `6`                                                  | Sets the limit when relations of a class should not be drawn anymore. If a class has more relations that the given value, the classes relations will not be shown. The default value is set to 6.
+`puml.showPackages` | `false`                                              | Group classes that are in the same package
+`puml.prefix` | ``                                                   | Add a custom prefix to the plantuml diagram
+`puml.postfix` | ``                                                   | Add a custom postfix to the plantuml diagram
+`puml.title` | ``                                                   | Add a custom title to the plantuml diagram
 
 ---
 
@@ -292,6 +295,6 @@ Please check the [Changelog file](https://github.com/Tosaa/ksp-plantuml/blob/mai
 
 ## 📌 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **Apache License, Version 2.0** — see the [LICENSE](LICENSE) file for details.
 
 ---

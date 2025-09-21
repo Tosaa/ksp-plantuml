@@ -14,7 +14,7 @@ The plugin is **open source**, **privacy-focused**, and **highly customizable**,
 
 ## 🎯 Purpose
 
-- Provide a **clear overview** of your Kotlin project structure.
+- Provide a **clear overview** of your Kotlin class structure.
 - Help **API readers** quickly understand class relationships.
 - Ensure **diagrams stay up to date** with your codebase.
 - Avoid **data privacy issues** by not sending any user data to third parties.
@@ -37,11 +37,22 @@ The plugin is **open source**, **privacy-focused**, and **highly customizable**,
 - Object declarations
 - companion objects
 - Suspend functions
+- Extension functions
 - Visibility modifiers (public, internal, private)
 - Custom filtering of elements by name or package
 - Collection element type resolving
 - Generic element type resolving
 - ...
+
+---
+
+### ⚒️ Try it out
+
+1. Clone this Repository.
+2. Run `./gradlew :example:kspKotlin` to generate a Plantuml Classdiagram.  
+3. The output can be found at `example/build/resources/main/ClassDiagram.puml`.  
+
+The generated file can be rendered by using the Intellij Plantuml Plugin or on [Plantuml.com](https://plantuml.com/)
 
 ---
 

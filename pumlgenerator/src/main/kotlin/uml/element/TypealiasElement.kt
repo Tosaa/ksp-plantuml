@@ -10,12 +10,20 @@ import uml.className
 import uml.fullQualifiedName
 import uml.shortName
 
-
+/**
+ * Expected layout:
+ * class "name" as package_name << (A, #FF7700) alias>> {
+ *  Type alias of "original name"
+ *  ==
+ *  Extension functions
+ * }
+ *
+ */
 class TypealiasElement(
     uniqueIdentifier: String,
     elementName: String,
     elementAlias: String,
-    val originalName:String,
+    val originalName: String,
     attributes: List<Field>,
     functions: List<Method>,
     isShell: Boolean
@@ -24,7 +32,7 @@ class TypealiasElement(
     override val elementKind: ElementKind = ElementKind.ALIAS
 
     override fun getContent(indent: String): String {
-        val typealiasDisclaimer = "TypeAlias of $originalName"
+        val typealiasDisclaimer = "${indent}TypeAlias of $originalName"
         val attributesString = attributes
             .takeIf { it.isNotEmpty() }
             ?.let { it.joinToString(separator = "\n") { "$indent${it.render()}" } }
@@ -35,7 +43,7 @@ class TypealiasElement(
             ?: ""
         return """
 $typealiasDisclaimer
-==
+$indent==
 $attributesString
 $functionsString
 """

@@ -1,10 +1,13 @@
+import com.google.devtools.ksp.findActualType
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.KSTypeAlias
 import com.google.devtools.ksp.symbol.KSVisitorVoid
 import com.google.devtools.ksp.validate
+import uml.fullQualifiedName
 
 class UMLGenerator(val logger: KSPLogger, val diagrams: ClassDiagramDescription, val options: Options) : KSVisitorVoid() {
     override fun visitFile(file: KSFile, data: Unit) {
@@ -54,6 +57,20 @@ class UMLGenerator(val logger: KSPLogger, val diagrams: ClassDiagramDescription,
         logger.v { "VisitClassDeclaration of: ${classDeclaration.qualifiedName?.asString()}" }
 
         diagrams.addClass(classDeclaration = classDeclaration)
+
+    }
+
+    override fun visitTypeAlias(typeAlias: KSTypeAlias, data: Unit) {
+        if (!typeAlias.validate()) {
+            logger.i { "visitClassDeclaration(): $typeAlias is not valid" }
+            return
+        }
+        if (!options.isValid(typeAlias.findActualType(), logger)) {
+            return
+        }
+        logger.v { "visitTypeAlias of: ${typeAlias.qualifiedName?.asString()} (${typeAlias.findActualType().qualifiedName?.asString()}" }
+
+        diagrams.addTypeAlias(typeAlias = typeAlias)
 
     }
 

@@ -46,6 +46,17 @@ class PropertyRelationTest : CompilationTest() {
     }
     """
 
+    val interfaceWithFlow = """
+    package com.test
+    import kotlinx.coroutines.flow.*
+    data class Color(val hex:String)
+    data class Brightness(val value:Int)
+    interface TestInterface {
+        val colors : Flow<List<Color>>
+        val brightness : StateFlow<Brightness>
+    }
+    """
+
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Create relations between classes`() {
@@ -145,5 +156,27 @@ class PropertyRelationTest : CompilationTest() {
         assertContains(generatedFile, "com_Something --* com_other_OtherThing")
         assertContains(generatedFile, "com_one_OneThing --* com_other_OtherThing")
         assertContainsNot(generatedFile, "com_other_ThingBox ..* com_one_OneThing")
+    }
+
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Test Generation of Interface with Flow`() {
+        val kotlinSource = SourceFile.kotlin(
+            "SymbolProcessor.kt",
+            interfaceWithFlow
+        ).also { println(it) }
+        val compilation = newCompilation(DEFAULT_OPTIONS, listOf(kotlinSource))
+
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile,"colors : Flow<List<Color>>")
+        assertContains(generatedFile,"com_test_TestInterface ..* com_test_Color")
+        assertContains(generatedFile,"brightness : StateFlow<Brightness>")
+        assertContains(generatedFile,"com_test_TestInterface ..* com_test_Brightness")
     }
 }

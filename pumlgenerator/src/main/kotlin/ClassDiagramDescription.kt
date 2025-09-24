@@ -1,9 +1,11 @@
 import OptionConstants.KEY_SHOW_INDIRECT_RELATIONS
+import com.google.devtools.ksp.findActualType
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.KSTypeAlias
 import com.sun.org.apache.bcel.internal.Repository.addClass
 import graph.FunctionRelation
 import graph.IndirectFunctionRelation
@@ -19,6 +21,7 @@ import uml.element.EnumElement
 import uml.element.InterfaceElement
 import uml.element.ObjectElement
 import uml.element.ReservedType
+import uml.element.TypealiasElement
 import uml.element.flatResolve
 import uml.fullQualifiedName
 
@@ -72,6 +75,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     is InterfaceElement.Builder -> builder.build()?.attributes
                     is ObjectElement.Builder -> builder.build()?.attributes
                     is EnumElement.Builder -> builder.build()?.attributes
+                    is TypealiasElement.Builder -> builder.build()?.attributes
                     else -> emptyList()
                 } ?: emptyList()
                 attributes
@@ -146,6 +150,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     is InterfaceElement.Builder -> builder.build()?.functions
                     is ObjectElement.Builder -> builder.build()?.functions
                     is EnumElement.Builder -> builder.build()?.functions
+                    is TypealiasElement.Builder -> builder.build()?.functions
                     else -> emptyList()
                 } ?: emptyList()
                 functions
@@ -533,5 +538,10 @@ end note
                 }
             }
         }
+    }
+
+    fun addTypeAlias(typeAlias: KSTypeAlias) {
+        val builder = TypealiasElement.Builder(typeAlias = typeAlias, clazz = typeAlias.findActualType(), isShell = false, options = options, logger = logger)
+        componentBuilder.add(builder)
     }
 }

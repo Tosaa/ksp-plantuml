@@ -43,7 +43,7 @@ package advanced
 import basic.Box
 typealias Carton = Box
 fun Carton.matchesID(id:Int): Boolean {
-    return id == $this.id 
+    return id == ${this.id} 
 }
 end note
 

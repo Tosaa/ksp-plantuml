@@ -241,7 +241,7 @@ class GenerationForDoc : CompilationTest() {
             import basic.Box
             typealias Carton = Box
             fun Carton.matchesID(id:Int): Boolean {
-                return id == ${'$'}this.id 
+                return id == ${'$'}{this.id} 
             }
         """.trimIndent()
 

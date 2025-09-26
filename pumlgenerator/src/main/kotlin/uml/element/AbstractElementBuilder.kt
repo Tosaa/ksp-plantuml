@@ -3,14 +3,20 @@ package uml.element
 import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import filterFunctionsByOptions
 import filterPropertiesByOptions
 import uml.DiagramElement
+import uml.fullQualifiedName
 
 abstract class AbstractElementBuilder(override val clazz: KSClassDeclaration, override var isShell: Boolean, override val options: Options, val logger: KSPLogger? = null) : DiagramElement.Builder<AbstractElement> {
+
     val companionObject = clazz.declarations.filter { it is KSClassDeclaration && it.isCompanionObject }.map { it as? KSClassDeclaration }.firstOrNull()
+
+    override val fullQualifiedName: String
+        get() = clazz.fullQualifiedName
 
     override val extensionProperties: MutableList<KSPropertyDeclaration> = mutableListOf()
 
@@ -28,7 +34,7 @@ abstract class AbstractElementBuilder(override val clazz: KSClassDeclaration, ov
             }
 
             addAll(extensionProperties)
-        }.toMutableList()
+        }
 
     override val extensionFunctions: MutableList<KSFunctionDeclaration> = mutableListOf()
 
@@ -46,7 +52,7 @@ abstract class AbstractElementBuilder(override val clazz: KSClassDeclaration, ov
             }
 
             addAll(extensionFunctions)
-        }.toMutableList()
+        }
 
     abstract override fun build(): AbstractElement?
 }

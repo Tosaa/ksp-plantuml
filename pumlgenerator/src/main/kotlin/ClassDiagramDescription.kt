@@ -33,6 +33,10 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
     val relationGraph = RelationGraph()
 
+    fun findBuilderFor(declaration: KSClassDeclaration): DiagramElement.Builder<*>? = componentBuilder.find { it.fullQualifiedName == declaration.fullQualifiedName }
+
+    fun findBuilderFor(declaration: KSTypeAlias): DiagramElement.Builder<*>? = componentBuilder.find { it.fullQualifiedName == declaration.fullQualifiedName }
+
     private fun addHierarchy(child: KSClassDeclaration, parent: KSClassDeclaration) {
         when {
             !options.showInheritance ->
@@ -270,7 +274,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             return
         }
 
-        val existingBuilder = componentBuilder.find { it.clazz == classDeclaration }
+        val existingBuilder = findBuilderFor(classDeclaration)
         if (existingBuilder != null) {
             when {
                 !existingBuilder.isShell -> {
@@ -333,7 +337,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
      * @param function The [KSFunctionDeclaration] that should be visualized
      */
     fun addFunction(function: KSFunctionDeclaration) {
-        val classOfExtensionFunction = function.extensionReceiver?.resolve()?.declaration as? KSClassDeclaration
+        val classOfExtensionFunction = function.extensionReceiver?.resolve()?.declaration
         when {
             classOfExtensionFunction == null -> {
                 logger.w { "addFunction(): Could not resolve Class for extension function $function" }
@@ -343,21 +347,38 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             (!options.isValid(classOfExtensionFunction, logger)) ->
                 return
 
-            else -> {
+            classOfExtensionFunction is KSClassDeclaration -> {
                 val functionOwningClass = if (classOfExtensionFunction.isCompanionObject) {
                     classOfExtensionFunction.parentDeclaration as? KSClassDeclaration ?: classOfExtensionFunction
                 } else {
                     classOfExtensionFunction
                 }
-                val builder = componentBuilder.find { it.clazz == functionOwningClass }
+                val builder = findBuilderFor(functionOwningClass)
                 if (builder != null) {
                     logger.v { "Add extension function $function to builder of $functionOwningClass" }
                     builder.extensionFunctions.add(function)
                 } else {
                     logger.w { "No builder found for class $functionOwningClass -> add class as shell first then add extension function $function" }
                     addClass(functionOwningClass, true)
-                    componentBuilder.find { it.clazz == functionOwningClass }?.extensionFunctions?.add(function)
+                    findBuilderFor(functionOwningClass)?.extensionFunctions?.add(function)
                 }
+            }
+
+            classOfExtensionFunction is KSTypeAlias -> {
+                val builder = findBuilderFor(classOfExtensionFunction)
+                if (builder != null) {
+                    logger.v { "Add extension function $function to builder of $classOfExtensionFunction" }
+                    builder.extensionFunctions.add(function)
+                } else {
+                    logger.w { "No builder found for class $classOfExtensionFunction -> add TypeAlias then add extension function $function" }
+                    addTypeAlias(classOfExtensionFunction)
+                    findBuilderFor(classOfExtensionFunction)?.extensionFunctions?.add(function)
+                }
+            }
+
+            else -> {
+                logger.w { "addFunction(): Resolved class for extension function $function, is not TypeAliasDeclaration or ClassDeclaration" }
+                return
             }
         }
     }
@@ -369,7 +390,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
      * @param property The [KSPropertyDeclaration] that should be visualized
      */
     fun addProperty(property: KSPropertyDeclaration) {
-        val classOfExtensionVariable = property.extensionReceiver?.resolve()?.declaration as? KSClassDeclaration
+        val classOfExtensionVariable = property.extensionReceiver?.resolve()?.declaration
         when {
             classOfExtensionVariable == null -> {
                 logger.w { "addFunction(): Could not resolve Class for extension variable $property" }
@@ -379,21 +400,38 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             (!options.isValid(classOfExtensionVariable, logger)) ->
                 return
 
-            else -> {
+            classOfExtensionVariable is KSClassDeclaration -> {
                 val variableOwningClass = if (classOfExtensionVariable.isCompanionObject) {
                     classOfExtensionVariable.parentDeclaration as? KSClassDeclaration ?: classOfExtensionVariable
                 } else {
                     classOfExtensionVariable
                 }
-                val builder = componentBuilder.find { it.clazz == classOfExtensionVariable }
+                val builder = findBuilderFor(classOfExtensionVariable)
                 if (builder != null) {
                     logger.v { "Add extension property $property to builder of $variableOwningClass" }
                     builder.extensionProperties.add(property)
                 } else {
                     logger.w { "No builder found for class $variableOwningClass -> add Class as shell first then add extension property $property" }
                     addClass(variableOwningClass, true)
-                    componentBuilder.find { it.clazz == variableOwningClass }?.extensionProperties?.add(property)
+                    findBuilderFor(variableOwningClass)?.extensionProperties?.add(property)
                 }
+            }
+
+            classOfExtensionVariable is KSTypeAlias -> {
+                val builder = findBuilderFor(classOfExtensionVariable)
+                if (builder != null) {
+                    logger.v { "Add extension property $property to builder of $classOfExtensionVariable" }
+                    builder.extensionProperties.add(property)
+                } else {
+                    logger.w { "No builder found for class $classOfExtensionVariable -> add TypeAlias then add extension property $property" }
+                    addTypeAlias(classOfExtensionVariable)
+                    findBuilderFor(classOfExtensionVariable)?.extensionProperties?.add(property)
+                }
+            }
+
+            else -> {
+                logger.w { "addFunction(): Resolved class for extension property $property, is not TypeAliasDeclaration or ClassDeclaration" }
+                return
             }
         }
     }
@@ -410,7 +448,6 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             componentBuilder.mapNotNull { it.build() }.joinToString("\n") { it.render() }
         }
     }
-
 
     fun computeAllRelations(): String {
         componentBuilder.forEach { builder ->
@@ -541,6 +578,12 @@ end note
     }
 
     fun addTypeAlias(typeAlias: KSTypeAlias) {
+        val existingBuilder = findBuilderFor(typeAlias)
+        if (existingBuilder != null) {
+            logger.v { "Builder for ${typeAlias.fullQualifiedName} was added previously" }
+            return
+        }
+
         val builder = TypealiasElement.Builder(typeAlias = typeAlias, clazz = typeAlias.findActualType(), isShell = false, options = options, logger = logger)
         componentBuilder.add(builder)
     }

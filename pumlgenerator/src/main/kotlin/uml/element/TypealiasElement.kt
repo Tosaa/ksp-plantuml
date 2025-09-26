@@ -3,6 +3,8 @@ package uml.element
 import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSTypeAlias
 import isValid
 import uml.ElementKind
@@ -50,6 +52,19 @@ $functionsString
     }
 
     class Builder(val typeAlias: KSTypeAlias, clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : AbstractElementBuilder(clazz, isShell, options, logger) {
+
+        override var isShell: Boolean
+            get() = false
+            set(value) {}
+
+        override val fullQualifiedName: String
+            get() = typeAlias.fullQualifiedName
+
+        override val allProperties: List<KSPropertyDeclaration>
+            get() = extensionProperties
+
+        override val allFunctions: List<KSFunctionDeclaration>
+            get() = extensionFunctions
 
         override fun build(): TypealiasElement? {
             return if (options.isValid(clazz, logger)) {

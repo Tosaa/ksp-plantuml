@@ -30,6 +30,7 @@ abstract class DiagramElement : Renderable {
     }
 
     interface Builder<T : DiagramElement> {
+        val fullQualifiedName : String
         var isShell: Boolean
         val allProperties: List<KSPropertyDeclaration>
         val extensionProperties: MutableList<KSPropertyDeclaration>

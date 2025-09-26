@@ -225,6 +225,46 @@ class GenerationForDoc : CompilationTest() {
                 saveUMLInDocs(result.sourcesGeneratedBySymbolProcessor.first(), name)
             }
         }
+
+        val boxCode = """
+            package basic
+            data class Box(val id: Int)
+        """.trimIndent()
+
+        val chestAliasCode = """
+            package basic
+            typealias Chest = Box
+        """.trimIndent()
+
+        val cartonAliasCode = """
+            package advanced
+            import basic.Box
+            typealias Carton = Box
+            fun Carton.matchesID(id:Int): Boolean {
+                return id == ${'$'}this.id 
+            }
+        """.trimIndent()
+
+        // TypeAlias example
+        val code = listOf(SourceFile.kotlin("Box.kt", boxCode), SourceFile.kotlin("Chest.kt", chestAliasCode), SourceFile.kotlin("Carton.kt", cartonAliasCode))
+        val note = buildString {
+            appendLine("note as note_of_code_box")
+            appendLine("Kotlin Code: Box.kt")
+            appendLine(boxCode)
+            appendLine("end note")
+            appendLine("note as note_of_code_chest")
+            appendLine("Kotlin Code: Chest.kt")
+            appendLine(chestAliasCode)
+            appendLine("end note")
+            appendLine("note as note_of_code_carton")
+            appendLine("Kotlin Code: Carton.kt")
+            appendLine(cartonAliasCode)
+            appendLine("end note")
+        }
+        newCompilation(options = DEFAULT_OPTIONS.copy(title = "Example for TypeAlias", prefix = GENERATION_REFERENCE_COMMENT, postfix = note), sources = code).let {
+            val result = it.compile()
+            saveUMLInDocs(result.sourcesGeneratedBySymbolProcessor.first(), "Example_for_TypeAlias")
+        }
     }
 
 }

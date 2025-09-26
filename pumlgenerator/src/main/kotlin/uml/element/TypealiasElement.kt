@@ -72,7 +72,7 @@ $functionsString
                     uniqueIdentifier = typeAlias.fullQualifiedName,
                     elementName = typeAlias.shortName,
                     elementAlias = typeAlias.fullQualifiedName.replace(".", "_").trim('_'),
-                    originalName = clazz.className,
+                    originalName = if (clazz.packageName == typeAlias.packageName) clazz.className else clazz.fullQualifiedName,
                     attributes = allProperties.map { it.toField(options) },
                     functions = allFunctions.map { it.toMethod(options) },
                     isShell = isShell

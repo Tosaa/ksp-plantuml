@@ -356,11 +356,11 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 val builder = findBuilderFor(functionOwningClass)
                 if (builder != null) {
                     logger.v { "Add extension function $function to builder of $functionOwningClass" }
-                    builder.extensionFunctions.add(function)
+                    builder.addExtensionFunction(function)
                 } else {
                     logger.w { "No builder found for class $functionOwningClass ($function) -> add class as shell first then add extension function $function" }
                     addClass(functionOwningClass, true)
-                    findBuilderFor(functionOwningClass)?.extensionFunctions?.add(function)
+                    findBuilderFor(functionOwningClass)?.addExtensionFunction(function)
                 }
             }
 
@@ -368,11 +368,11 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 val builder = findBuilderFor(classOfExtensionFunction)
                 if (builder != null) {
                     logger.v { "Add extension function $function to builder of $classOfExtensionFunction" }
-                    builder.extensionFunctions.add(function)
+                    builder.addExtensionFunction(function)
                 } else {
                     logger.w { "No builder found for class $classOfExtensionFunction ($function) -> add TypeAlias then add extension function $function" }
                     addTypeAlias(classOfExtensionFunction)
-                    findBuilderFor(classOfExtensionFunction)?.extensionFunctions?.add(function)
+                    findBuilderFor(classOfExtensionFunction)?.addExtensionFunction(function)
                 }
             }
 
@@ -409,11 +409,11 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 val builder = findBuilderFor(classOfExtensionVariable)
                 if (builder != null) {
                     logger.v { "Add extension property $property to builder of $variableOwningClass" }
-                    builder.extensionProperties.add(property)
+                    builder.addExtensionProperty(property)
                 } else {
                     logger.w { "No builder found for class $variableOwningClass ($property) -> add Class as shell first then add extension property $property" }
                     addClass(variableOwningClass, true)
-                    findBuilderFor(variableOwningClass)?.extensionProperties?.add(property)
+                    findBuilderFor(variableOwningClass)?.addExtensionProperty(property)
                 }
             }
 
@@ -421,11 +421,11 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 val builder = findBuilderFor(classOfExtensionVariable)
                 if (builder != null) {
                     logger.v { "Add extension property $property to builder of $classOfExtensionVariable" }
-                    builder.extensionProperties.add(property)
+                    builder.addExtensionProperty(property)
                 } else {
                     logger.w { "No builder found for class $classOfExtensionVariable ($property) -> add TypeAlias then add extension property $property" }
                     addTypeAlias(classOfExtensionVariable)
-                    findBuilderFor(classOfExtensionVariable)?.extensionProperties?.add(property)
+                    findBuilderFor(classOfExtensionVariable)?.addExtensionProperty(property)
                 }
             }
 

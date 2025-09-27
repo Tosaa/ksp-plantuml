@@ -17,7 +17,7 @@ abstract class AbstractElementBuilder(override val clazz: KSClassDeclaration, ov
     override val fullQualifiedName: String
         get() = clazz.fullQualifiedName
 
-    override val extensionProperties: MutableList<KSPropertyDeclaration> = mutableListOf()
+    protected val extensionProperties: MutableList<KSPropertyDeclaration> = mutableListOf()
 
     override val allProperties: List<KSPropertyDeclaration>
         get() = buildList {
@@ -35,7 +35,7 @@ abstract class AbstractElementBuilder(override val clazz: KSClassDeclaration, ov
             addAll(extensionProperties)
         }
 
-    override val extensionFunctions: MutableList<KSFunctionDeclaration> = mutableListOf()
+    protected val extensionFunctions: MutableList<KSFunctionDeclaration> = mutableListOf()
 
     override val allFunctions: List<KSFunctionDeclaration>
         get() = buildList {
@@ -52,6 +52,14 @@ abstract class AbstractElementBuilder(override val clazz: KSClassDeclaration, ov
 
             addAll(extensionFunctions)
         }
+
+    override fun addExtensionFunction(function: KSFunctionDeclaration) {
+        extensionFunctions.add(function)
+    }
+
+    override fun addExtensionProperty(property: KSPropertyDeclaration) {
+        extensionProperties.add(property)
+    }
 
     abstract override fun build(): AbstractElement?
 }

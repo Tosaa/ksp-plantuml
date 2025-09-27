@@ -8,11 +8,16 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import filterFunctionsByOptions
 import filterPropertiesByOptions
 import uml.DiagramElement
+import uml.fullQualifiedName
 
 abstract class AbstractElementBuilder(override val clazz: KSClassDeclaration, override var isShell: Boolean, override val options: Options, val logger: KSPLogger? = null) : DiagramElement.Builder<AbstractElement> {
+
     val companionObject = clazz.declarations.filter { it is KSClassDeclaration && it.isCompanionObject }.map { it as? KSClassDeclaration }.firstOrNull()
 
-    override val extensionProperties: MutableList<KSPropertyDeclaration> = mutableListOf()
+    override val fullQualifiedName: String
+        get() = clazz.fullQualifiedName
+
+    protected val extensionProperties: MutableList<KSPropertyDeclaration> = mutableListOf()
 
     override val allProperties: List<KSPropertyDeclaration>
         get() = buildList {
@@ -28,9 +33,9 @@ abstract class AbstractElementBuilder(override val clazz: KSClassDeclaration, ov
             }
 
             addAll(extensionProperties)
-        }.toMutableList()
+        }
 
-    override val extensionFunctions: MutableList<KSFunctionDeclaration> = mutableListOf()
+    protected val extensionFunctions: MutableList<KSFunctionDeclaration> = mutableListOf()
 
     override val allFunctions: List<KSFunctionDeclaration>
         get() = buildList {
@@ -46,7 +51,15 @@ abstract class AbstractElementBuilder(override val clazz: KSClassDeclaration, ov
             }
 
             addAll(extensionFunctions)
-        }.toMutableList()
+        }
+
+    override fun addExtensionFunction(function: KSFunctionDeclaration) {
+        extensionFunctions.add(function)
+    }
+
+    override fun addExtensionProperty(property: KSPropertyDeclaration) {
+        extensionProperties.add(property)
+    }
 
     abstract override fun build(): AbstractElement?
 }

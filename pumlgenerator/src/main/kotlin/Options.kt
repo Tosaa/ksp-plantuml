@@ -4,9 +4,11 @@ import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.KSTypeAlias
 import uml.isInheritedFunction
 import uml.isInheritedProperty
 
@@ -130,26 +132,26 @@ fun Options?.isValid(packageName: String, logger: KSPLogger? = null): Boolean = 
             true
 
         this.excludedPackages.any { it == packageName } -> {
-            logger.v { "Package is excluded: $packageName" }
+            logger.v { "Package is excluded: '$packageName'" }
             false
         }
 
 
         this.excludedPackages.any { (packageName.startsWith(it)) } -> {
             val packageThatExcludesThisClass = this.excludedPackages.find { (packageName.startsWith(it)) }
-            logger.v { "Exclude package $packageName by excluded package: $packageThatExcludesThisClass" }
+            logger.v { "Exclude package '$packageName' by excluded package: $packageThatExcludesThisClass" }
             false
         }
 
         this.includedPackages.isNotEmpty() && this.includedPackages.none { it == packageName || packageName.startsWith(it) } -> {
-            logger.v { "Exclude package $packageName since it does not match the included packages: ${this.includedPackages.joinToString()}" }
+            logger.v { "Exclude package '$packageName' since it does not match the included packages: ${this.includedPackages.joinToString()}" }
             false
         }
 
         else -> true
     }
 }.getOrElse { throwable ->
-    logger.w { "Exclude package $packageName due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
+    logger.w { "Exclude package '$packageName' due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
     false
 }
 
@@ -187,6 +189,40 @@ fun Options?.isValid(type: KSType?, logger: KSPLogger? = null): Boolean = runCat
 }
 
 fun Options?.isValid(declaration: KSClassDeclaration, logger: KSPLogger? = null): Boolean = runCatching {
+    when {
+        this == null ->
+            true
+
+        declaration.isPublic() && !this.showPublicClasses -> {
+            logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Public and Public deactivated by the options" }
+            false
+        }
+
+        declaration.isInternal() && !this.showInternalClasses -> {
+            logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Internal and Internal deactivated by the options" }
+            false
+        }
+
+        declaration.isPrivate() && !this.showPrivateClasses -> {
+            logger.v { "Exclude ${declaration.simpleName.getShortName()} since its Private and Private deactivated by the options" }
+            false
+        }
+
+        declaration.simpleName.asString() in this.excludedClassNames -> {
+            logger.v { "Exclude ${declaration.simpleName.asString()} since its in excludedClassNames" }
+            false
+        }
+
+        !isValid(declaration.packageName.asString(), logger) -> false
+
+        else -> true
+    }
+}.getOrElse { throwable ->
+    logger.w { "Exclude ${declaration.simpleName.asString()} due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
+    false
+}
+
+fun Options?.isValid(declaration: KSTypeAlias, logger: KSPLogger? = null): Boolean = runCatching {
     when {
         this == null ->
             true
@@ -292,6 +328,17 @@ fun Options?.isValid(declaration: KSFunctionDeclaration, logger: KSPLogger? = nu
 }.getOrElse { throwable ->
     logger.w { "Exclude ${declaration.simpleName.asString()} due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
     false
+}
+
+fun Options?.isValid(declaration: KSDeclaration, logger: KSPLogger? = null): Boolean = when (declaration) {
+    is KSPropertyDeclaration -> isValid(declaration, logger)
+    is KSFunctionDeclaration -> isValid(declaration, logger)
+    is KSClassDeclaration -> isValid(declaration, logger)
+    is KSTypeAlias -> isValid(declaration, logger)
+    else -> {
+        logger.w { "No validation function implemented for $declaration -> return True" }
+        true
+    }
 }
 
 fun Sequence<KSPropertyDeclaration>.filterPropertiesByOptions(clazz: KSClassDeclaration, options: Options, logger: KSPLogger?): Sequence<KSPropertyDeclaration> {

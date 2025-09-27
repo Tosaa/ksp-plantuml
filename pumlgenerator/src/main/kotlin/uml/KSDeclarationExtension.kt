@@ -4,6 +4,7 @@ import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.KSTypeAlias
 import com.google.devtools.ksp.symbol.Modifier
 import w
 
@@ -13,6 +14,11 @@ val KSClassDeclaration.fullQualifiedName: String
 val KSClassDeclaration.className: String
     get() = fullQualifiedName.replace(packageName.asString(), "").trim('.')
 
+val KSTypeAlias.fullQualifiedName: String
+    get() = "${qualifiedName?.getQualifier() ?: packageName.asString()}.${simpleName.asString()}"
+
+val KSTypeAlias.shortName: String
+    get() = fullQualifiedName.replace(packageName.asString(), "").trim('.')
 
 /**
  * Checks if this [KSFunctionDeclaration] has the modifier [Modifier.OVERRIDE]. If that is the case, the function is inherited.

@@ -1,3 +1,9 @@
+## 0.0.6 - unreleased
+- Added TypeAlias support
+- If TypeAlias is declared in 'includedPackages', TypeAlias will be resolved
+- If Type that TypeAlias points to, is not in 'includedPackages', it will be resolved also. (TypeAlias of classes in the same package are not as intentional as TypeAlias of classes of other packages / libraries)
+
+
 ## 0.0.5 - 2025-09-20
 - Added generic type resolution. 
   - When a Variable links a class/interface that makes use of a generic type, like a Collection, the generic type is resolved as well.

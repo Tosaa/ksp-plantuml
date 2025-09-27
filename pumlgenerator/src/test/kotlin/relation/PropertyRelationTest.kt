@@ -158,15 +158,35 @@ class PropertyRelationTest : CompilationTest() {
         assertContainsNot(generatedFile, "com_other_ThingBox ..* com_one_OneThing")
     }
 
-
     @OptIn(ExperimentalCompilerApi::class)
     @Test
-    fun `Test Generation of Interface with Flow`() {
+    fun `Test Generation of Interface with Flow Variable`() {
         val kotlinSource = SourceFile.kotlin(
             "SymbolProcessor.kt",
             interfaceWithFlow
         ).also { println(it) }
         val compilation = newCompilation(DEFAULT_OPTIONS, listOf(kotlinSource))
+
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile,"colors : Flow<List<Color>>")
+        assertContains(generatedFile,"com_test_TestInterface ..* com_test_Color")
+        assertContains(generatedFile,"brightness : StateFlow<Brightness>")
+        assertContains(generatedFile,"com_test_TestInterface ..* com_test_Brightness")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Test Generation of Interface with Flow Variable with reduced included packages`() {
+        val kotlinSource = SourceFile.kotlin(
+            "SymbolProcessor.kt",
+            interfaceWithFlow
+        ).also { println(it) }
+        val compilation = newCompilation(DEFAULT_OPTIONS.copy(includedPackages = listOf("com.test")), listOf(kotlinSource))
 
         val result = compilation.compile()
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)

@@ -37,6 +37,10 @@ open class Type(
 
     val isGeneric = (originalKSType?.arguments?.size ?: 0) > 0
     val genericTypes = originalKSType?.arguments?.mapNotNull { it.type?.resolve()?.toType() } ?: emptyList()
+
+    override fun toString(): String {
+        return "Type(originalKSType = $originalKSType, typeName=$typeName)"
+    }
 }
 
 class ReservedType(
@@ -75,12 +79,12 @@ fun Type.flatResolve(options: Options, logger: KSPLogger? = null, level: Int = 0
             }
 
             isPrimitive -> {
-                logger.i { "flatResolve(): $this is primitive -> Ignore" }
+                logger.i { "flatResolve(): ${this@flatResolve} is primitive -> Ignore" }
                 // Do nothing
             }
 
             else -> {
-                logger.i { "flatResolve(): resolved: $this" }
+                logger.i { "flatResolve(): resolved: ${this@flatResolve}" }
                 add(this@flatResolve to level)
             }
         }

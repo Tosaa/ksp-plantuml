@@ -243,6 +243,10 @@ No additional `Class.Companion` entry is added but companion variables and funct
 
 ![example of how the uml looks like if an enum is defined in Kotlin](doc/plantuml/Enums.png)
 
+### TypeAlias example
+
+![example of how TypeAlias uml looks like if an TypeAlias is defined in Kotlin](doc/plantuml/Example_for_TypeAlias.png)
+
 ### Extensions example
 Extension variables and functions can be marked as `<ext>`. Extensions of the Companion object are marked as static as well.
 

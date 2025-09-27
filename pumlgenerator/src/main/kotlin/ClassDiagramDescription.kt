@@ -94,44 +94,45 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                             fieldOfClass.attributeType.fullQualifiedName.startsWith("java") ->
                                 logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored (${fieldOfClass.attributeType.fullQualifiedName})" }
 
-                            !options.isValid(fieldOfClass.originalKSProperty, logger) || !options.isValid(fieldOfClass.attributeType.originalKSType, logger) ->
-                                Unit // Reason is logged in the isValid invocation
-
                             base.fullQualifiedName == fieldOfClass.attributeType.fullQualifiedName ->
                                 logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
 
-                            else -> {
-                                if (!fieldOfClass.attributeType.isGeneric && !fieldOfClass.attributeType.isCollection && fieldOfClass.attributeType !is ReservedType) {
+                            !fieldOfClass.attributeType.isGeneric && !fieldOfClass.attributeType.isCollection && fieldOfClass.attributeType !is ReservedType -> {
+                                if (!options.isValid(fieldOfClass.originalKSProperty, logger) || !options.isValid(fieldOfClass.attributeType.originalKSType, logger)) {
+                                    Unit // Reason is logged in the isValid invocation
+                                } else {
                                     logger.i { "Add Relation ${PropertyRelation(base, fieldOfClass)}" }
                                     relationGraph.addRelation(PropertyRelation(base, fieldOfClass))
-                                } else {
-                                    val types = fieldOfClass.attributeType.flatResolve(options = options, logger = logger)
+                                }
+                            }
 
-                                    if (types.isNotEmpty()) {
-                                        types.forEach { (type, level) ->
-                                            when {
-                                                level == 0 ->
-                                                    PropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
+                            else -> {
+                                val types = fieldOfClass.attributeType.flatResolve(options = options, logger = logger).filter { options.isValid(it.first.originalKSType, logger) }
 
-                                                level > 0 && options.showIndirectRelations ->
-                                                    IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
+                                if (types.isNotEmpty()) {
+                                    types.forEach { (type, level) ->
+                                        when {
+                                            level == 0 ->
+                                                PropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
 
-                                                else -> {
-                                                    logger.v { "Ignore Relation of $fieldOfClass due to $KEY_SHOW_INDIRECT_RELATIONS=false" }
-                                                    null
-                                                }
-                                            }?.let { relation ->
-                                                if (base.fullQualifiedName == type.fullQualifiedName) {
-                                                    logger.v { "Ignore Relation to itself: $relation" }
-                                                } else {
-                                                    logger.i { "Add Relation $relation" }
-                                                    relationGraph.addRelation(relation)
-                                                }
+                                            level > 0 && options.showIndirectRelations ->
+                                                IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
+
+                                            else -> {
+                                                logger.v { "Ignore Relation of $fieldOfClass due to $KEY_SHOW_INDIRECT_RELATIONS=false" }
+                                                null
+                                            }
+                                        }?.let { relation ->
+                                            if (base.fullQualifiedName == type.fullQualifiedName) {
+                                                logger.v { "Ignore Relation to itself: $relation" }
+                                            } else {
+                                                logger.i { "Add Relation $relation" }
+                                                relationGraph.addRelation(relation)
                                             }
                                         }
-                                    } else {
-                                        logger.w { "$fieldOfClass resolved no types" }
                                     }
+                                } else {
+                                    logger.w { "$fieldOfClass resolved no types" }
                                 }
                             }
                         }
@@ -169,44 +170,45 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                             methodOfClass.returnType.fullQualifiedName.startsWith("java") ->
                                 logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored" }
 
-                            !options.isValid(methodOfClass.originalKSFunctionDeclaration, logger) || !options.isValid(methodOfClass.returnType.originalKSType, logger) ->
-                                Unit // Reason is logged in the isValid invocation
-
                             base.fullQualifiedName == methodOfClass.returnType.fullQualifiedName ->
                                 logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
 
-                            else -> {
-                                if (!methodOfClass.returnType.isGeneric && !methodOfClass.returnType.isCollection && methodOfClass.returnType !is ReservedType) {
+                            !methodOfClass.returnType.isGeneric && !methodOfClass.returnType.isCollection && methodOfClass.returnType !is ReservedType -> {
+                                if (!options.isValid(methodOfClass.originalKSFunctionDeclaration, logger) || !options.isValid(methodOfClass.returnType.originalKSType, logger)) {
+                                    Unit // Reason is logged in the isValid invocation}
+                                } else {
                                     logger.i { "Add Relation ${FunctionRelation(base, methodOfClass)}" }
                                     relationGraph.addRelation(FunctionRelation(base, methodOfClass))
-                                } else {
-                                    val types = methodOfClass.returnType.flatResolve(options = options, logger = logger)
+                                }
+                            }
 
-                                    if (types.isNotEmpty()) {
-                                        types.forEach { (type, level) ->
-                                            when {
-                                                level == 0 ->
-                                                    FunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
+                            else -> {
+                                val types = methodOfClass.returnType.flatResolve(options = options, logger = logger).filter { options.isValid(it.first.originalKSType, logger) }
 
-                                                level > 0 && options.showIndirectRelations ->
-                                                    IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
+                                if (types.isNotEmpty()) {
+                                    types.forEach { (type, level) ->
+                                        when {
+                                            level == 0 ->
+                                                FunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
 
-                                                else -> {
-                                                    logger.v { "Ignore Relation of $methodOfClass due to $KEY_SHOW_INDIRECT_RELATIONS=false" }
-                                                    null
-                                                }
-                                            }?.let { relation ->
-                                                if (base.fullQualifiedName == type.fullQualifiedName) {
-                                                    logger.v { "Ignore Relation to itself: $relation" }
-                                                } else {
-                                                    logger.i { "Add Relation $relation" }
-                                                    relationGraph.addRelation(relation)
-                                                }
+                                            level > 0 && options.showIndirectRelations ->
+                                                IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
+
+                                            else -> {
+                                                logger.v { "Ignore Relation of $methodOfClass due to $KEY_SHOW_INDIRECT_RELATIONS=false" }
+                                                null
+                                            }
+                                        }?.let { relation ->
+                                            if (base.fullQualifiedName == type.fullQualifiedName) {
+                                                logger.v { "Ignore Relation to itself: $relation" }
+                                            } else {
+                                                logger.i { "Add Relation $relation" }
+                                                relationGraph.addRelation(relation)
                                             }
                                         }
-                                    } else {
-                                        logger.w { "$methodOfClass resolved no return types" }
                                     }
+                                } else {
+                                    logger.w { "$methodOfClass resolved no return types" }
                                 }
                             }
                         }

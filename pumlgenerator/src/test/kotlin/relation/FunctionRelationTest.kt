@@ -6,6 +6,7 @@ import assertContainsNot
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.sourcesGeneratedBySymbolProcessor
+import kotlinx.coroutines.flow.flow
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.junit.jupiter.api.Test
 import kotlin.test.assertContains
@@ -43,6 +44,14 @@ class FunctionRelationTest : CompilationTest() {
         }
     }
     """
+    val boxWithThingsCode = """
+        package com.other
+        import kotlinx.coroutines.flow.* 
+        data class BoxWithThings(val nameOfThings: List<String>) {
+            fun otherThings(): List<OtherThing> = emptyList()
+            fun otherThingsAsFlow(): Flow<OtherThing> = flow { }
+        }
+    """.trimIndent()
 
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -159,5 +168,81 @@ class FunctionRelationTest : CompilationTest() {
         assertContains(generatedFile, "com_Something --> com_one_OneThing")
         assertContains(generatedFile, "com_one_OneThing --> com_other_OtherThing")
         assertContainsNot(generatedFile, "com_other_ThingBox ..> com_one_OneThing")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Create Indirect relations if List is returned`() {
+        val fileNames = listOf("OtherThing.kt", "BoxWithThings.kt")
+        val codes = listOf(otherthingCode, boxWithThingsCode)
+        val files = fileNames.zip(codes).map { (name, code) ->
+            SourceFile.kotlin(name, code)
+        }.toList()
+        val compilation = newCompilation(DEFAULT_OPTIONS, files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "otherThings() : List<OtherThing>")
+        assertContains(generatedFile, "com_other_BoxWithThings ..> com_other_OtherThing")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Create Indirect relations if List is returned with reduced included packages`() {
+        val fileNames = listOf("OtherThing.kt", "BoxWithThings.kt")
+        val codes = listOf(otherthingCode, boxWithThingsCode)
+        val files = fileNames.zip(codes).map { (name, code) ->
+            SourceFile.kotlin(name, code)
+        }.toList()
+        val compilation = newCompilation(DEFAULT_OPTIONS.copy(includedPackages = listOf("com.other")), files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "otherThings() : List<OtherThing>")
+        assertContains(generatedFile, "com_other_BoxWithThings ..> com_other_OtherThing")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Create Indirect relations if Flow is returned`() {
+        val fileNames = listOf("OtherThing.kt", "BoxWithThings.kt")
+        val codes = listOf(otherthingCode, boxWithThingsCode)
+        val files = fileNames.zip(codes).map { (name, code) ->
+            SourceFile.kotlin(name, code)
+        }.toList()
+        val compilation = newCompilation(DEFAULT_OPTIONS, files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "otherThingsAsFlow() : Flow<OtherThing>")
+        assertContains(generatedFile, "com_other_BoxWithThings ..> com_other_OtherThing")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Create Indirect relations if Flow is returned with reduced included packages`() {
+        val fileNames = listOf("OtherThing.kt", "BoxWithThings.kt")
+        val codes = listOf(otherthingCode, boxWithThingsCode)
+        val files = fileNames.zip(codes).map { (name, code) ->
+            SourceFile.kotlin(name, code)
+        }.toList()
+        val compilation = newCompilation(DEFAULT_OPTIONS.copy(includedPackages = listOf("com.other")), files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "otherThingsAsFlow() : Flow<OtherThing>")
+        assertContains(generatedFile, "com_other_BoxWithThings ..> com_other_OtherThing")
     }
 }

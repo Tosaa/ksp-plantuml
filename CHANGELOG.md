@@ -1,4 +1,5 @@
 ## 0.0.6 - unreleased
+- Fixed Type resolving of generic types, even if first resolved type is not in 'includedPackages'
 - Added TypeAlias support
 - If TypeAlias is declared in 'includedPackages', TypeAlias will be resolved
 - If Type that TypeAlias points to, is not in 'includedPackages', it will be resolved also. (TypeAlias of classes in the same package are not as intentional as TypeAlias of classes of other packages / libraries)

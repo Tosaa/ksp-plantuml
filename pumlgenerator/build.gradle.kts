@@ -36,6 +36,7 @@ dependencies {
     implementation("com.google.devtools.ksp:symbol-processing-api:2.1.21-2.0.1")
     testImplementation(kotlin("test"))
     testImplementation("dev.zacsweers.kctfork:ksp:0.7.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     ksp("io.github.tosaa.puml.ksp:ksp-plantuml-generator:0.0.+")
 }
 

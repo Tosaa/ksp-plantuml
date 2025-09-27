@@ -1,4 +1,4 @@
-## 0.0.6 - unreleased
+## 0.0.6 - 2025-09-27
 - Fixed Type resolving of generic types, even if first resolved type is not in 'includedPackages'
 - Added TypeAlias support
 - If TypeAlias is declared in 'includedPackages', TypeAlias will be resolved

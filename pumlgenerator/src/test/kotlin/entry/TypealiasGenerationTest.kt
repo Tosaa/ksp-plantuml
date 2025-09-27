@@ -116,4 +116,24 @@ class TypealiasGenerationTest : CompilationTest() {
         assertContains(generatedFile, "TypeAlias of basic.Item")
     }
 
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Typealias can reference any class`() {
+        val code = """
+            package com.test           
+            typealias Text = String
+        """.trimIndent()
+        val files = listOf(SourceFile.kotlin("AliasOfString.kt", code))
+        val compilation = newCompilation(DEFAULT_OPTIONS.copy(includedPackages = listOf("com.test")), files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "class \"Text\" as com_test_Text")
+        assertContains(generatedFile, "TypeAlias of kotlin.String")
+    }
+
 }

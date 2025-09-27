@@ -11,7 +11,6 @@ import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSTypeAlias
 import uml.isInheritedFunction
 import uml.isInheritedProperty
-import kotlin.reflect.typeOf
 
 data class Options(
     val includedPackages: List<String> = emptyList(),
@@ -133,26 +132,26 @@ fun Options?.isValid(packageName: String, logger: KSPLogger? = null): Boolean = 
             true
 
         this.excludedPackages.any { it == packageName } -> {
-            logger.v { "Package is excluded: $packageName" }
+            logger.v { "Package is excluded: '$packageName'" }
             false
         }
 
 
         this.excludedPackages.any { (packageName.startsWith(it)) } -> {
             val packageThatExcludesThisClass = this.excludedPackages.find { (packageName.startsWith(it)) }
-            logger.v { "Exclude package $packageName by excluded package: $packageThatExcludesThisClass" }
+            logger.v { "Exclude package '$packageName' by excluded package: $packageThatExcludesThisClass" }
             false
         }
 
         this.includedPackages.isNotEmpty() && this.includedPackages.none { it == packageName || packageName.startsWith(it) } -> {
-            logger.v { "Exclude package $packageName since it does not match the included packages: ${this.includedPackages.joinToString()}" }
+            logger.v { "Exclude package '$packageName' since it does not match the included packages: ${this.includedPackages.joinToString()}" }
             false
         }
 
         else -> true
     }
 }.getOrElse { throwable ->
-    logger.w { "Exclude package $packageName due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
+    logger.w { "Exclude package '$packageName' due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
     false
 }
 

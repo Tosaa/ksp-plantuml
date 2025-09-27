@@ -67,7 +67,7 @@ $functionsString
             get() = extensionFunctions
 
         override fun build(): TypealiasElement? {
-            return if (options.isValid(clazz, logger)) {
+            return if (options.isValid(typeAlias, logger)) {
                 TypealiasElement(
                     uniqueIdentifier = typeAlias.fullQualifiedName,
                     elementName = typeAlias.shortName,

@@ -294,25 +294,25 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             ClassKind.CLASS -> {
                 val builder = ClassElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
                 componentBuilder.add(builder)
-                logger.v { "${classDeclaration.fullQualifiedName} added" }
+                logger.v { "${builder.fullQualifiedName} added" }
             }
 
             ClassKind.INTERFACE -> {
                 val builder = InterfaceElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
                 componentBuilder.add(builder)
-                logger.v { "${classDeclaration.fullQualifiedName} added" }
+                logger.v { "${builder.fullQualifiedName} added" }
             }
 
             ClassKind.ENUM_CLASS -> {
                 val builder = EnumElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
                 componentBuilder.add(builder)
-                logger.v { "${classDeclaration.fullQualifiedName} added" }
+                logger.v { "${builder.fullQualifiedName} added" }
             }
 
             ClassKind.OBJECT -> {
                 val builder = ObjectElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
                 componentBuilder.add(builder)
-                logger.v { "${classDeclaration.fullQualifiedName} added" }
+                logger.v { "${builder.fullQualifiedName} added" }
             }
 
             else -> Unit
@@ -358,7 +358,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     logger.v { "Add extension function $function to builder of $functionOwningClass" }
                     builder.extensionFunctions.add(function)
                 } else {
-                    logger.w { "No builder found for class $functionOwningClass -> add class as shell first then add extension function $function" }
+                    logger.w { "No builder found for class $functionOwningClass ($function) -> add class as shell first then add extension function $function" }
                     addClass(functionOwningClass, true)
                     findBuilderFor(functionOwningClass)?.extensionFunctions?.add(function)
                 }
@@ -370,7 +370,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     logger.v { "Add extension function $function to builder of $classOfExtensionFunction" }
                     builder.extensionFunctions.add(function)
                 } else {
-                    logger.w { "No builder found for class $classOfExtensionFunction -> add TypeAlias then add extension function $function" }
+                    logger.w { "No builder found for class $classOfExtensionFunction ($function) -> add TypeAlias then add extension function $function" }
                     addTypeAlias(classOfExtensionFunction)
                     findBuilderFor(classOfExtensionFunction)?.extensionFunctions?.add(function)
                 }
@@ -411,7 +411,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     logger.v { "Add extension property $property to builder of $variableOwningClass" }
                     builder.extensionProperties.add(property)
                 } else {
-                    logger.w { "No builder found for class $variableOwningClass -> add Class as shell first then add extension property $property" }
+                    logger.w { "No builder found for class $variableOwningClass ($property) -> add Class as shell first then add extension property $property" }
                     addClass(variableOwningClass, true)
                     findBuilderFor(variableOwningClass)?.extensionProperties?.add(property)
                 }
@@ -423,7 +423,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     logger.v { "Add extension property $property to builder of $classOfExtensionVariable" }
                     builder.extensionProperties.add(property)
                 } else {
-                    logger.w { "No builder found for class $classOfExtensionVariable -> add TypeAlias then add extension property $property" }
+                    logger.w { "No builder found for class $classOfExtensionVariable ($property) -> add TypeAlias then add extension property $property" }
                     addTypeAlias(classOfExtensionVariable)
                     findBuilderFor(classOfExtensionVariable)?.extensionProperties?.add(property)
                 }
@@ -586,5 +586,6 @@ end note
 
         val builder = TypealiasElement.Builder(typeAlias = typeAlias, clazz = typeAlias.findActualType(), isShell = false, options = options, logger = logger)
         componentBuilder.add(builder)
+        logger.v { "${builder.fullQualifiedName} added" }
     }
 }

@@ -17,7 +17,7 @@ class UMLGenerator(val logger: KSPLogger, val diagrams: ClassDiagramDescription,
         }
 
         logger.v { "${file.fileName} -> ${file.declarations.joinToString()}" }
-        val ignoredDeclarations = file.declarations.filter { it !is KSClassDeclaration && it !is KSFunctionDeclaration && it !is KSPropertyDeclaration }.toList()
+        val ignoredDeclarations = file.declarations.filter { it !is KSClassDeclaration && it !is KSFunctionDeclaration && it !is KSPropertyDeclaration && it !is KSTypeAlias }.toList()
         if (ignoredDeclarations.isNotEmpty()) {
             logger.w { "The following declarations were ignored since only class declarations are considered: ${ignoredDeclarations.joinToString()}" }
         }
@@ -62,13 +62,13 @@ class UMLGenerator(val logger: KSPLogger, val diagrams: ClassDiagramDescription,
 
     override fun visitTypeAlias(typeAlias: KSTypeAlias, data: Unit) {
         if (!typeAlias.validate()) {
-            logger.i { "visitClassDeclaration(): $typeAlias is not valid" }
+            logger.i { "visitTypeAlias(): $typeAlias is not valid" }
             return
         }
-        if (!options.isValid(typeAlias.findActualType(), logger)) {
+        if (!options.isValid(typeAlias, logger)) {
             return
         }
-        logger.v { "visitTypeAlias of: ${typeAlias.qualifiedName?.asString()} (${typeAlias.findActualType().qualifiedName?.asString()}" }
+        logger.v { "visitTypeAlias: ${typeAlias.fullQualifiedName} (alias of ${typeAlias.findActualType().fullQualifiedName})" }
 
         diagrams.addTypeAlias(typeAlias = typeAlias)
 

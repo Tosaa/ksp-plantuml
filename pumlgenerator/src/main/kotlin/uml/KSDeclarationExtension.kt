@@ -14,7 +14,7 @@ val KSClassDeclaration.fullQualifiedName: String
 val KSClassDeclaration.className: String
     get() = fullQualifiedName.replace(packageName.asString(), "").trim('.')
 
-val KSTypeAlias.fullQualifiedName : String
+val KSTypeAlias.fullQualifiedName: String
     get() = "${qualifiedName?.getQualifier() ?: packageName.asString()}.${simpleName.asString()}"
 
 val KSTypeAlias.shortName: String

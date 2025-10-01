@@ -45,7 +45,7 @@ $functionsString
 """
     }
 
-    class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : AbstractElementBuilder(clazz, isShell, options, logger) {
+    class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : AbstractElementBuilder<EnumElement>(clazz, isShell, options, logger) {
 
         override fun build(): EnumElement? {
             return if (options.isValid(clazz, logger)) {

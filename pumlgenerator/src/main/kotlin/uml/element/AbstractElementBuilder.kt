@@ -10,7 +10,7 @@ import filterPropertiesByOptions
 import uml.DiagramElement
 import uml.fullQualifiedName
 
-abstract class AbstractElementBuilder(override val clazz: KSClassDeclaration, override var isShell: Boolean, override val options: Options, val logger: KSPLogger? = null) : DiagramElement.Builder<AbstractElement> {
+abstract class AbstractElementBuilder<T : AbstractElement>(override val clazz: KSClassDeclaration, override var isShell: Boolean, override val options: Options, val logger: KSPLogger? = null) : DiagramElement.Builder<T> {
 
     val companionObject = clazz.declarations.filter { it is KSClassDeclaration && it.isCompanionObject }.map { it as? KSClassDeclaration }.firstOrNull()
 
@@ -61,5 +61,5 @@ abstract class AbstractElementBuilder(override val clazz: KSClassDeclaration, ov
         extensionProperties.add(property)
     }
 
-    abstract override fun build(): AbstractElement?
+    abstract override fun build(): DiagramElement?
 }

@@ -1,6 +1,7 @@
 package entry
 
 import CompilationTest
+import assertContainsNot
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.sourcesGeneratedBySymbolProcessor
@@ -31,6 +32,7 @@ class SealedGenerationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertTrue { generatedFile.contains(Regex("class \"ABC\" as test_letters_ABC.*Sealed>>")) }

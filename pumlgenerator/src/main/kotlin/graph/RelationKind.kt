@@ -1,6 +1,9 @@
 package graph
 
 enum class RelationKind(val arrow: String, val reversedArrow: String = arrow.reversed()) {
+    // Inheritance will be shown as inheritance
+    Inheritance("--|>", "<|--"),
+
     // Properties will be shown as aggregation
     Property("-*"),
 
@@ -11,10 +14,7 @@ enum class RelationKind(val arrow: String, val reversedArrow: String = arrow.rev
     IndirectProperty(".*"),
 
     // Indirect functions will be shown as dependency but with dotted line
-    IndirectFunction(".>"),
-
-    // Inheritance will be shown as inheritance
-    Inheritance("--|>", "<|--");
+    IndirectFunction(".>");
 
     /**
      * arrowWithLevel enables positioning elements on the same level (level = 0) or below each other (level > 0)

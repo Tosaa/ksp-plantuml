@@ -1,6 +1,7 @@
 package relation
 
 import CompilationTest
+import assertContainsNot
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.sourcesGeneratedBySymbolProcessor
@@ -47,6 +48,7 @@ class GenericRelationsTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "description : Text")
@@ -66,6 +68,7 @@ class GenericRelationsTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
 

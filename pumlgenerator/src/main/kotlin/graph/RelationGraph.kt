@@ -1,16 +1,23 @@
 package graph
 
-private typealias Vertex = String
-private typealias Edge = Pair<Vertex, Vertex>
+import uml.DiagramElement
+
+typealias Vertex = String
+typealias Edge = Pair<Vertex, Vertex>
 
 class RelationGraph {
     val relations = mutableSetOf<Relation>()
+    val elements = mutableSetOf<DiagramElement.Builder<*>>()
 
     val edges: List<Edge>
         get() = this.relations.map { it.fromAlias to it.toAlias }
 
     val vertices: Set<Vertex>
-        get() = (this.relations.map { it.fromAlias } + this.relations.map { it.toAlias }).toSet()
+        get() = elements.map { it.fullQualifiedName.replace(".", "_").trim('_') }.toSet()
+
+    fun addElementBuilder(diagramElement: DiagramElement.Builder<*>) {
+        this.elements.add(diagramElement)
+    }
 
     fun addRelation(relation: Relation) {
         this.relations.add(relation)
@@ -24,7 +31,6 @@ class RelationGraph {
         return this.edges.count { it.second == vertex }
     }
 
-
     fun outEdgesOf(vertex: Vertex): List<Relation> {
         return this.relations.filter { it.fromAlias == vertex }
     }
@@ -37,5 +43,24 @@ class RelationGraph {
         return edges.contains(fromVertex to toVertex)
     }
 
+    fun hasVertex(vertex: Vertex): Boolean = vertex.replace(".", "_").trim('_') in vertices
 
+    fun findBuilderForVertex(vertex: Vertex): DiagramElement.Builder<*>? {
+        return elements.find { it.fullQualifiedName == vertex }
+    }
+
+    fun describe(): String {
+        return """
+            Vertices: ${vertices.size}
+            Edges: ${edges.size}
+            Unrelated Vertices: ${computeVerticesWithoutRelations().joinToString()}
+            Invalid Relations: ${computeInvalidRelations().joinToString()}
+        """.trimIndent()
+    }
+
+    fun computeVerticesWithoutRelations(): List<Vertex> = vertices
+        .filter { vertex -> vertex !in (edges.map { it.first } + edges.map { it.second }) }
+
+    fun computeInvalidRelations(): List<Relation> = relations
+        .filter { relation -> relation.fromAlias !in vertices || relation.toAlias !in vertices }
 }

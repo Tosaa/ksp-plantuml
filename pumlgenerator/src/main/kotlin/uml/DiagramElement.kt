@@ -36,7 +36,7 @@ abstract class DiagramElement : Renderable {
         val allFunctions: List<KSFunctionDeclaration>
         val clazz: KSClassDeclaration
         val options: Options?
-        fun build(): T?
+        fun build(): DiagramElement?
         fun addExtensionFunction(function:KSFunctionDeclaration)
         fun addExtensionProperty(property:KSPropertyDeclaration)
     }

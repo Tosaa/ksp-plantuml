@@ -6,7 +6,6 @@ import assertContainsNot
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.sourcesGeneratedBySymbolProcessor
-import kotlinx.coroutines.flow.flow
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.junit.jupiter.api.Test
 import kotlin.test.assertContains
@@ -67,6 +66,7 @@ class FunctionRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
 
@@ -88,6 +88,7 @@ class FunctionRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "com_Something --> com_one_OneThing")
@@ -107,6 +108,7 @@ class FunctionRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContainsNot(generatedFile, "com_Something --> com_one_OneThing")
@@ -126,6 +128,7 @@ class FunctionRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "com_Something --> com_one_OneThing")
@@ -145,6 +148,7 @@ class FunctionRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContainsNot(generatedFile, "com_other_OtherThing --> com_other_OtherThing")
@@ -163,6 +167,7 @@ class FunctionRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "com_Something --> com_one_OneThing")
@@ -183,6 +188,7 @@ class FunctionRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "otherThings() : List<OtherThing>")
@@ -202,6 +208,7 @@ class FunctionRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "otherThings() : List<OtherThing>")
@@ -221,6 +228,7 @@ class FunctionRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "otherThingsAsFlow() : Flow<OtherThing>")
@@ -240,6 +248,7 @@ class FunctionRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "otherThingsAsFlow() : Flow<OtherThing>")

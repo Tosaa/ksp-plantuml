@@ -22,7 +22,7 @@ class ClassElement(
 
     override val elementKind: ElementKind = ElementKind.CLAZZ(isSealed = isSealedClass, isData = isDataClass)
 
-    class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger? = null) : AbstractElementBuilder(clazz, isShell, options, logger) {
+    class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger? = null) : AbstractElementBuilder<ClassElement>(clazz, isShell, options, logger) {
 
         override fun build(): ClassElement? {
             return if (options.isValid(clazz, logger)) {

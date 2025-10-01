@@ -1,9 +1,6 @@
 import com.vanniktech.maven.publish.SonatypeHost
 import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
-import java.io.IOException
-import java.io.StringReader
-import java.lang.StringBuilder
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.zip.Deflater
@@ -28,7 +25,8 @@ repositories {
 
 ksp {
     arg("puml.allowEmptyPackage", "true")
-    arg("puml.showPropertyRelations", "false")
+    arg("puml.includedPackages", "graph,uml")
+    arg("puml.showPropertyRelations", "true")
     arg("puml.showFunctionRelations", "false")
 }
 

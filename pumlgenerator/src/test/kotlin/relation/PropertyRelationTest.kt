@@ -70,6 +70,7 @@ class PropertyRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "com_Something --* com_one_OneThing")
@@ -91,6 +92,7 @@ class PropertyRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "com_Something --* com_one_OneThing")
@@ -111,6 +113,7 @@ class PropertyRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContainsNot(generatedFile, "com_Something --* com_one_OneThing")
@@ -131,6 +134,7 @@ class PropertyRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContainsNot(generatedFile, "com_Something --* com_Something")
@@ -150,6 +154,7 @@ class PropertyRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "com_Something --* com_one_OneThing")
@@ -171,12 +176,13 @@ class PropertyRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile,"colors : Flow<List<Color>>")
-        assertContains(generatedFile,"com_test_TestInterface ..* com_test_Color")
-        assertContains(generatedFile,"brightness : StateFlow<Brightness>")
-        assertContains(generatedFile,"com_test_TestInterface ..* com_test_Brightness")
+        assertContains(generatedFile, "colors : Flow<List<Color>>")
+        assertContains(generatedFile, "com_test_TestInterface ..* com_test_Color")
+        assertContains(generatedFile, "brightness : StateFlow<Brightness>")
+        assertContains(generatedFile, "com_test_TestInterface ..* com_test_Brightness")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -192,11 +198,12 @@ class PropertyRelationTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile,"colors : Flow<List<Color>>")
-        assertContains(generatedFile,"com_test_TestInterface ..* com_test_Color")
-        assertContains(generatedFile,"brightness : StateFlow<Brightness>")
-        assertContains(generatedFile,"com_test_TestInterface ..* com_test_Brightness")
+        assertContains(generatedFile, "colors : Flow<List<Color>>")
+        assertContains(generatedFile, "com_test_TestInterface ..* com_test_Color")
+        assertContains(generatedFile, "brightness : StateFlow<Brightness>")
+        assertContains(generatedFile, "com_test_TestInterface ..* com_test_Brightness")
     }
 }

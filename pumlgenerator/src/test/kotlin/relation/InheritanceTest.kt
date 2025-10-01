@@ -101,6 +101,24 @@ class InheritanceTest : CompilationTest() {
     }
     """
 
+    val allRelationsGivenCode = """
+        package a
+        interface C {
+        
+        }
+        interface B : C {
+            val variableC : C
+            fun functionC() : C
+        }
+        interface D {
+            val variableC : C
+            fun functionC(): C
+        }
+        interface E {
+            fun functionC(): C
+        }
+    """.trimIndent()
+
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Create inheritance for Interface and implementation`() {
@@ -114,6 +132,7 @@ class InheritanceTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "\"Animal\" as explorer_database_Animal")
@@ -138,6 +157,7 @@ class InheritanceTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "\"Animal\" as explorer_database_Animal")
@@ -187,6 +207,7 @@ class InheritanceTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "\"Animal\" as explorer_database_Animal")
@@ -227,6 +248,7 @@ class InheritanceTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "\"Animal\" as explorer_database_Animal")
@@ -266,6 +288,7 @@ class InheritanceTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "\"AbstractAnimal\" as explorer_database_AbstractAnimal")
@@ -288,6 +311,7 @@ class InheritanceTest : CompilationTest() {
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
         val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "\"AbstractAnimal\" as explorer_database_AbstractAnimal")
@@ -295,5 +319,32 @@ class InheritanceTest : CompilationTest() {
         assertContains(generatedFile, "\"Dog\" as explorer_database_pets_Dog")
         assertContainsNot(generatedFile, "explorer_database_AbstractAnimal <|-- explorer_database_pets_Cat")
         assertContainsNot(generatedFile, "explorer_database_AbstractAnimal <|-- explorer_database_pets_Dog")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Assert order of relations that are drawn`() {
+        val fileNames = listOf("Test.kt")
+        val codes = listOf(allRelationsGivenCode)
+        val files = fileNames.zip(codes).map { (name, code) ->
+            SourceFile.kotlin(name, code)
+        }.toList()
+        val compilation = newCompilation(DEFAULT_OPTIONS, files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "a_C <|-- a_B")
+        assertContains(generatedFile, "a_B --* a_C")
+        assertContainsNot(generatedFile, "a_B --> a_C")
+        assertContainsNot(generatedFile, "a_C <|-- a_D")
+        assertContains(generatedFile, "a_D --* a_C")
+        assertContainsNot(generatedFile, "a_D --> a_C")
+        assertContainsNot(generatedFile, "a_C <|-- a_E")
+        assertContainsNot(generatedFile, "a_E --* a_C")
+        assertContains(generatedFile, "a_E --> a_C")
     }
 }

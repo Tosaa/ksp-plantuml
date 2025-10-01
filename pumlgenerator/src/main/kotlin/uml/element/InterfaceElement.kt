@@ -17,11 +17,11 @@ class InterfaceElement(
     functions: List<Method>,
     isSealedClass: Boolean,
     isShell: Boolean
-) : AbstractElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
+) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
 
     override val elementKind: ElementKind = ElementKind.INTERFACE(isSealedClass)
 
-    class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : AbstractElementBuilder<InterfaceElement>(clazz, isShell, options, logger) {
+    class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
 
         override fun build(): InterfaceElement? {
             return if (options.isValid(clazz, logger)) {

@@ -7,19 +7,18 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import filterFunctionsByOptions
 import filterPropertiesByOptions
-import uml.DiagramElement
 import uml.fullQualifiedName
 
-abstract class AbstractElementBuilder<T : AbstractElement>(override val clazz: KSClassDeclaration, override var isShell: Boolean, override val options: Options, val logger: KSPLogger? = null) : DiagramElement.Builder<T> {
+abstract class DiagramElementBuilder(val clazz: KSClassDeclaration, open var isShell: Boolean, val options: Options, val logger: KSPLogger? = null) {
 
     val companionObject = clazz.declarations.filter { it is KSClassDeclaration && it.isCompanionObject }.map { it as? KSClassDeclaration }.firstOrNull()
 
-    override val fullQualifiedName: String
+    open val fullQualifiedName: String
         get() = clazz.fullQualifiedName
 
     protected val extensionProperties: MutableList<KSPropertyDeclaration> = mutableListOf()
 
-    override val allProperties: List<KSPropertyDeclaration>
+    open val allProperties: List<KSPropertyDeclaration>
         get() = buildList {
             if (!isShell) {
                 val validCompanionObjectProperties = companionObject?.getAllProperties()?.filterPropertiesByOptions(clazz, options, logger) ?: emptySequence()
@@ -37,7 +36,7 @@ abstract class AbstractElementBuilder<T : AbstractElement>(override val clazz: K
 
     protected val extensionFunctions: MutableList<KSFunctionDeclaration> = mutableListOf()
 
-    override val allFunctions: List<KSFunctionDeclaration>
+    open val allFunctions: List<KSFunctionDeclaration>
         get() = buildList {
             if (!isShell) {
                 val validCompanionObjectFunctions = companionObject?.getAllFunctions()?.filterFunctionsByOptions(clazz, options, logger) ?: emptySequence()
@@ -53,13 +52,13 @@ abstract class AbstractElementBuilder<T : AbstractElement>(override val clazz: K
             addAll(extensionFunctions)
         }
 
-    override fun addExtensionFunction(function: KSFunctionDeclaration) {
+    fun addExtensionFunction(function: KSFunctionDeclaration) {
         extensionFunctions.add(function)
     }
 
-    override fun addExtensionProperty(property: KSPropertyDeclaration) {
+    fun addExtensionProperty(property: KSPropertyDeclaration) {
         extensionProperties.add(property)
     }
 
-    abstract override fun build(): DiagramElement?
+    abstract fun build(): DiagramElement?
 }

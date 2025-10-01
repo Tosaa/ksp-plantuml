@@ -1,13 +1,13 @@
 package graph
 
-import uml.DiagramElement
+import uml.element.DiagramElementBuilder
 
 typealias Vertex = String
 typealias Edge = Pair<Vertex, Vertex>
 
 class RelationGraph {
     val relations = mutableSetOf<Relation>()
-    val elements = mutableSetOf<DiagramElement.Builder<*>>()
+    val elements = mutableSetOf<DiagramElementBuilder>()
 
     val edges: List<Edge>
         get() = this.relations.map { it.fromAlias to it.toAlias }
@@ -15,7 +15,7 @@ class RelationGraph {
     val vertices: Set<Vertex>
         get() = elements.map { it.fullQualifiedName.replace(".", "_").trim('_') }.toSet()
 
-    fun addElementBuilder(diagramElement: DiagramElement.Builder<*>) {
+    fun addElementBuilder(diagramElement: DiagramElementBuilder) {
         this.elements.add(diagramElement)
     }
 
@@ -45,7 +45,7 @@ class RelationGraph {
 
     fun hasVertex(vertex: Vertex): Boolean = vertex.replace(".", "_").trim('_') in vertices
 
-    fun findBuilderForVertex(vertex: Vertex): DiagramElement.Builder<*>? {
+    fun findBuilderForVertex(vertex: Vertex): DiagramElementBuilder? {
         return elements.find { it.fullQualifiedName == vertex }
     }
 

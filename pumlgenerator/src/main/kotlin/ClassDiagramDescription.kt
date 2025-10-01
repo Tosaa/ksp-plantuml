@@ -15,8 +15,9 @@ import graph.PropertyRelation
 import graph.Relation
 import graph.RelationGraph
 import graph.RelationKind
-import uml.DiagramElement
+import uml.element.DiagramElementBuilder
 import uml.element.ClassElement
+import uml.element.DiagramElement
 import uml.element.EnumElement
 import uml.element.InterfaceElement
 import uml.element.ObjectElement
@@ -32,9 +33,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
     val graph = RelationGraph()
 
-    fun findBuilderFor(declaration: KSClassDeclaration): DiagramElement.Builder<*>? = graph.findBuilderForVertex(declaration.fullQualifiedName)
+    fun findBuilderFor(declaration: KSClassDeclaration): DiagramElementBuilder? = graph.findBuilderForVertex(declaration.fullQualifiedName)
 
-    fun findBuilderFor(declaration: KSTypeAlias): DiagramElement.Builder<*>? = graph.findBuilderForVertex(declaration.fullQualifiedName)
+    fun findBuilderFor(declaration: KSTypeAlias): DiagramElementBuilder? = graph.findBuilderForVertex(declaration.fullQualifiedName)
 
     private fun addHierarchy(child: KSClassDeclaration, parent: KSClassDeclaration) {
         when {
@@ -65,9 +66,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         }
     }
 
-    private fun addPropertyRelations(builder: DiagramElement.Builder<DiagramElement>) = addPropertyRelations(base = builder.clazz, builder = builder)
+    private fun addPropertyRelations(builder: DiagramElementBuilder) = addPropertyRelations(base = builder.clazz, builder = builder)
 
-    private fun addPropertyRelations(base: KSClassDeclaration, builder: DiagramElement.Builder<*>) {
+    private fun addPropertyRelations(base: KSClassDeclaration, builder: DiagramElementBuilder) {
         when {
             !options.isValid(base, logger) ->
                 logger.v { "Property relations of ${base.fullQualifiedName} are excluded due to invalid KSClassDeclaration" }
@@ -148,9 +149,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         }
     }
 
-    private fun addFunctionRelations(builder: DiagramElement.Builder<DiagramElement>) = addFunctionRelations(base = builder.clazz, builder = builder)
+    private fun addFunctionRelations(builder: DiagramElementBuilder) = addFunctionRelations(base = builder.clazz, builder = builder)
 
-    private fun addFunctionRelations(base: KSClassDeclaration, builder: DiagramElement.Builder<*>) {
+    private fun addFunctionRelations(base: KSClassDeclaration, builder: DiagramElementBuilder) {
         when {
             !options.isValid(base, logger) ->
                 logger.v { "Function relations of ${base.fullQualifiedName} are excluded due to invalid KSClassDeclaration" }
@@ -480,7 +481,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         }
 
         graph.elements
-            .filterIsInstance<DiagramElement.Builder<DiagramElement>>()
+            .filterIsInstance<DiagramElementBuilder>()
             .forEach { builder ->
                 addFunctionRelations(builder)
                 addPropertyRelations(builder)

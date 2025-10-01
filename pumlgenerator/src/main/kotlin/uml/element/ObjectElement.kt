@@ -15,11 +15,11 @@ class ObjectElement(
     attributes: List<Field>,
     functions: List<Method>,
     isShell: Boolean
-) : AbstractElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
+) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
 
     override val elementKind: ElementKind = ElementKind.OBJECT
 
-    class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : AbstractElementBuilder<ObjectElement>(clazz, isShell, options, logger) {
+    class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
 
         override fun build(): ObjectElement? {
             return if (options.isValid(clazz, logger)) {

@@ -10,7 +10,6 @@ title Example for Interface
     }
 
 
-com_google_devtools_ksp_processing_SymbolProcessor ..> com_google_devtools_ksp_symbol_KSAnnotated
 
 note as note_of_code
 Kotlin Code:

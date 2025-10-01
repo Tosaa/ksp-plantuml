@@ -39,11 +39,11 @@ title Example for Inheritance
     }
 
 
-Room <|-- MagicRoom
-Room <|-- OrdinaryRoom
-MazeGame <|-- MagicMazeGame
-MazeGame <|-- OrdinaryMazeGame
 MazeGame --> Room
+MazeGame <|-- OrdinaryMazeGame
+MazeGame <|-- MagicMazeGame
+Room <|-- OrdinaryRoom
+Room <|-- MagicRoom
 
 note as note_of_code
 Kotlin Code:

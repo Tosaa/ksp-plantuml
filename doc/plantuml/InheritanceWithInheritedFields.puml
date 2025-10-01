@@ -41,15 +41,15 @@ title Example for InheritanceWithInheritedFields
     }
 
 
-Room <|-- MagicRoom
-Room <|-- OrdinaryRoom
-MagicMazeGame --> MagicRoom
-MagicMazeGame ..* Room
-MazeGame <|-- MagicMazeGame
+MazeGame --> Room
+MazeGame <|-- OrdinaryMazeGame
 OrdinaryMazeGame --> OrdinaryRoom
 OrdinaryMazeGame ..* Room
-MazeGame <|-- OrdinaryMazeGame
-MazeGame --> Room
+MazeGame <|-- MagicMazeGame
+MagicMazeGame --> MagicRoom
+MagicMazeGame ..* Room
+Room <|-- OrdinaryRoom
+Room <|-- MagicRoom
 
 note as note_of_code
 Non default options:

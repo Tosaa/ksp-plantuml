@@ -1,4 +1,3 @@
-import OptionConstants.ALL_KEYS
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.KSPLogger
@@ -77,7 +76,7 @@ $finalDiagram
 
 class PumlProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        val unexpectedKeys = environment.options.filter { it.key !in ALL_KEYS }.toList()
+        val unexpectedKeys = environment.options.filter { it.key !in OptionConstants.IDENTIFIER }.toList()
         environment.logger.i {
             """
 KSP Environment

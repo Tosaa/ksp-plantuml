@@ -1,4 +1,4 @@
-import OptionConstants.MAX_RELATIONS
+import OptionConstants.Companion.MAX_RELATIONS
 import com.google.devtools.ksp.isInternal
 import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.isPublic
@@ -44,68 +44,68 @@ data class Options(
     val title: String = "",
 ) {
     constructor(kspProcessorOptions: Map<String, String>) : this(
-        includedPackages = kspProcessorOptions[OptionConstants.KEY_INCLUDED_PACKAGES]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
-        excludedPackages = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_PACKAGES]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
-        excludedClassNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_CLASS_NAMES]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
-        excludedPropertyNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_PROPERTY_NAMES]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
-        excludedFunctionNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_FUNCTION_NAMES]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: DEFAULT_EXCLUDED_FUNCTIONS,
-        showVisibilityModifiers = kspProcessorOptions[OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS]?.equals("true", true) ?: true,
-        markExtensions = kspProcessorOptions[OptionConstants.KEY_MARK_EXTENSIONS]?.equals("true", true) ?: true,
-        showInheritedProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITED_PROPERTIES]?.equals("true", true) ?: false,
-        showInheritedFunctions = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITED_FUNCTIONS]?.equals("true", true) ?: false,
-        showExtensions = kspProcessorOptions[OptionConstants.KEY_SHOW_EXTENSIONS]?.equals("true", true) ?: true,
-        showPublicClasses = kspProcessorOptions[OptionConstants.KEY_SHOW_PUBLIC_CLASSES]?.equals("true", true) ?: true,
-        showPublicProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_PUBLIC_PROPERTIES]?.equals("true", true) ?: true,
-        showPublicFunctions = kspProcessorOptions[OptionConstants.KEY_SHOW_PUBLIC_FUNCTIONS]?.equals("true", true) ?: true,
-        showInternalClasses = kspProcessorOptions[OptionConstants.KEY_SHOW_INTERNAL_CLASSES]?.equals("true", true) ?: true,
-        showInternalProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_INTERNAL_PROPERTIES]?.equals("true", true) ?: true,
-        showInternalFunctions = kspProcessorOptions[OptionConstants.KEY_SHOW_INTERNAL_FUNCTIONS]?.equals("true", true) ?: true,
-        showPrivateClasses = kspProcessorOptions[OptionConstants.KEY_SHOW_PRIVATE_CLASSES]?.equals("true", true) ?: true,
-        showPrivateProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_PRIVATE_PROPERTIES]?.equals("true", true) ?: true,
-        showPrivateFunctions = kspProcessorOptions[OptionConstants.KEY_SHOW_PRIVATE_FUNCTIONS]?.equals("true", true) ?: true,
-        showInheritance = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITANCE]?.equals("true", true) ?: true,
-        showPropertyRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_PROPERTY_RELATIONS]?.equals("true", true) ?: true,
-        showFunctionRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_FUNCTION_RELATIONS]?.equals("true", true) ?: true,
-        showIndirectRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_INDIRECT_RELATIONS]?.equals("true", true) ?: true,
-        maxRelations = kspProcessorOptions[OptionConstants.KEY_MAX_RELATIONS]?.toIntOrNull() ?: MAX_RELATIONS,
-        showPackages = kspProcessorOptions[OptionConstants.KEY_SHOW_PACKAGES]?.equals("true", true) ?: false,
-        allowEmptyPackage = kspProcessorOptions[OptionConstants.KEY_ALLOW_EMPTY_PACKAGE]?.equals("true", true) ?: false,
-        prefix = kspProcessorOptions[OptionConstants.KEY_PREFIX] ?: "",
-        postfix = kspProcessorOptions[OptionConstants.KEY_POSTFIX] ?: "",
-        title = kspProcessorOptions[OptionConstants.KEY_TITLE] ?: "",
+        includedPackages = kspProcessorOptions[OptionConstants.KEY_INCLUDED_PACKAGES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        excludedPackages = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_PACKAGES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        excludedClassNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_CLASS_NAMES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        excludedPropertyNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_PROPERTY_NAMES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        excludedFunctionNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_FUNCTION_NAMES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: DEFAULT_EXCLUDED_FUNCTIONS,
+        showVisibilityModifiers = kspProcessorOptions[OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS.identifier]?.equals("true", true) ?: true,
+        markExtensions = kspProcessorOptions[OptionConstants.KEY_MARK_EXTENSIONS.identifier]?.equals("true", true) ?: true,
+        showInheritedProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITED_PROPERTIES.identifier]?.equals("true", true) ?: false,
+        showInheritedFunctions = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITED_FUNCTIONS.identifier]?.equals("true", true) ?: false,
+        showExtensions = kspProcessorOptions[OptionConstants.KEY_SHOW_EXTENSIONS.identifier]?.equals("true", true) ?: true,
+        showPublicClasses = kspProcessorOptions[OptionConstants.KEY_SHOW_PUBLIC_CLASSES.identifier]?.equals("true", true) ?: true,
+        showPublicProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_PUBLIC_PROPERTIES.identifier]?.equals("true", true) ?: true,
+        showPublicFunctions = kspProcessorOptions[OptionConstants.KEY_SHOW_PUBLIC_FUNCTIONS.identifier]?.equals("true", true) ?: true,
+        showInternalClasses = kspProcessorOptions[OptionConstants.KEY_SHOW_INTERNAL_CLASSES.identifier]?.equals("true", true) ?: true,
+        showInternalProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_INTERNAL_PROPERTIES.identifier]?.equals("true", true) ?: true,
+        showInternalFunctions = kspProcessorOptions[OptionConstants.KEY_SHOW_INTERNAL_FUNCTIONS.identifier]?.equals("true", true) ?: true,
+        showPrivateClasses = kspProcessorOptions[OptionConstants.KEY_SHOW_PRIVATE_CLASSES.identifier]?.equals("true", true) ?: true,
+        showPrivateProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_PRIVATE_PROPERTIES.identifier]?.equals("true", true) ?: true,
+        showPrivateFunctions = kspProcessorOptions[OptionConstants.KEY_SHOW_PRIVATE_FUNCTIONS.identifier]?.equals("true", true) ?: true,
+        showInheritance = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITANCE.identifier]?.equals("true", true) ?: true,
+        showPropertyRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_PROPERTY_RELATIONS.identifier]?.equals("true", true) ?: true,
+        showFunctionRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_FUNCTION_RELATIONS.identifier]?.equals("true", true) ?: true,
+        showIndirectRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_INDIRECT_RELATIONS.identifier]?.equals("true", true) ?: true,
+        maxRelations = kspProcessorOptions[OptionConstants.KEY_MAX_RELATIONS.identifier]?.toIntOrNull() ?: MAX_RELATIONS,
+        showPackages = kspProcessorOptions[OptionConstants.KEY_SHOW_PACKAGES.identifier]?.equals("true", true) ?: false,
+        allowEmptyPackage = kspProcessorOptions[OptionConstants.KEY_ALLOW_EMPTY_PACKAGE.identifier]?.equals("true", true) ?: false,
+        prefix = kspProcessorOptions[OptionConstants.KEY_PREFIX.identifier] ?: "",
+        postfix = kspProcessorOptions[OptionConstants.KEY_POSTFIX.identifier] ?: "",
+        title = kspProcessorOptions[OptionConstants.KEY_TITLE.identifier] ?: "",
     )
 
     fun asMap(): Map<String, String> {
         return mutableMapOf<String, String>().apply {
-            put(OptionConstants.KEY_INCLUDED_PACKAGES, includedPackages.joinToString(", "))
-            put(OptionConstants.KEY_EXCLUDE_PACKAGES, excludedPackages.joinToString(", "))
-            put(OptionConstants.KEY_EXCLUDE_CLASS_NAMES, excludedClassNames.joinToString(", "))
-            put(OptionConstants.KEY_EXCLUDE_PROPERTY_NAMES, excludedPropertyNames.joinToString(", "))
-            put(OptionConstants.KEY_EXCLUDE_FUNCTION_NAMES, excludedFunctionNames.joinToString(", "))
-            put(OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS, if (showVisibilityModifiers) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INHERITED_PROPERTIES, if (showInheritedProperties) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INHERITED_FUNCTIONS, if (showInheritedFunctions) "true" else "false")
-            put(OptionConstants.KEY_MARK_EXTENSIONS, if (markExtensions) "true" else "false")
-            put(OptionConstants.KEY_SHOW_EXTENSIONS, if (showExtensions) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PUBLIC_CLASSES, if (showPublicClasses) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PUBLIC_PROPERTIES, if (showPublicProperties) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PUBLIC_FUNCTIONS, if (showPublicFunctions) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INTERNAL_CLASSES, if (showInternalClasses) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INTERNAL_PROPERTIES, if (showInternalProperties) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INTERNAL_FUNCTIONS, if (showInternalFunctions) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PRIVATE_CLASSES, if (showPrivateClasses) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PRIVATE_PROPERTIES, if (showPrivateProperties) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PRIVATE_FUNCTIONS, if (showPrivateFunctions) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INHERITANCE, if (showInheritance) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PROPERTY_RELATIONS, if (showPropertyRelations) "true" else "false")
-            put(OptionConstants.KEY_SHOW_FUNCTION_RELATIONS, if (showFunctionRelations) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INDIRECT_RELATIONS, if (showIndirectRelations) "true" else "false")
-            put(OptionConstants.KEY_MAX_RELATIONS, maxRelations.toString())
-            put(OptionConstants.KEY_SHOW_PACKAGES, if (showPackages) "true" else "false")
-            put(OptionConstants.KEY_ALLOW_EMPTY_PACKAGE, if (allowEmptyPackage) "true" else "false")
-            put(OptionConstants.KEY_PREFIX, prefix)
-            put(OptionConstants.KEY_POSTFIX, postfix)
-            put(OptionConstants.KEY_TITLE, title)
+            put(OptionConstants.KEY_INCLUDED_PACKAGES.identifier, includedPackages.joinToString(", "))
+            put(OptionConstants.KEY_EXCLUDE_PACKAGES.identifier, excludedPackages.joinToString(", "))
+            put(OptionConstants.KEY_EXCLUDE_CLASS_NAMES.identifier, excludedClassNames.joinToString(", "))
+            put(OptionConstants.KEY_EXCLUDE_PROPERTY_NAMES.identifier, excludedPropertyNames.joinToString(", "))
+            put(OptionConstants.KEY_EXCLUDE_FUNCTION_NAMES.identifier, excludedFunctionNames.joinToString(", "))
+            put(OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS.identifier, if (showVisibilityModifiers) "true" else "false")
+            put(OptionConstants.KEY_SHOW_INHERITED_PROPERTIES.identifier, if (showInheritedProperties) "true" else "false")
+            put(OptionConstants.KEY_SHOW_INHERITED_FUNCTIONS.identifier, if (showInheritedFunctions) "true" else "false")
+            put(OptionConstants.KEY_MARK_EXTENSIONS.identifier, if (markExtensions) "true" else "false")
+            put(OptionConstants.KEY_SHOW_EXTENSIONS.identifier, if (showExtensions) "true" else "false")
+            put(OptionConstants.KEY_SHOW_PUBLIC_CLASSES.identifier, if (showPublicClasses) "true" else "false")
+            put(OptionConstants.KEY_SHOW_PUBLIC_PROPERTIES.identifier, if (showPublicProperties) "true" else "false")
+            put(OptionConstants.KEY_SHOW_PUBLIC_FUNCTIONS.identifier, if (showPublicFunctions) "true" else "false")
+            put(OptionConstants.KEY_SHOW_INTERNAL_CLASSES.identifier, if (showInternalClasses) "true" else "false")
+            put(OptionConstants.KEY_SHOW_INTERNAL_PROPERTIES.identifier, if (showInternalProperties) "true" else "false")
+            put(OptionConstants.KEY_SHOW_INTERNAL_FUNCTIONS.identifier, if (showInternalFunctions) "true" else "false")
+            put(OptionConstants.KEY_SHOW_PRIVATE_CLASSES.identifier, if (showPrivateClasses) "true" else "false")
+            put(OptionConstants.KEY_SHOW_PRIVATE_PROPERTIES.identifier, if (showPrivateProperties) "true" else "false")
+            put(OptionConstants.KEY_SHOW_PRIVATE_FUNCTIONS.identifier, if (showPrivateFunctions) "true" else "false")
+            put(OptionConstants.KEY_SHOW_INHERITANCE.identifier, if (showInheritance) "true" else "false")
+            put(OptionConstants.KEY_SHOW_PROPERTY_RELATIONS.identifier, if (showPropertyRelations) "true" else "false")
+            put(OptionConstants.KEY_SHOW_FUNCTION_RELATIONS.identifier, if (showFunctionRelations) "true" else "false")
+            put(OptionConstants.KEY_SHOW_INDIRECT_RELATIONS.identifier, if (showIndirectRelations) "true" else "false")
+            put(OptionConstants.KEY_MAX_RELATIONS.identifier, maxRelations.toString())
+            put(OptionConstants.KEY_SHOW_PACKAGES.identifier, if (showPackages) "true" else "false")
+            put(OptionConstants.KEY_ALLOW_EMPTY_PACKAGE.identifier, if (allowEmptyPackage) "true" else "false")
+            put(OptionConstants.KEY_PREFIX.identifier, prefix)
+            put(OptionConstants.KEY_POSTFIX.identifier, postfix)
+            put(OptionConstants.KEY_TITLE.identifier, title)
         }
     }
 

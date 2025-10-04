@@ -15,9 +15,9 @@ import graph.PropertyRelation
 import graph.Relation
 import graph.RelationGraph
 import graph.RelationKind
-import uml.element.DiagramElementBuilder
 import uml.element.ClassElement
 import uml.element.DiagramElement
+import uml.element.DiagramElementBuilder
 import uml.element.EnumElement
 import uml.element.InterfaceElement
 import uml.element.ObjectElement

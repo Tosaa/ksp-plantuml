@@ -1,4 +1,4 @@
-package uml.element
+package uml
 
 import com.google.devtools.ksp.symbol.Visibility
 

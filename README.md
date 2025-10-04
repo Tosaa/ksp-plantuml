@@ -300,6 +300,12 @@ Instead all relations will be hidden and a note will be added.
 
 If you have any questions, feature requests, or need help, feel free to report these as an [issue](https://github.com/Tosaa/ksp-plantuml/issues).
 
+**Open Topics & Ideas:**
+
+- Create Option to hide Relations for given classes
+- Create Option to generated output file to given path
+- Bug: Indirect Relations do not exclude classes that are not in included packages
+
 ---
 
 ## 📋 Changelog

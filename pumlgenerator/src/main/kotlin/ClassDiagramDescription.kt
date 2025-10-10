@@ -141,36 +141,36 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
         val functions = builder.build()?.functions ?: return
         functions.forEach { methodOfClass ->
-                when {
-                    !options.showFunctionRelations ->
-                        logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to option ${OptionConstants.KEY_SHOW_PROPERTY_RELATIONS}=false" }
+            when {
+                !options.showFunctionRelations ->
+                    logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to option ${OptionConstants.KEY_SHOW_PROPERTY_RELATIONS}=false" }
 
-                    methodOfClass.returnType.isPrimitive ->
-                        logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due kotlin primitives are ignored" }
+                methodOfClass.returnType.isPrimitive ->
+                    logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due kotlin primitives are ignored" }
 
-                    methodOfClass.returnType.fullQualifiedName.startsWith("java") ->
-                        logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored" }
+                methodOfClass.returnType.fullQualifiedName.startsWith("java") ->
+                    logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored" }
 
-                    base.fullQualifiedName == methodOfClass.returnType.fullQualifiedName ->
-                        logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
+                base.fullQualifiedName == methodOfClass.returnType.fullQualifiedName ->
+                    logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
 
-                    !methodOfClass.returnType.isGeneric && !methodOfClass.returnType.isCollection && methodOfClass.returnType !is ReservedType -> {
-                        if (!options.isValid(methodOfClass.originalKSFunctionDeclaration, logger) || !options.isValid(methodOfClass.returnType.originalKSType, logger)) {
-                            Unit // Reason is logged in the isValid invocation}
-                        } else {
-                            logger.i { "Add Relation ${FunctionRelation(base, methodOfClass)}" }
-                            graph.addRelation(FunctionRelation(base, methodOfClass))
-                        }
+                !methodOfClass.returnType.isGeneric && !methodOfClass.returnType.isCollection && methodOfClass.returnType !is ReservedType -> {
+                    if (!options.isValid(methodOfClass.originalKSFunctionDeclaration, logger) || !options.isValid(methodOfClass.returnType.originalKSType, logger)) {
+                        Unit // Reason is logged in the isValid invocation}
+                    } else {
+                        logger.i { "Add Relation ${FunctionRelation(base, methodOfClass)}" }
+                        graph.addRelation(FunctionRelation(base, methodOfClass))
                     }
+                }
 
-                    else -> {
-                        val types = methodOfClass.returnType.flatResolve(options = options, logger = logger).filter { options.isValid(it.first.originalKSType, logger) }
-                        types.forEach { (type, level) ->
-                            addFunctionTypeRelation(base, methodOfClass, type, level)
-                        }
+                else -> {
+                    val types = methodOfClass.returnType.flatResolve(options = options, logger = logger).filter { options.isValid(it.first.originalKSType, logger) }
+                    types.forEach { (type, level) ->
+                        addFunctionTypeRelation(base, methodOfClass, type, level)
                     }
                 }
             }
+        }
     }
 
     private fun addFunctionTypeRelation(base: KSClassDeclaration, methodOfClass: Method, type: Type, level: Int) {

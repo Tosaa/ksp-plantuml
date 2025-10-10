@@ -4,7 +4,7 @@ title Example for TypeAlias
 
     'advanced.Carton
     class "Carton" as advanced_Carton << (A, #FF7700) alias>>{
-        TypeAlias of basic.Box
+        TypeAlias of Box
 		==
 
 		+ <ext> matchesID(Int) : Boolean

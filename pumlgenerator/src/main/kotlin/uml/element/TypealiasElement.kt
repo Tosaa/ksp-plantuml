@@ -8,7 +8,6 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSTypeAlias
 import isValid
 import uml.ElementKind
-import uml.className
 import uml.fullQualifiedName
 import uml.shortName
 

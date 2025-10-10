@@ -18,7 +18,7 @@ class TypealiasGenerationTest : CompilationTest() {
         typealias Book = List<Pair<Int,Page>>
     """.trimIndent()
 
-val typeAliasOfCollectionCode = """
+    val typeAliasOfCollectionCode = """
         package extensions
         typealias Book = List<String>
     """.trimIndent()

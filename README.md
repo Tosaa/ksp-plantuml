@@ -226,6 +226,7 @@ Key | Default                                              | Description
 `puml.prefix` | ``                                                   | Add a custom prefix to the plantuml diagram
 `puml.postfix` | ``                                                   | Add a custom postfix to the plantuml diagram
 `puml.title` | ``                                                   | Add a custom title to the plantuml diagram
+`puml.outputFileName` | ``                                                   | Set custom file within /build/generated/ksp/main/resources
 
 ---
 

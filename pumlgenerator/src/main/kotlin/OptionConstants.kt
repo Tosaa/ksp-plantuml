@@ -43,7 +43,10 @@ enum class OptionConstants(val identifier: String) {
     // Add custom puml content
     KEY_PREFIX("puml.prefix"),
     KEY_POSTFIX("puml.postfix"),
-    KEY_TITLE("puml.title");
+    KEY_TITLE("puml.title"),
+
+    // Save to file within generated resources folder
+    KEY_OUTPUT_FILE_PATH("puml.outputFileName");
 
     companion object {
         val MAX_RELATIONS = 6

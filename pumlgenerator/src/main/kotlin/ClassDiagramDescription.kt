@@ -15,27 +15,27 @@ import graph.PropertyRelation
 import graph.Relation
 import graph.RelationGraph
 import graph.RelationKind
-import uml.DiagramElement
 import uml.element.ClassElement
+import uml.element.DiagramElement
+import uml.element.DiagramElementBuilder
 import uml.element.EnumElement
+import uml.element.Field
 import uml.element.InterfaceElement
+import uml.element.Method
 import uml.element.ObjectElement
 import uml.element.ReservedType
+import uml.element.Type
 import uml.element.TypealiasElement
 import uml.element.flatResolve
 import uml.fullQualifiedName
 
 class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = null) {
-    val componentBuilder = mutableListOf<DiagramElement.Builder<*>>()
 
-    val renderedComponents: List<KSClassDeclaration>
-        get() = componentBuilder.map { it.clazz }
+    val graph = RelationGraph()
 
-    val relationGraph = RelationGraph()
+    fun findBuilderFor(declaration: KSClassDeclaration): DiagramElementBuilder? = graph.findBuilderForVertex(declaration.fullQualifiedName)
 
-    fun findBuilderFor(declaration: KSClassDeclaration): DiagramElement.Builder<*>? = componentBuilder.find { it.fullQualifiedName == declaration.fullQualifiedName }
-
-    fun findBuilderFor(declaration: KSTypeAlias): DiagramElement.Builder<*>? = componentBuilder.find { it.fullQualifiedName == declaration.fullQualifiedName }
+    fun findBuilderFor(declaration: KSTypeAlias): DiagramElementBuilder? = graph.findBuilderForVertex(declaration.fullQualifiedName)
 
     private fun addHierarchy(child: KSClassDeclaration, parent: KSClassDeclaration) {
         when {
@@ -53,171 +53,158 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
             else ->
                 when {
-                    parent.fullQualifiedName !in renderedComponents.map { it.fullQualifiedName } ->
+                    !graph.hasVertex(parent.fullQualifiedName.replace(".", "_")) ->
                         logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due Superclass is a not rendered class" }
 
-                    child.fullQualifiedName !in renderedComponents.map { it.fullQualifiedName } ->
+                    !graph.hasVertex(child.fullQualifiedName.replace(".", "_")) ->
                         logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due derived class is a not rendered class" }
 
                     else -> {
-                        relationGraph.addRelation(InheritanceRelation(child, parent))
+                        graph.addRelation(InheritanceRelation(child, parent))
                     }
                 }
         }
     }
 
-    private fun addPropertyRelations(builder: DiagramElement.Builder<DiagramElement>) = addPropertyRelations(base = builder.clazz, builder = builder)
+    private fun addPropertyRelations(builder: DiagramElementBuilder) = addPropertyRelations(base = builder.clazz, builder = builder)
 
-    private fun addPropertyRelations(base: KSClassDeclaration, builder: DiagramElement.Builder<*>) {
-        when {
-            !options.isValid(base, logger) ->
-                logger.v { "Property relations of ${base.fullQualifiedName} are excluded due to invalid KSClassDeclaration" }
+    private fun addPropertyRelations(base: KSClassDeclaration, builder: DiagramElementBuilder) {
+        if (!options.isValid(base, logger)) {
+            logger.v { "Property relations of ${base.fullQualifiedName} are excluded due to invalid KSClassDeclaration" }
+            return
+        }
 
-            else -> {
-                val attributes = when (builder) {
-                    is ClassElement.Builder -> builder.build()?.attributes
-                    is InterfaceElement.Builder -> builder.build()?.attributes
-                    is ObjectElement.Builder -> builder.build()?.attributes
-                    is EnumElement.Builder -> builder.build()?.attributes
-                    is TypealiasElement.Builder -> builder.build()?.attributes
-                    else -> emptyList()
-                } ?: emptyList()
-                attributes
-                    .forEach { fieldOfClass ->
-                        when {
-                            !options.showPropertyRelations ->
-                                logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to option ${OptionConstants.KEY_SHOW_PROPERTY_RELATIONS}=false" }
+        val attributes = builder.build()?.attributes ?: return
+        attributes
+            .forEach { fieldOfClass ->
+                when {
+                    !options.showPropertyRelations ->
+                        logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to option ${OptionConstants.KEY_SHOW_PROPERTY_RELATIONS}=false" }
 
-                            fieldOfClass.isPrimitive ->
-                                logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due kotlin primitive classes are ignored" }
+                    fieldOfClass.isPrimitive ->
+                        logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due kotlin primitive classes are ignored" }
 
-                            fieldOfClass.attributeType.fullQualifiedName.startsWith("java") ->
-                                logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored (${fieldOfClass.attributeType.fullQualifiedName})" }
+                    fieldOfClass.isJava ->
+                        logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored (${fieldOfClass.attributeType.fullQualifiedName})" }
 
-                            base.fullQualifiedName == fieldOfClass.attributeType.fullQualifiedName ->
-                                logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
+                    base.fullQualifiedName == fieldOfClass.attributeType.fullQualifiedName ->
+                        logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
 
-                            !fieldOfClass.attributeType.isGeneric && !fieldOfClass.attributeType.isCollection && fieldOfClass.attributeType !is ReservedType -> {
-                                if (!options.isValid(fieldOfClass.originalKSProperty, logger) || !options.isValid(fieldOfClass.attributeType.originalKSType, logger)) {
-                                    Unit // Reason is logged in the isValid invocation
-                                } else {
-                                    logger.i { "Add Relation ${PropertyRelation(base, fieldOfClass)}" }
-                                    relationGraph.addRelation(PropertyRelation(base, fieldOfClass))
-                                }
-                            }
-
-                            else -> {
-                                val types = fieldOfClass.attributeType.flatResolve(options = options, logger = logger).filter { options.isValid(it.first.originalKSType, logger) }
-
-                                if (types.isNotEmpty()) {
-                                    types.forEach { (type, level) ->
-                                        when {
-                                            level == 0 ->
-                                                PropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
-
-                                            level > 0 && options.showIndirectRelations ->
-                                                IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
-
-                                            else -> {
-                                                logger.v { "Ignore Relation of $fieldOfClass due to $KEY_SHOW_INDIRECT_RELATIONS=false" }
-                                                null
-                                            }
-                                        }?.let { relation ->
-                                            if (base.fullQualifiedName == type.fullQualifiedName) {
-                                                logger.v { "Ignore Relation to itself: $relation" }
-                                            } else {
-                                                logger.i { "Add Relation $relation" }
-                                                relationGraph.addRelation(relation)
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    logger.w { "$fieldOfClass resolved no types" }
-                                }
-                            }
+                    else -> {
+                        val types = fieldOfClass.attributeType.flatResolve(options = options, logger = logger).filter { options.isValid(it.first.originalKSType, logger) }
+                        types.forEach { (type, level) ->
+                            addPropertyTypeRelation(base, fieldOfClass, type, level)
                         }
                     }
+                }
+            }
+    }
+
+    private fun addPropertyTypeRelation(base: KSClassDeclaration, fieldOfClass: Field, type: Type, level: Int) {
+        when {
+            !options.isValid(type.originalKSType, logger) ->
+                null
+
+            !graph.hasVertex(type.fullQualifiedName) -> {
+                logger.v { "Ignore Relation of $fieldOfClass to $type, since class of type $type is not in the diagram" }
+                null
+            }
+
+            base.fullQualifiedName == type.fullQualifiedName -> {
+                logger.v { "Ignore Relation of $fieldOfClass to $type, since to references to itself are ignored" }
+                null
+            }
+
+            level == 0 ->
+                PropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
+
+            level > 0 && options.showIndirectRelations ->
+                IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
+
+            else -> {
+                logger.v { "Ignore Relation of $fieldOfClass due to $KEY_SHOW_INDIRECT_RELATIONS=false" }
+                null
+            }
+        }?.let { relation ->
+            logger.i { "Add Relation $relation" }
+            graph.addRelation(relation)
+        }
+    }
+
+    private fun addFunctionRelations(builder: DiagramElementBuilder) = addFunctionRelations(base = builder.clazz, builder = builder)
+
+    private fun addFunctionRelations(base: KSClassDeclaration, builder: DiagramElementBuilder) {
+        if (!options.isValid(base, logger)) {
+            logger.v { "Function relations of ${base.fullQualifiedName} are excluded due to invalid KSClassDeclaration" }
+            return
+        }
+
+        val functions = builder.build()?.functions ?: return
+        functions.forEach { methodOfClass ->
+            when {
+                !options.showFunctionRelations ->
+                    logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to option ${OptionConstants.KEY_SHOW_PROPERTY_RELATIONS}=false" }
+
+                methodOfClass.returnType.isPrimitive ->
+                    logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due kotlin primitives are ignored" }
+
+                methodOfClass.returnType.fullQualifiedName.startsWith("java") ->
+                    logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored" }
+
+                base.fullQualifiedName == methodOfClass.returnType.fullQualifiedName ->
+                    logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
+
+                !methodOfClass.returnType.isGeneric && !methodOfClass.returnType.isCollection && methodOfClass.returnType !is ReservedType -> {
+                    if (!options.isValid(methodOfClass.originalKSFunctionDeclaration, logger) || !options.isValid(methodOfClass.returnType.originalKSType, logger)) {
+                        Unit // Reason is logged in the isValid invocation}
+                    } else {
+                        logger.i { "Add Relation ${FunctionRelation(base, methodOfClass)}" }
+                        graph.addRelation(FunctionRelation(base, methodOfClass))
+                    }
+                }
+
+                else -> {
+                    val types = methodOfClass.returnType.flatResolve(options = options, logger = logger).filter { options.isValid(it.first.originalKSType, logger) }
+                    types.forEach { (type, level) ->
+                        addFunctionTypeRelation(base, methodOfClass, type, level)
+                    }
+                }
             }
         }
     }
 
-    private fun addFunctionRelations(builder: DiagramElement.Builder<DiagramElement>) = addFunctionRelations(base = builder.clazz, builder = builder)
-
-    private fun addFunctionRelations(base: KSClassDeclaration, builder: DiagramElement.Builder<*>) {
+    private fun addFunctionTypeRelation(base: KSClassDeclaration, methodOfClass: Method, type: Type, level: Int) {
         when {
-            !options.isValid(base, logger) ->
-                logger.v { "Function relations of ${base.fullQualifiedName} are excluded due to invalid KSClassDeclaration" }
+            !options.isValid(type.originalKSType, logger) ->
+                null
 
+            !graph.hasVertex(type.fullQualifiedName) -> {
+                logger.v { "Ignore Relation of $methodOfClass to $type, since class of type $type is not in the diagram" }
+                null
+            }
+
+            base.fullQualifiedName == type.fullQualifiedName -> {
+                logger.v { "Ignore Relation of $methodOfClass to $type, since to references to itself are ignored" }
+                null
+            }
+
+            level == 0 ->
+                FunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
+
+            level > 0 && options.showIndirectRelations ->
+                IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
 
             else -> {
-                val functions = when (builder) {
-                    is ClassElement.Builder -> builder.build()?.functions
-                    is InterfaceElement.Builder -> builder.build()?.functions
-                    is ObjectElement.Builder -> builder.build()?.functions
-                    is EnumElement.Builder -> builder.build()?.functions
-                    is TypealiasElement.Builder -> builder.build()?.functions
-                    else -> emptyList()
-                } ?: emptyList()
-                functions
-                    .forEach { methodOfClass ->
-                        when {
-                            !options.showFunctionRelations ->
-                                logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to option ${OptionConstants.KEY_SHOW_PROPERTY_RELATIONS}=false" }
-
-                            methodOfClass.returnType.isPrimitive ->
-                                logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due kotlin primitives are ignored" }
-
-                            methodOfClass.returnType.fullQualifiedName.startsWith("java") ->
-                                logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored" }
-
-                            base.fullQualifiedName == methodOfClass.returnType.fullQualifiedName ->
-                                logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
-
-                            !methodOfClass.returnType.isGeneric && !methodOfClass.returnType.isCollection && methodOfClass.returnType !is ReservedType -> {
-                                if (!options.isValid(methodOfClass.originalKSFunctionDeclaration, logger) || !options.isValid(methodOfClass.returnType.originalKSType, logger)) {
-                                    Unit // Reason is logged in the isValid invocation}
-                                } else {
-                                    logger.i { "Add Relation ${FunctionRelation(base, methodOfClass)}" }
-                                    relationGraph.addRelation(FunctionRelation(base, methodOfClass))
-                                }
-                            }
-
-                            else -> {
-                                val types = methodOfClass.returnType.flatResolve(options = options, logger = logger).filter { options.isValid(it.first.originalKSType, logger) }
-
-                                if (types.isNotEmpty()) {
-                                    types.forEach { (type, level) ->
-                                        when {
-                                            level == 0 ->
-                                                FunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
-
-                                            level > 0 && options.showIndirectRelations ->
-                                                IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
-
-                                            else -> {
-                                                logger.v { "Ignore Relation of $methodOfClass due to $KEY_SHOW_INDIRECT_RELATIONS=false" }
-                                                null
-                                            }
-                                        }?.let { relation ->
-                                            if (base.fullQualifiedName == type.fullQualifiedName) {
-                                                logger.v { "Ignore Relation to itself: $relation" }
-                                            } else {
-                                                logger.i { "Add Relation $relation" }
-                                                relationGraph.addRelation(relation)
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    logger.w { "$methodOfClass resolved no return types" }
-                                }
-                            }
-                        }
-                    }
+                logger.v { "Ignore Relation of $methodOfClass due to $KEY_SHOW_INDIRECT_RELATIONS=false" }
+                null
             }
+        }?.let { relation ->
+            logger.i { "Add Relation $relation" }
+            graph.addRelation(relation)
         }
     }
 
-    private fun computeUMLDiagramsWithPackages() = componentBuilder.groupBy {
+    private fun computeUMLDiagramsWithPackages() = graph.elements.groupBy {
         (it as? InterfaceElement.Builder)?.clazz?.packageName?.asString()
             ?: (it as? ClassElement.Builder)?.clazz?.packageName?.asString()
             ?: (it as? EnumElement.Builder)?.clazz?.packageName?.asString()
@@ -295,25 +282,25 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         when (classDeclaration.classKind) {
             ClassKind.CLASS -> {
                 val builder = ClassElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
-                componentBuilder.add(builder)
+                graph.addElementBuilder(builder)
                 logger.v { "${builder.fullQualifiedName} added" }
             }
 
             ClassKind.INTERFACE -> {
                 val builder = InterfaceElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
-                componentBuilder.add(builder)
+                graph.addElementBuilder(builder)
                 logger.v { "${builder.fullQualifiedName} added" }
             }
 
             ClassKind.ENUM_CLASS -> {
                 val builder = EnumElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
-                componentBuilder.add(builder)
+                graph.addElementBuilder(builder)
                 logger.v { "${builder.fullQualifiedName} added" }
             }
 
             ClassKind.OBJECT -> {
                 val builder = ObjectElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
-                componentBuilder.add(builder)
+                graph.addElementBuilder(builder)
                 logger.v { "${builder.fullQualifiedName} added" }
             }
 
@@ -326,10 +313,12 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
     }
 
     private fun addInnerClasses(classDeclaration: KSClassDeclaration) {
-        val innerClasses = classDeclaration.declarations.mapNotNull { it as? KSClassDeclaration }.filter { !it.isCompanionObject }
-        innerClasses.forEach {
-            addClass(it, false)
-        }
+        classDeclaration.declarations
+            .filterIsInstance<KSClassDeclaration>()
+            .filter { !it.isCompanionObject }
+            .forEach {
+                addClass(it, false)
+            }
     }
 
     /**
@@ -447,12 +436,12 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         return if (options.showPackages) {
             computeUMLDiagramsWithPackages()
         } else {
-            componentBuilder.mapNotNull { it.build() }.joinToString("\n") { it.render() }
+            graph.elements.mapNotNull { it.build() }.joinToString("\n") { it.render() }
         }
     }
 
     fun computeAllRelations(): String {
-        componentBuilder.forEach { builder ->
+        graph.elements.forEach { builder ->
             builder.clazz.superTypes
                 .mapNotNull { it.resolve().declaration as? KSClassDeclaration }
                 .filterNot { it.packageName.asString().startsWith("kotlin") }
@@ -461,15 +450,19 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                     addHierarchy(builder.clazz, parent)
                 }
         }
-        componentBuilder
-            .filterIsInstance<DiagramElement.Builder<DiagramElement>>()
+
+        graph.elements
+            .filterIsInstance<DiagramElementBuilder>()
             .forEach { builder ->
                 addFunctionRelations(builder)
                 addPropertyRelations(builder)
             }
         val blacklistedVertices = mutableListOf<String>()
         val allEdges = mutableMapOf<Pair<String, String>, Relation>()
-        blacklistedVertices.addAll(relationGraph.vertices.filter { relationGraph.inDegreeOf(it) > options.maxRelations || relationGraph.outDegreeOf(it) > options.maxRelations })
+        blacklistedVertices.addAll(graph.vertices.filter { graph.inDegreeOf(it) > options.maxRelations || graph.outDegreeOf(it) > options.maxRelations })
+        if (graph.computeInvalidRelations().isNotEmpty()) {
+            logger.e { "The following relations were added to the graph but are invalid: ${graph.computeInvalidRelations().joinToString()}" }
+        }
         return computationVariant2(allEdges, blacklistedVertices)
     }
 
@@ -493,12 +486,12 @@ end note
                 )
             }
             // Start with vertices with most edges & End with vertices with the least edges
-            relationGraph.vertices.sortedBy { relationGraph.inDegreeOf(it) + relationGraph.outDegreeOf(it) }.reversed().forEach {
+            graph.vertices.sortedBy { graph.inDegreeOf(it) + graph.outDegreeOf(it) }.reversed().forEach {
                 // Start with edges to vertices with most out edges & End with vertices with least out edges
-                val outRelations = relationGraph.outEdgesOf(it).sortedWith(
+                val outRelations = graph.outEdgesOf(it).sortedWith(
                     compareBy(
                         { edge -> edge.relationKind },
-                        { edge -> relationGraph.outDegreeOf(edge.toAlias) * (-1) })
+                        { edge -> graph.outDegreeOf(edge.toAlias) * (-1) })
                 )
                 outRelations.forEachIndexed { index, relation ->
                     // Avoid adding edge multiple times
@@ -546,11 +539,11 @@ end note
                 )
             }
             // Start with vertices with most edges & End with vertices with the least edges
-            relationGraph.vertices.sortedBy { relationGraph.inDegreeOf(it) + relationGraph.outDegreeOf(it) }.forEach {
-                relationGraph.outEdgesOf(it).sortedWith(
+            graph.vertices.sortedBy { graph.inDegreeOf(it) + graph.outDegreeOf(it) }.reversed().forEach {
+                graph.outEdgesOf(it).sortedWith(
                     compareBy(
                         { edge -> edge.relationKind },
-                        { edge -> relationGraph.outDegreeOf(edge.toAlias) * (-1) })
+                        { edge -> graph.outDegreeOf(edge.toAlias) * (-1) })
                 ).forEachIndexed { index, relation ->
                     when {
                         allEdges.containsKey(relation.fromAlias to relation.toAlias) ->
@@ -567,7 +560,7 @@ end note
 
                         else -> {
                             allEdges[relation.fromAlias to relation.toAlias] = relation
-                            if (relationGraph.hasEdge(relation.toAlias, relation.fromAlias) && relationGraph.hasEdge(relation.fromAlias, relation.toAlias)) {
+                            if (graph.hasEdge(relation.toAlias, relation.fromAlias) && graph.hasEdge(relation.fromAlias, relation.toAlias)) {
                                 appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(0)} ${relation.toAlias}")
                             } else {
                                 appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}")
@@ -587,7 +580,7 @@ end note
         }
 
         val builder = TypealiasElement.Builder(typeAlias = typeAlias, clazz = typeAlias.findActualType(), isShell = false, options = options, logger = logger)
-        componentBuilder.add(builder)
+        graph.addElementBuilder(builder)
         logger.v { "${builder.fullQualifiedName} added" }
     }
 }

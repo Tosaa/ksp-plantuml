@@ -5,7 +5,6 @@ import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import isValid
-import uml.DiagramElement
 import uml.ElementKind
 import uml.className
 import uml.fullQualifiedName
@@ -19,7 +18,7 @@ class EnumElement(
     functions: List<Method>,
     val members: List<String>,
     isShell: Boolean
-) : AbstractElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
+) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
 
     override val elementKind: ElementKind = ElementKind.ENUM
 
@@ -45,7 +44,7 @@ $functionsString
 """
     }
 
-    class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : AbstractElementBuilder(clazz, isShell, options, logger) {
+    class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
 
         override fun build(): EnumElement? {
             return if (options.isValid(clazz, logger)) {

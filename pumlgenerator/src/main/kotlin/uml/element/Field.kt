@@ -5,6 +5,7 @@ import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.Modifier
+import uml.pumlVisibility
 
 
 data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibility: Boolean = true, val markExtension: Boolean) {
@@ -14,6 +15,8 @@ data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibili
     val isCollection = attributeType.isCollection
 
     val isPrimitive = attributeType.isPrimitive
+
+    val isJava = attributeType.fullQualifiedName.startsWith("java")
 
     val attributeName: String
         get() = originalKSProperty.simpleName.asString()

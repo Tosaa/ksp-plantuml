@@ -30,9 +30,9 @@ title Example for SealedClasses
     }
 
 
-ui_UIState <|-- ui_UIState_Loading
-ui_UIState <|-- ui_UIState_Success
 ui_UIState <|-- ui_UIState_Error
+ui_UIState <|-- ui_UIState_Success
+ui_UIState <|-- ui_UIState_Loading
 
 note as note_of_code
 Kotlin Code:

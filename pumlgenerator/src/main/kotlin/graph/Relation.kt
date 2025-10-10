@@ -7,12 +7,12 @@ import uml.element.Method
 import uml.element.Type
 import uml.fullQualifiedName
 
-abstract class Relation {
+
+sealed class Relation(val relationKind: RelationKind) {
     abstract val fromAlias: String
     open val fromAliasDetail: String = "" // Mostly unused but interesting for debugging 
     abstract val toAlias: String
     open val toAliasDetail: String = "" // Mostly unused but interesting for debugging 
-    abstract val relationKind: RelationKind
 
     override fun toString(): String {
         return "Relation(fromAlias=$fromAlias, fromAliasDetail=$fromAliasDetail, toAlias=$toAlias, toAliasDetail=$toAliasDetail, relationKind=$relationKind)"
@@ -22,18 +22,17 @@ abstract class Relation {
 /**
  * Relation to indicate that a child inherits a parent class.
  */
-class InheritanceRelation(val child: KSClassDeclaration, val parent: KSClassDeclaration) : Relation() {
+class InheritanceRelation(val child: KSClassDeclaration, val parent: KSClassDeclaration) : Relation(RelationKind.Inheritance) {
     override val fromAlias: String
         get() = child.fullQualifiedName.replace(".", "_").trim('_')
     override val toAlias: String
         get() = parent.fullQualifiedName.replace(".", "_").trim('_')
-    override val relationKind: RelationKind = RelationKind.Inheritance
 }
 
 /**
  * Relation to indicate that a class has a variable of a type of another class.
  */
-class PropertyRelation(val classDeclaration: KSClassDeclaration, val classAttribute: Field, val fieldType: Type = classAttribute.attributeType, val logger: KSPLogger? = null) : Relation() {
+class PropertyRelation(val classDeclaration: KSClassDeclaration, val classAttribute: Field, val fieldType: Type = classAttribute.attributeType, val logger: KSPLogger? = null) : Relation(RelationKind.Property) {
     val classNameAlias = classDeclaration.fullQualifiedName.replace(".", "_").trim('_')
     val propertyName = classAttribute.attributeName
 
@@ -46,9 +45,6 @@ class PropertyRelation(val classDeclaration: KSClassDeclaration, val classAttrib
 
     override val toAlias: String
         get() = fieldType.fullQualifiedName.replace(".", "_").trim('_')
-
-    override val relationKind: RelationKind
-        get() = RelationKind.Property
 }
 
 /**
@@ -56,7 +52,7 @@ class PropertyRelation(val classDeclaration: KSClassDeclaration, val classAttrib
  * Its relation is indirect because the class holds a variable which holds the type of the other class.
  * E.g. Result<T> or collections like List<T>
  */
-class IndirectPropertyRelation(val classDeclaration: KSClassDeclaration, val classAttribute: Field, val fieldType: Type = classAttribute.attributeType, val logger: KSPLogger? = null) : Relation() {
+class IndirectPropertyRelation(val classDeclaration: KSClassDeclaration, val classAttribute: Field, val fieldType: Type = classAttribute.attributeType, val logger: KSPLogger? = null) : Relation(RelationKind.IndirectProperty) {
     val classNameAlias = classDeclaration.fullQualifiedName.replace(".", "_").trim('_')
     val propertyName = classAttribute.attributeName
 
@@ -68,15 +64,12 @@ class IndirectPropertyRelation(val classDeclaration: KSClassDeclaration, val cla
 
     override val toAlias: String
         get() = fieldType.fullQualifiedName.replace(".", "_").trim('_')
-
-    override val relationKind: RelationKind
-        get() = RelationKind.IndirectProperty
 }
 
 /**
  * Relation to indicate that a class has a function that returns indirectly a type of another class.
  */
-class FunctionRelation(val classDeclaration: KSClassDeclaration, val classMethod: Method, val returnType: Type = classMethod.returnType, val logger: KSPLogger? = null) : Relation() {
+class FunctionRelation(val classDeclaration: KSClassDeclaration, val classMethod: Method, val returnType: Type = classMethod.returnType, val logger: KSPLogger? = null) : Relation(RelationKind.Function) {
     val classNameAlias = classDeclaration.fullQualifiedName.replace(".", "_").trim('_')
     val propertyName = classMethod.functionName
 
@@ -86,8 +79,6 @@ class FunctionRelation(val classDeclaration: KSClassDeclaration, val classMethod
         get() = propertyName
     override val toAlias: String
         get() = returnType.fullQualifiedName.replace(".", "_").trim('_')
-    override val relationKind: RelationKind
-        get() = RelationKind.Function
 }
 
 
@@ -96,7 +87,7 @@ class FunctionRelation(val classDeclaration: KSClassDeclaration, val classMethod
  * Its relation is indirect because the returned class holds a variable, which is of type of the other class.
  * E.g. Result<T> or collections like List<T>
  */
-class IndirectFunctionRelation(val classDeclaration: KSClassDeclaration, val classMethod: Method, val returnType: Type = classMethod.returnType, val logger: KSPLogger? = null) : Relation() {
+class IndirectFunctionRelation(val classDeclaration: KSClassDeclaration, val classMethod: Method, val returnType: Type = classMethod.returnType, val logger: KSPLogger? = null) : Relation(RelationKind.IndirectFunction) {
     val classNameAlias = classDeclaration.fullQualifiedName.replace(".", "_").trim('_')
     val propertyName = classMethod.functionName
 
@@ -106,6 +97,4 @@ class IndirectFunctionRelation(val classDeclaration: KSClassDeclaration, val cla
         get() = propertyName
     override val toAlias: String
         get() = returnType.fullQualifiedName.replace(".", "_").trim('_')
-    override val relationKind: RelationKind
-        get() = RelationKind.IndirectFunction
 }

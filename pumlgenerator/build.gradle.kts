@@ -1,9 +1,6 @@
 import com.vanniktech.maven.publish.SonatypeHost
 import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
-import java.io.IOException
-import java.io.StringReader
-import java.lang.StringBuilder
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.zip.Deflater
@@ -28,7 +25,9 @@ repositories {
 
 ksp {
     arg("puml.allowEmptyPackage", "true")
-    arg("puml.showPropertyRelations", "false")
+    arg("puml.includedPackages", "graph,uml")
+    arg("puml.excludedClassNames", "Options,OptionConstants")
+    arg("puml.showPropertyRelations", "true")
     arg("puml.showFunctionRelations", "false")
 }
 
@@ -47,9 +46,29 @@ tasks.test {
 tasks {
     register("docsToPNG") {
         val directory = file(layout.projectDirectory.file("../doc/plantuml/"))
-            directory.listFiles()?.forEach {
-                createImageByServer(it)
+        directory.listFiles()?.forEach {
+            val newPNGFile = file(it.parentFile.path + "/" + it.nameWithoutExtension + ".png").also {
+                it.createNewFile()
             }
+            createImageByServer(it, newPNGFile)
+        }
+    }
+
+    register("projectDiagram") {
+        dependsOn("kspKotlin")
+
+        val generatedDiagram = layout.buildDirectory.file("generated/ksp/main/resources/generated/puml").get().asFile.listFiles { pathname: File ->
+            pathname.name.endsWith(".puml")
+        }!!.firstOrNull()
+        println("Diagram file: $generatedDiagram")
+        generatedDiagram?.let {
+            // val newPNGFile = file(generatedDiagram.parentFile.path + "/" + generatedDiagram.nameWithoutExtension + ".png")
+            val newPNGFile = layout.projectDirectory.file("../doc/contributing/overview.png").asFile.also {
+                it.createNewFile()
+            }
+            println(newPNGFile)
+            createImageByServer(it, newPNGFile)
+        }
     }
 }
 
@@ -146,22 +165,19 @@ fun deflateAndEncode(text: String): String {
     return plantumlBase64Encoded
 }
 
-fun createImageByServer(it: File) {
-    if (!it.name.endsWith(".puml")) {
-        return
+fun createImageByServer(pumlDiagram: File, targetFile: File): Result<Unit> {
+    if (!pumlDiagram.name.endsWith(".puml")) {
+        return Result.failure(IllegalArgumentException("File $pumlDiagram must end with '.puml'"))
     }
-    println("File: " + it.name)
-    val plantumlBase64Encoded = deflateAndEncode(it.readText())
+    println("Diagram File: " + pumlDiagram.name)
+    val plantumlBase64Encoded = deflateAndEncode(pumlDiagram.readText())
     println("\tRequest image generation with ${plantumlBase64Encoded.length} payload")
     val url = URL("https://www.plantuml.com/plantuml/png/$plantumlBase64Encoded")
     val connection = url.openConnection() as HttpURLConnection
     connection.connect()
+    val filePath = targetFile.path
 
-    val newPNGFile = File(it.parentFile, it.nameWithoutExtension + ".png")
-    newPNGFile.createNewFile()
-    val filePath = newPNGFile.path
-
-    if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+    return if (connection.responseCode == HttpURLConnection.HTTP_OK) {
         val inputStream = connection.inputStream
         val fileOutputStream = FileOutputStream(filePath)
 
@@ -175,9 +191,11 @@ fun createImageByServer(it: File) {
         fileOutputStream.close()
         inputStream.close()
         println("\tPNG saved to $filePath")
+        Result.success(Unit)
     } else {
-        println("\tFailed to download image for ${it.name}. HTTP response code: ${connection.responseCode}")
+        println("\tFailed to download image for ${pumlDiagram.name}. HTTP response code: ${connection.responseCode}")
         println("\t${connection.responseMessage}")
         println("\tURL: $url")
+        Result.failure(RuntimeException("Server responded with error: ${connection.responseCode}, ${connection.responseMessage}"))
     }
 }

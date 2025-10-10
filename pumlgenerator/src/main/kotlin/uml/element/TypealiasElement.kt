@@ -29,7 +29,7 @@ class TypealiasElement(
     attributes: List<Field>,
     functions: List<Method>,
     isShell: Boolean
-) : AbstractElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
+) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
 
     override val elementKind: ElementKind = ElementKind.ALIAS
 
@@ -51,7 +51,7 @@ $functionsString
 """
     }
 
-    class Builder(val typeAlias: KSTypeAlias, clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : AbstractElementBuilder(clazz, isShell, options, logger) {
+    class Builder(val typeAlias: KSTypeAlias, clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
 
         override var isShell: Boolean
             get() = false

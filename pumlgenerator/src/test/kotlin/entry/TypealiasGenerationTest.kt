@@ -12,6 +12,33 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class TypealiasGenerationTest : CompilationTest() {
+    val advancedTypeAliasOfCollectionCode = """
+        package extensions
+        data class Page(val text:String)
+        typealias Book = List<Pair<Int,Page>>
+    """.trimIndent()
+
+val typeAliasOfCollectionCode = """
+        package extensions
+        typealias Book = List<String>
+    """.trimIndent()
+
+    val typeAliasOfPrimitiveCode = """
+        package extensions
+        typealias Page = String
+    """.trimIndent()
+
+    val typeAliasOfPairOfPrimitivesCode = """
+        package extensions
+        typealias Item = Pair<Int,String>
+    """.trimIndent()
+
+    val typeAliasOfPairOfClassesCode = """
+        package extensions
+        data class Page(val text:String)
+        typealias Item = Pair<Int,Page>
+    """.trimIndent()
+
     val bigBoxExtentionCode = """
         package extensions
         import basic.BigItem 
@@ -106,23 +133,6 @@ class TypealiasGenerationTest : CompilationTest() {
 
     @OptIn(ExperimentalCompilerApi::class)
     @Test
-    fun `TypeAlias references other package with class if its not in the same package`() {
-        val files = listOf(SourceFile.kotlin("BoxAlias.kt", typeAliasOfItemInPackageAdvanced), SourceFile.kotlin("Box.kt", boxCodeWithImportAdvancedBigItem))
-        val compilation = newCompilation(DEFAULT_OPTIONS, files)
-        val result = compilation.compile()
-        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
-        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
-        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
-        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
-        assertContains(generatedFile, "@startuml")
-        assertContains(generatedFile, "@enduml")
-        assertContains(generatedFile, "class \"BigItem\" as advanced_BigItem")
-        assertContains(generatedFile, "TypeAlias of basic.Item")
-    }
-
-
-    @OptIn(ExperimentalCompilerApi::class)
-    @Test
     fun `Typealias can reference any class`() {
         val code = """
             package com.test           
@@ -138,7 +148,82 @@ class TypealiasGenerationTest : CompilationTest() {
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "class \"Text\" as com_test_Text")
-        assertContains(generatedFile, "TypeAlias of kotlin.String")
+        assertContains(generatedFile, "TypeAlias of String")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Typealias can reference collections with generics as elements`() {
+        val files = listOf(SourceFile.kotlin("AliasCode.kt", advancedTypeAliasOfCollectionCode))
+        val compilation = newCompilation(DEFAULT_OPTIONS, files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "TypeAlias of List<Pair<Int,Page>>")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Typealias can reference collections with primitive types`() {
+        val files = listOf(SourceFile.kotlin("AliasCode.kt", typeAliasOfCollectionCode))
+        val compilation = newCompilation(DEFAULT_OPTIONS, files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "TypeAlias of List<String>")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Typealias can reference primitive types`() {
+        val files = listOf(SourceFile.kotlin("AliasCode.kt", typeAliasOfPrimitiveCode))
+        val compilation = newCompilation(DEFAULT_OPTIONS, files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "TypeAlias of String")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Typealias can reference Pairs of primitive types`() {
+        val files = listOf(SourceFile.kotlin("AliasCode.kt", typeAliasOfPairOfPrimitivesCode))
+        val compilation = newCompilation(DEFAULT_OPTIONS, files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "TypeAlias of Pair<Int,String>")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Typealias can reference Pairs of classes`() {
+        val files = listOf(SourceFile.kotlin("AliasCode.kt", typeAliasOfPairOfClassesCode))
+        val compilation = newCompilation(DEFAULT_OPTIONS, files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "TypeAlias of Pair<Int,Page>")
     }
 
 }

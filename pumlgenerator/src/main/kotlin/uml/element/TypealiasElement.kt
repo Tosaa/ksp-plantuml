@@ -53,6 +53,8 @@ $functionsString
 
     class Builder(val typeAlias: KSTypeAlias, clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
 
+        val type: Type = typeAlias.type.resolve().toType()
+
         override var isShell: Boolean
             get() = false
             set(value) {}
@@ -72,7 +74,7 @@ $functionsString
                     uniqueIdentifier = typeAlias.fullQualifiedName,
                     elementName = typeAlias.shortName,
                     elementAlias = typeAlias.fullQualifiedName.replace(".", "_").trim('_'),
-                    originalName = if (clazz.packageName == typeAlias.packageName) clazz.className else clazz.fullQualifiedName,
+                    originalName = type.typeName,
                     attributes = allProperties.map { it.toField(options) },
                     functions = allFunctions.map { it.toMethod(options) },
                     isShell = isShell

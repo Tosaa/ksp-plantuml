@@ -8,33 +8,11 @@ plugins {
     application
 
 }
-val firstExampleConfiguration = mutableMapOf<String, String>().apply {
-    put("puml.excludedPackages", "com.ignore,com.app.main")
-    put("puml.excludedPropertyNames", "")
-    put("puml.excludedFunctionNames", "<init>,finalize")
-    put("puml.showPublicClasses", "true")
-    put("puml.showPublicProperties", "true")
-    put("puml.showPublicFunctions", "true")
-    put("puml.showInternalClasses", "true")
-    put("puml.showInternalProperties", "true")
-    put("puml.showInternalFunctions", "true")
-    put("puml.showPrivateClasses", "true")
-    put("puml.showPrivateProperties", "true")
-    put("puml.showPrivateFunctions", "true")
-    put("puml.showInheritance", "true")
-    put("puml.showPropertyRelations", "true")
-    put("puml.showFunctionRelations", "false")
-    put("puml.showPackages", "false")
-    put("puml.allowEmptyPackage", "true")
-    put("puml.outputFileName", "example1.puml")
-}
 
 tasks {
     register("kspExample1") {
         ksp {
-            firstExampleConfiguration.forEach {
-                arg(it.key, it.value)
-            }
+            arg("puml.configFilePath", layout.projectDirectory.file("configs/firstExample.conf").asFile.path)
         }
         dependsOn(findByName("kspKotlin"))
     }
@@ -116,30 +94,11 @@ tasks {
 }
 
 
-val cityExampleConfiguration = mutableMapOf<String, String>().apply {
-    put("puml.includedPackages", "com.city")
-    put("puml.showPublicClasses", "true")
-    put("puml.showPublicProperties", "true")
-    put("puml.showPublicFunctions", "true")
-    put("puml.showInternalClasses", "true")
-    put("puml.showInternalProperties", "true")
-    put("puml.showInternalFunctions", "true")
-    put("puml.showPrivateClasses", "true")
-    put("puml.showPrivateProperties", "true")
-    put("puml.showPrivateFunctions", "true")
-    put("puml.showInheritance", "true")
-    put("puml.showPropertyRelations", "true")
-    put("puml.showFunctionRelations", "true")
-    put("puml.showPackages", "false")
-    put("puml.allowEmptyPackage", "true")
-}
-
 tasks {
     register("kspExampleCity") {
         ksp {
-            cityExampleConfiguration.forEach {
-                arg(it.key, it.value)
-            }
+            arg("puml.configFilePath", layout.projectDirectory.file("configs/cityExample.conf").asFile.path)
+            // arg("puml.configFilePath", layout.projectDirectory.file("../doc/publicAPI.conf").asFile.path)
         }
         dependsOn(findByName("kspKotlin"))
     }

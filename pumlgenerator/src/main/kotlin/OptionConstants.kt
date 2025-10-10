@@ -45,6 +45,9 @@ enum class OptionConstants(val identifier: String) {
     KEY_POSTFIX("puml.postfix"),
     KEY_TITLE("puml.title"),
 
+    // Specify puml configuration by file
+    KEY_CONFIG_FILE_PATH("puml.configFilePath"),
+
     // Save to file within generated resources folder
     KEY_OUTPUT_FILE_PATH("puml.outputFileName");
 

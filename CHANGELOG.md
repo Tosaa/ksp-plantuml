@@ -1,3 +1,7 @@
+## 0.0.7 - unreleased
+- Order of relations in generated `.puml` file will change, based on a refactoring
+
+
 ## 0.0.6 - 2025-09-27
 - Fixed Type resolving of generic types, even if first resolved type is not in 'includedPackages'
 - Added TypeAlias support

@@ -109,12 +109,44 @@ Use a tool like the [PlantUML CLI](https://plantuml.com/overview) or an online e
 
 ## 🛠️ Configuration
 
-You can customize the plugin's behavior passing a customized KSP configuration and setup a custom gradle task.
+You can customize the plugin's behavior by 
+passing a customized KSP configuration within the Kotlin-DSL 
+or writing a configuration file 
+and setup a custom gradle task.
 
-### Example Configuration
+### Example Configuration by configuration file
+1. Define all required options in a file
+
+MyConfig.conf
+```
+# comment
+; comment
+puml.allowEmptyPackage=true
+```
+
+2. Reference the file in a custom gradle task
 
 ```kotlin
-val customizedPlantumlConifguration = mutableMapOf<String, String>().apply {
+tasks {
+    register("generatePlantumlWithMySettings") {
+        ksp {
+            arg("puml.configFilePath", layout.projectDirectory.file("myConfig.conf").asFile.path)
+        }
+        dependsOn(findByName("kspKotlin"))
+    }
+}
+```
+
+The configuration file is based on the [INI file schema](https://en.wikipedia.org/wiki/INI_file).
+- Lines beginning with ; and # are interpreted as comments
+- key and value settings are separated with '='
+- Packages and Names can be separated with ','
+- Boolean settings can be set with 'true' and 'false'
+
+### Example Configuration within Kotlin-DSL
+
+```kotlin
+val customizedPlantumlConfiguration = mutableMapOf<String, String>().apply {
     // add all your settings here
     put("puml.allowEmptyPackage", "true")
 }
@@ -122,7 +154,7 @@ val customizedPlantumlConifguration = mutableMapOf<String, String>().apply {
 tasks {
     register("generatePlantumlWithMySettings") {
         ksp {
-            customizedPlantumlConifguration.forEach {
+            customizedPlantumlConfiguration.forEach {
                 arg(it.key, it.value)
             }
         }
@@ -135,8 +167,10 @@ tasks {
 
 ## 📚 Configuration Guide
 
-### Configruation Templates
+### Configuration Templates
 
+- [Default configuration](doc/default.conf) as .conf file _- is always a good way to start_
+- [Public API configuration](doc/publicAPI.conf) as .conf file _- probably the best suitable configuration when you want to visualize your library_
 
 <details>
 <summary>KSP configuration for public API</summary>
@@ -193,9 +227,9 @@ ksp {
 
 </details>
 
-### Configuration Options
+### List of Configuration Options
 
-The following options can be set using ksp.
+The following options can be set.
 
 Key | Default                                              | Description
 --|------------------------------------------------------|--
@@ -227,6 +261,7 @@ Key | Default                                              | Description
 `puml.postfix` | ``                                                   | Add a custom postfix to the plantuml diagram
 `puml.title` | ``                                                   | Add a custom title to the plantuml diagram
 `puml.outputFileName` | ``                                                   | Set custom file within /build/generated/ksp/main/resources
+`puml.configFilePath` | ``                                                   | Apply config file with all above described configurations
 
 ---
 

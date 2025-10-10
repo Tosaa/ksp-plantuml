@@ -1,14 +1,14 @@
 # Kotlin PlantUML Generator
 
-> A **Gradle plugin** that generates **PlantUML** code from **Kotlin source files** to help you create **accurate, up-to-date UML diagrams** for your project.
+> A **KSP-Processor** that generates **PlantUML** code from **Kotlin source files** to help you create **accurate, up-to-date UML diagrams** for your project.
 
 ---
 
 ## 📦 Overview
 
-This plugin is designed to automatically generate **PlantUML** code from your Kotlin codebase using the **Kotlin Symbol Processing API (KSP)**. The generated `.puml` files can be rendered using tools like `plantuml`, online editors, or IDE integrations.
+This Processor is designed to automatically generate **PlantUML** code from your Kotlin codebase using the **Kotlin Symbol Processing API (KSP)**. The generated `.puml` files can be rendered using tools like `plantuml`, online editors, or IDE integrations.
 
-The plugin is **open source**, **privacy-focused**, and **highly customizable**, allowing you to control what parts of your code are included in the diagrams.
+The project is **open source**, **privacy-focused**, and **highly customizable**, allowing you to control what parts of your code are included in the diagrams.
 
 ---
 
@@ -56,29 +56,11 @@ The generated file can be rendered by using the Intellij Plantuml Plugin or on [
 
 ---
 
-## 📦 Installation
-
-Add the plugin to your `build.gradle.kts`:
-
-```kotlin
-plugins {
-    id("com.google.devtools.ksp") version "2.1.21-2.0.1"
-}
-
-dependencies {
-    ksp("io.github.tosaa.puml.ksp:ksp-plantuml-generator:0.0.+")
-}
-
-```
-
----
-
 ## 🚀 Getting Started
 
-### 1. **Add the Plugin to Your Project**
+### 📦 1. Installation
 
-Add the plugin to your `build.gradle.kts` file:
-
+Add the KSP-Plugin and the Processor to your `build.gradle.kts`:
 
 ```kotlin
 plugins {
@@ -91,7 +73,7 @@ dependencies {
 
 ```
 
-### 2. **Run the Gradle Task**
+### ▶️ 2. **Run the Gradle Task**
 
 Run the following command to generate PlantUML code:
 
@@ -101,7 +83,7 @@ Run the following command to generate PlantUML code:
 
 > This will generate `.puml` files in the `<modulename>/build/resources/main/` directory by default.
 
-### 3. **Render the Diagrams**
+### 🎨 3. **Render the Diagrams**
 
 Use a tool like the [PlantUML CLI](https://plantuml.com/overview) or an online editor like [PlantUML Editor](https://www.plantuml.com/plantuml/uml) to render the `.puml` files.
 

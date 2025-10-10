@@ -1,5 +1,6 @@
 ## 0.0.7 - unreleased
 - Order of relations in generated `.puml` file will change, based on a refactoring
+- Added new option `puml.outputFileName`, to specify how the file should be named, that is generated in the folder of generated resources.
 
 
 ## 0.0.6 - 2025-09-27
@@ -7,7 +8,6 @@
 - Added TypeAlias support
 - If TypeAlias is declared in 'includedPackages', TypeAlias will be resolved
 - If Type that TypeAlias points to, is not in 'includedPackages', it will be resolved also. (TypeAlias of classes in the same package are not as intentional as TypeAlias of classes of other packages / libraries)
-- Added new option `puml.outputFileName`, to specify how the file should be named, that is generated in the folder of generated resources.
 
 
 ## 0.0.5 - 2025-09-20

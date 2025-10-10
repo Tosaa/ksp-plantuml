@@ -16,6 +16,8 @@ data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibili
 
     val isPrimitive = attributeType.isPrimitive
 
+    val isJava = attributeType.fullQualifiedName.startsWith("java")
+
     val attributeName: String
         get() = originalKSProperty.simpleName.asString()
 

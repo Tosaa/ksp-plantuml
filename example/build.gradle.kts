@@ -26,6 +26,7 @@ val firstExampleConfiguration = mutableMapOf<String, String>().apply {
     put("puml.showFunctionRelations", "false")
     put("puml.showPackages", "false")
     put("puml.allowEmptyPackage", "true")
+    put("puml.outputFileName", "example1.puml")
 }
 
 tasks {

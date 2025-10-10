@@ -42,6 +42,7 @@ data class Options(
     val prefix: String = "",
     val postfix: String = "",
     val title: String = "",
+    val outputFileName: String = "",
 ) {
     constructor(kspProcessorOptions: Map<String, String>) : this(
         includedPackages = kspProcessorOptions[OptionConstants.KEY_INCLUDED_PACKAGES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
@@ -73,6 +74,7 @@ data class Options(
         prefix = kspProcessorOptions[OptionConstants.KEY_PREFIX.identifier] ?: "",
         postfix = kspProcessorOptions[OptionConstants.KEY_POSTFIX.identifier] ?: "",
         title = kspProcessorOptions[OptionConstants.KEY_TITLE.identifier] ?: "",
+        outputFileName = kspProcessorOptions[OptionConstants.KEY_OUTPUT_FILE_PATH.identifier] ?: "",
     )
 
     fun asMap(): Map<String, String> {
@@ -106,6 +108,7 @@ data class Options(
             put(OptionConstants.KEY_PREFIX.identifier, prefix)
             put(OptionConstants.KEY_POSTFIX.identifier, postfix)
             put(OptionConstants.KEY_TITLE.identifier, title)
+            put(OptionConstants.KEY_OUTPUT_FILE_PATH.identifier, outputFileName)
         }
     }
 

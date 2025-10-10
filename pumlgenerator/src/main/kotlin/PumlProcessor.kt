@@ -24,7 +24,12 @@ finish():
 $finalDiagram            
         """
         }
-        saveDiagramToFile(finalDiagram)
+        val outputFile = if (options.outputFileName.isEmpty()) {
+            File("generated/puml/ClassDiagram${finalDiagram.hashCode()}")
+        } else {
+            File(options.outputFileName)
+        }
+        saveDiagramToFile(finalDiagram, outputFile)
         super.finish()
     }
 
@@ -58,18 +63,19 @@ $finalDiagram
         return diagramBuilder.toString()
     }
 
-    private fun saveDiagramToFile(fileContent: String) {
+    private fun saveDiagramToFile(fileContent: String, outputFile: File) {
         kotlin.runCatching {
-            codeGenerator.generatedFile.forEach {
-                it.delete()
-            }
+            codeGenerator.generatedFile.find { it.path == outputFile.path }?.delete()
 
-            val file = codeGenerator.createNewFileByPath(Dependencies(true), File("generated/puml/ClassDiagram${fileContent.hashCode()}").path, "puml").let {
+            val file = codeGenerator.createNewFileByPath(Dependencies(true), outputFile.path.trimEnd(*".puml".toCharArray()), "puml").let {
                 OutputStreamWriter(it)
             }
             // val file = OutputStreamWriter(codeGenerator.createNewFile(Dependencies(true), "", "ClassDiagram", "puml"))
             file.append(fileContent)
             file.close()
+            logger.i { "Diagram saved to: ${outputFile.absolutePath}" }
+        }.onFailure {
+            logger.e { "Failed to save diagram:\n${it.stackTraceToString()}" }
         }
     }
 }

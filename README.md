@@ -81,11 +81,37 @@ Run the following command to generate PlantUML code:
 ./gradlew :<modulename>:kspKotlin
 ```
 
-> This will generate `.puml` files in the `<modulename>/build/resources/main/` directory by default.
+> This will generate `.puml` file in the `<modulename>/build/generated/ksp/main/resources` directory by default.
 
 ### 🎨 3. **Render the Diagrams**
 
-Use a tool like the [PlantUML CLI](https://plantuml.com/overview) or an online editor like [PlantUML Editor](https://www.plantuml.com/plantuml/uml) to render the `.puml` files.
+#### 🥇🥇🥇Recommended way: Do it locally 🥇🥇🥇  
+_(hence it supports maximum privacy and offline compatibility)_
+
+Download the `plantuml.jar` and make use of CLI commands
+
+- [plantuml.jar](https://plantuml.com/download)
+- [CLI commands overview](https://plantuml.com/command-line)
+
+To generate the diagram the following command can be used.  
+
+`java -jar plantuml.jar <modulename>/build/generated/ksp/main/resources -svg`
+
+Quote from the docs:
+> If you provide a relative path then the images is placed in that directory relative to the location of the input file, not the current directory (note: this applies even if the path begins with a .). When Plantuml processes files from multiple directores then the corresponding directory structure is created under the computed output directory.
+
+#### 🥈🥈🥈 Good for playing around: Do it online 🥈🥈🥈  
+_(Be aware that you share your diagram with a 3rd party)_
+
+Use the [Plantuml online editor](https://www.plantuml.com/plantuml/uml) and copy and paste your diagram into it.
+
+#### 🥉🥉🥉Other options: 🥉🥉🥉  
+Here are a few more options that can be used to render the diagram:
+- Use Plantuml integrations for editors and IDEs
+- Host your own plantuml server via docker -> [Instructions](https://plantuml.com/starting)
+- [Many more options](https://plantuml.com/running) are supported by the Plantuml Community
+
+
 
 ---
 

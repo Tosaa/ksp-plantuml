@@ -1,14 +1,14 @@
 # Kotlin PlantUML Generator
 
-> A **Gradle plugin** that generates **PlantUML** code from **Kotlin source files** to help you create **accurate, up-to-date UML diagrams** for your project.
+> A **KSP-Processor** that generates **PlantUML** code from **Kotlin source files** to help you create **accurate, up-to-date UML diagrams** for your project.
 
 ---
 
 ## 📦 Overview
 
-This plugin is designed to automatically generate **PlantUML** code from your Kotlin codebase using the **Kotlin Symbol Processing API (KSP)**. The generated `.puml` files can be rendered using tools like `plantuml`, online editors, or IDE integrations.
+This Processor is designed to automatically generate **PlantUML** code from your Kotlin codebase using the **Kotlin Symbol Processing API (KSP)**. The generated `.puml` files can be rendered using tools like `plantuml`, online editors, or IDE integrations.
 
-The plugin is **open source**, **privacy-focused**, and **highly customizable**, allowing you to control what parts of your code are included in the diagrams.
+The project is **open source**, **privacy-focused**, and **highly customizable**, allowing you to control what parts of your code are included in the diagrams.
 
 ---
 
@@ -56,29 +56,11 @@ The generated file can be rendered by using the Intellij Plantuml Plugin or on [
 
 ---
 
-## 📦 Installation
-
-Add the plugin to your `build.gradle.kts`:
-
-```kotlin
-plugins {
-    id("com.google.devtools.ksp") version "2.1.21-2.0.1"
-}
-
-dependencies {
-    ksp("io.github.tosaa.puml.ksp:ksp-plantuml-generator:0.0.+")
-}
-
-```
-
----
-
 ## 🚀 Getting Started
 
-### 1. **Add the Plugin to Your Project**
+### 📦 1. Installation
 
-Add the plugin to your `build.gradle.kts` file:
-
+Add the KSP-Plugin and the Processor to your `build.gradle.kts`:
 
 ```kotlin
 plugins {
@@ -91,7 +73,7 @@ dependencies {
 
 ```
 
-### 2. **Run the Gradle Task**
+### ▶️ 2. **Run the Gradle Task**
 
 Run the following command to generate PlantUML code:
 
@@ -101,7 +83,7 @@ Run the following command to generate PlantUML code:
 
 > This will generate `.puml` files in the `<modulename>/build/resources/main/` directory by default.
 
-### 3. **Render the Diagrams**
+### 🎨 3. **Render the Diagrams**
 
 Use a tool like the [PlantUML CLI](https://plantuml.com/overview) or an online editor like [PlantUML Editor](https://www.plantuml.com/plantuml/uml) to render the `.puml` files.
 
@@ -109,12 +91,44 @@ Use a tool like the [PlantUML CLI](https://plantuml.com/overview) or an online e
 
 ## 🛠️ Configuration
 
-You can customize the plugin's behavior passing a customized KSP configuration and setup a custom gradle task.
+You can customize the plugin's behavior by 
+passing a customized KSP configuration within the Kotlin-DSL 
+or writing a configuration file 
+and setup a custom gradle task.
 
-### Example Configuration
+### Example Configuration by configuration file
+1. Define all required options in a file
+
+MyConfig.conf
+```
+# comment
+; comment
+puml.allowEmptyPackage=true
+```
+
+2. Reference the file in a custom gradle task
 
 ```kotlin
-val customizedPlantumlConifguration = mutableMapOf<String, String>().apply {
+tasks {
+    register("generatePlantumlWithMySettings") {
+        ksp {
+            arg("puml.configFilePath", layout.projectDirectory.file("myConfig.conf").asFile.path)
+        }
+        dependsOn(findByName("kspKotlin"))
+    }
+}
+```
+
+The configuration file is based on the [INI file schema](https://en.wikipedia.org/wiki/INI_file).
+- Lines beginning with ; and # are interpreted as comments
+- key and value settings are separated with '='
+- Packages and Names can be separated with ','
+- Boolean settings can be set with 'true' and 'false'
+
+### Example Configuration within Kotlin-DSL
+
+```kotlin
+val customizedPlantumlConfiguration = mutableMapOf<String, String>().apply {
     // add all your settings here
     put("puml.allowEmptyPackage", "true")
 }
@@ -122,7 +136,7 @@ val customizedPlantumlConifguration = mutableMapOf<String, String>().apply {
 tasks {
     register("generatePlantumlWithMySettings") {
         ksp {
-            customizedPlantumlConifguration.forEach {
+            customizedPlantumlConfiguration.forEach {
                 arg(it.key, it.value)
             }
         }
@@ -135,8 +149,10 @@ tasks {
 
 ## 📚 Configuration Guide
 
-### Configruation Templates
+### Configuration Templates
 
+- [Default configuration](doc/default.conf) as .conf file _- is always a good way to start_
+- [Public API configuration](doc/publicAPI.conf) as .conf file _- probably the best suitable configuration when you want to visualize your library_
 
 <details>
 <summary>KSP configuration for public API</summary>
@@ -193,9 +209,9 @@ ksp {
 
 </details>
 
-### Configuration Options
+### List of Configuration Options
 
-The following options can be set using ksp.
+The following options can be set.
 
 Key | Default                                              | Description
 --|------------------------------------------------------|--
@@ -227,6 +243,7 @@ Key | Default                                              | Description
 `puml.postfix` | ``                                                   | Add a custom postfix to the plantuml diagram
 `puml.title` | ``                                                   | Add a custom title to the plantuml diagram
 `puml.outputFileName` | ``                                                   | Set custom file within /build/generated/ksp/main/resources
+`puml.configFilePath` | ``                                                   | Apply config file with all above described configurations
 
 ---
 

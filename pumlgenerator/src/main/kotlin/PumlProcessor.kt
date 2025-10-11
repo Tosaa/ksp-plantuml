@@ -85,7 +85,7 @@ class PumlProcessorProvider : SymbolProcessorProvider {
         val unexpectedKeys = environment.options.filter { it.key !in OptionConstants.IDENTIFIER }.toList()
         environment.logger.i {
             """
-KSP Environment
+    KSP Environment
     platforms: ${environment.platforms}
     apiVersion: ${environment.apiVersion}            
     compilerVersion: ${environment.compilerVersion}            
@@ -96,13 +96,49 @@ KSP Environment
         if (unexpectedKeys.isNotEmpty()) {
             environment.logger.w { "Environment configuration contains unexpected keys: ${unexpectedKeys.joinToString()}" }
         }
+        val configFilePath = environment.options["puml.configFilePath"]
+        val configFile = configFilePath?.let { File(it) }
+        val options = when {
+            configFile != null && configFile.exists() && configFile.isFile ->
+                configFile.toOptions(environment.logger)
+
+            !configFilePath.isNullOrEmpty() -> {
+                environment.logger.e { "Failed to read configFilePath = $configFilePath, fallback to Environment options" }
+                Options(environment.options)
+            }
+
+            else -> Options(environment.options)
+        }
+
         return PumlProcessor(
             codeGenerator = environment.codeGenerator,
             logger = environment.logger,
-            options = Options(
-                kspProcessorOptions = environment.options
-            )
+            options = options
         )
+    }
+
+    /**
+     * Oriented on the INI file schema.
+     * # at the start of a line is a comment
+     * ; at the start of a line is a comment
+     * Key value pairs must be separated with '='
+     * The complete text on the left hand side of '=' is interpreted as key and must match with on of [OptionConstants]
+     * The complete text on the right hand side of '=' is interpreted as value and read as String
+     * See: https://en.wikipedia.org/wiki/INI_file
+     */
+    private fun File.toOptions(logger: KSPLogger): Options {
+        val lines = readLines().filterNot {
+            it.startsWith(";") || it.startsWith('#')
+        }
+        val invalidConfigurations = lines.filterNot { line -> OptionConstants.IDENTIFIER.any { it in line } }
+        val validConfigurations = lines.filter { line -> OptionConstants.IDENTIFIER.any { it in line } }
+        if (invalidConfigurations.isNotEmpty()) {
+            logger.e { "Invalid configurations in file $this detected: ${invalidConfigurations.joinToString("\n")}" }
+        }
+        return Options(validConfigurations.map { line ->
+            val (key, value) = line.split("=", limit = 2)
+            key to value
+        }.toMap())
     }
 }
 

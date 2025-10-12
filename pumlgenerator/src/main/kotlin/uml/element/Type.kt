@@ -15,6 +15,15 @@ val PRIMITIVE_NAMES: List<String> = listOf(
     "Byte",
 )
 
+class FunctionType(
+    originalKSType: KSType? = null,
+    val argumentTypes: List<Type> = emptyList(),
+    val returnType: Type? = null,
+) : Type(
+    originalKSType,
+    "${argumentTypes.joinToString(prefix = "(", postfix = ")", separator = ", ") { it.typeName }} -> ${(returnType ?: ReservedType(null, "Unit")).typeName}"
+)
+
 open class Type(
     val originalKSType: KSType? = null,
     val typeName: String
@@ -93,6 +102,14 @@ fun Type.flatResolve(options: Options, logger: KSPLogger? = null, level: Int = 0
 }
 
 fun KSType.toType(): Type {
+    if (isFunctionType) {
+        return FunctionType(
+            this,
+            arguments.dropLast(1).mapNotNull { it.type?.resolve()?.toType() },
+            arguments.lastOrNull()?.type?.resolve()?.toType()
+        )
+    }
+
     val genericTypes = this.arguments.mapNotNull { it.type?.resolve()?.toType() }
     val generic = if (genericTypes.isNotEmpty()) genericTypes.joinToString(prefix = "<", postfix = ">", separator = ",") { it.typeName } else ""
     val optionalIndicator = if (this.isMarkedNullable) {

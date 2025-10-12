@@ -5,13 +5,13 @@ title Example for Objects
     'my.logging.Logger
     class "Logger" as my_logging_Logger << (O, #FF7700) object>>{
         + warn(String) : Unit
-		+ warn(Function0<String>) : Unit
+		+ warn(() -> String) : Unit
 		+ info(String) : Unit
-		+ info(Function0<String>) : Unit
+		+ info(() -> String) : Unit
 		+ verbose(String) : Unit
-		+ verbose(Function0<String>) : Unit
+		+ verbose(() -> String) : Unit
 		+ error(String, Throwable?) : Unit
-		+ error(Function0<String>, Throwable?) : Unit
+		+ error(() -> String, Throwable?) : Unit
     }
 
 

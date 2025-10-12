@@ -26,6 +26,7 @@ class PropertyRelationTest : CompilationTest() {
         fun findAThing() : OneThing
     }
     """
+
     val onethingCode = """
     package com.one
     import com.other.OtherThing
@@ -34,15 +35,40 @@ class PropertyRelationTest : CompilationTest() {
         val description : String
     }
     """
+
     val otherthingCode = """
     package com.other
     public data class OtherThing(val name:String, val isKnown:Boolean)
     """
+
     val thingBox = """
     package com.other
     import com.one.OneThing
     public class ThingBox(){
         val things : List<OneThing> = emptyList()
+    }
+    """
+
+    val classWithLambdaPrimitiveCode = """
+    package com.other
+    public class StringFactory(val name: String) {
+        val functionNothingToString: () -> String = { name }
+        val functionNothingToUnit: () -> Unit = {}
+        val functionStringToUnit: (String) -> Unit = {_ -> Unit}
+        val functionStringToString: (String) -> String = { _ -> name }
+        val functionStringStringToString: (String, String) -> String = { _, _ -> name }
+    }
+    """
+
+    val classWithLambdaCode = """
+    package com.other
+    import com.one.OneThing
+    public class OneThingFactory(val oneThing: OneThing) {
+        val functionNothingToOneThing: () -> OneThing = { oneThing }
+        val functionNothingToUnit: () -> Unit = {}
+        val functionOneThingToUnit: (OneThing) -> Unit = {_ -> Unit}
+        val functionOneThingToOneThing: (OneThing) -> OneThing = { _ -> oneThing }
+        val functionOneThingOneThingToOneThing: (OneThing, OneThing) -> OneThing = { _, _ -> oneThing }
     }
     """
 
@@ -205,5 +231,80 @@ class PropertyRelationTest : CompilationTest() {
         assertContains(generatedFile, "com_test_TestInterface ..* com_test_Color")
         assertContains(generatedFile, "brightness : StateFlow<Brightness>")
         assertContains(generatedFile, "com_test_TestInterface ..* com_test_Brightness")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Test Lambda functions with primitive types are shown in a Kotlin Manner`() {
+        val kotlinSource = SourceFile.kotlin(
+            "CodeWithLambda.kt",
+            classWithLambdaPrimitiveCode
+        ).also { println(it) }
+        val compilation = newCompilation(DEFAULT_OPTIONS, listOf(kotlinSource))
+
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "functionNothingToString : () -> String")
+        assertContains(generatedFile, "functionNothingToUnit : () -> Unit")
+        assertContains(generatedFile, "functionStringToUnit : (String) -> Unit")
+        assertContains(generatedFile, "functionStringToString : (String) -> String")
+        assertContains(generatedFile, "functionStringStringToString : (String, String) -> String")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Test Lambda functions with classes are shown in a Kotlin Manner`() {
+        val fileNames = listOf("Something.kt", "OneThing.kt", "OtherThing.kt", "ClassWithLambda.kt")
+        val codes = listOf(somethingCode, onethingCode, otherthingCode, classWithLambdaCode)
+        val files = fileNames.zip(codes).map { (name, code) ->
+            SourceFile.kotlin(name, code)
+        }.toList()
+
+        val compilation = newCompilation(DEFAULT_OPTIONS, files)
+
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "functionNothingToOneThing : () -> OneThing")
+        assertContains(generatedFile, "functionNothingToUnit : () -> Unit")
+        assertContains(generatedFile, "functionOneThingToUnit : (OneThing) -> Unit")
+        assertContains(generatedFile, "functionOneThingToOneThing : (OneThing) -> OneThing")
+        assertContains(generatedFile, "functionOneThingOneThingToOneThing : (OneThing, OneThing) -> OneThing")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `A function that returns a function is shown in a Kotlin Manner`() {
+        val kotlinSource = SourceFile.kotlin(
+            "CodeThatReturnsFunction.kt",
+            """
+         interface TextStrategy {
+             fun doMagic(magic: (String) -> String): () -> String
+             fun createTextAppendingFunction(): () -> String
+             fun createTextAppendingFunction(prefix: String): () -> String
+         }       
+            """.trimIndent()
+        )
+        val compilation = newCompilation(DEFAULT_OPTIONS, listOf(kotlinSource))
+
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "doMagic((String) -> String) : () -> String")
+        assertContains(generatedFile, "createTextAppendingFunction() : () -> String")
+        assertContains(generatedFile, "createTextAppendingFunction(String) : () -> String")
     }
 }

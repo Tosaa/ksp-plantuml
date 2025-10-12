@@ -1,7 +1,8 @@
-## 0.0.7 - unreleased
+## 0.0.7 - 2025-10-12
 - Order of relations in generated `.puml` file will change, based on a refactoring
 - Added new option `puml.outputFileName`, to specify how the file should be named, that is generated in the folder of generated resources.
 - Added new option `puml.configFile`, to specify a config file that can be used to setup the configuration for the plantuml generation.
+- Added support for Lambda functions.
 
 
 ## 0.0.6 - 2025-09-27

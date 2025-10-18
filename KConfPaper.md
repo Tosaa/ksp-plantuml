@@ -34,7 +34,6 @@ About me:
 - Speaker in company internal presentations and events
 - Besides coding: American Football coach near munich
 - Github: https://github.com/Tosaa/ksp-plantuml
-- Presentation mode: Short ppt combined with debugging within the IntelliJ IDEA and a handful of jokes.
 
 ## Topic: Inheritance
 ### Story:

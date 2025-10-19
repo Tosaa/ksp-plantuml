@@ -1,21 +1,28 @@
-# KSP in Action: How KSP and Plantuml keeps your documentation up to date
+# Kotlin Symbol Processing in Action: How KSP and Plantuml keeps your documentation up to date
 
 ## Abstract
 
 It can be hard to write and maintain documentation. It can be outdated quickly and often there is just limited time to
 update the documentation. This can be inconvenient, especially for documentation and manuals that are given to 3rd
-parties.  
+parties.
 The Kotlin Plantuml Generator library should decrease the overhead to draw diagrams of a codebase by generating Plantuml
 diagrams based on the Kotlin sourcecode and Kotlin Symbol Processing. Since it can be integrated as a gradle task, the documentation can stay up to
 date with every build. By this it's a great tool for anyone who develops Kotlin-libraries and shares them with others.
+The library handles a lot of class dependencies, inheritance, type resolutions, and interpreting Kotlin-specific features.
 
-In this talk, I will summarize how a Kotlin Symbol Processor is implemented to convert Kotlin classes into a good visual representation using Plantuml.
-Details about special scenarios will be explained and the opportunities of the KSP feature set will be advertised.
-For example inner Classes, Interfaces or Companion Objects will not be visited by the `KSVisitor.visitClassDeclaration` function and they need to be resolved by their owning class.
+During its implementation, I encountered a few challenges in the Kotlin Symbol Processing world.
+And in this talk, I will address these challenges, share my experiences, and inspire the audience to use KSP on their own.
+
+For example, it was difficult to display Inner Classes or Companion Objects, since it's not straightforward to access Inner Classes.
+Inner Classes, Interfaces or Companion Objects will not be visited by the `KSVisitor.visitClassDeclaration` function.
+Instead, they must be accessed through the declarations of the owning class.
+
+Another challenge was to hide inherited functions and properties. By default, a `KSClassDeclaration` offers access to all functions and properties that are accessible on this class.
+The task was to figure out if a function has been inherited or not.
+Join this talk to find out why the override modifier won't be enough and how you still can find out if a function or property has been inherited.
 
 A few more takeaways will be:
 - How Inheritance of classes can be identified
-- How to group a class functions and properties into **inherited** and **not inherited**, _(spoiler: Override is not enough)_
 - How to determine types for function return values and variables, taking into account lambdas, generics, collections, simple classes, and primitive types
 - How to identify extension functions and to resolve their receiver
 - How to deal with Sealed classes and Data classes
@@ -29,10 +36,9 @@ Plantuml knowledge required.
 ## Additional notes
 About me:
 - Living near Munich
-- Android dev with major domain in the Automotive industry
-- 4th time attendee on the Kotlin Conf
+- Android dev with domain in the Automotive industry
+- 4th time attending on the Kotlin Conf
 - Speaker in company internal presentations and events
-- Besides coding: American Football coach near munich
 - Github: https://github.com/Tosaa/ksp-plantuml
 
 ## Topic: Inheritance

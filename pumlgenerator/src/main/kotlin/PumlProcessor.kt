@@ -133,7 +133,7 @@ class PumlProcessorProvider : SymbolProcessorProvider {
         val invalidConfigurations = lines.filterNot { line -> OptionConstants.IDENTIFIER.any { it in line } }
         val validConfigurations = lines.filter { line -> OptionConstants.IDENTIFIER.any { it in line } }
         if (invalidConfigurations.isNotEmpty()) {
-            logger.e { "Invalid configurations in file $this detected: ${invalidConfigurations.joinToString("\n")}" }
+            logger.w { "Invalid configurations in file $this detected: ${invalidConfigurations.joinToString("\n")}" }
         }
         return Options(validConfigurations.map { line ->
             val (key, value) = line.split("=", limit = 2)

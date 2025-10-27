@@ -1,5 +1,5 @@
-## 0.0.8 - 2025-10-24
-- Do not use KSPLogger.error for the validation of expected and unexpected referenced classes in the diagram.
+## 0.0.8 - unreleased
+- Do not use `KSPLogger.error` for the validation of expected and unexpected referenced classes in the diagram.
 
 
 ## 0.0.7 - 2025-10-12

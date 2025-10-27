@@ -1,3 +1,7 @@
+## 0.0.8 - unreleased
+- Do not use `KSPLogger.error` for the validation of expected and unexpected referenced classes in the diagram.
+
+
 ## 0.0.7 - 2025-10-12
 - Order of relations in generated `.puml` file will change, based on a refactoring
 - Added new option `puml.outputFileName`, to specify how the file should be named, that is generated in the folder of generated resources.

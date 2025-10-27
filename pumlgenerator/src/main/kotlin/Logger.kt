@@ -15,6 +15,7 @@ fun KSPLogger?.w(node: KSNode? = null, message: () -> String) {
     this?.warn(message(), node)
 }
 
+// Logging with this function will cause the Gradle task to fail!
 fun KSPLogger?.e(node: KSNode? = null, message: () -> String) {
     this?.error(message(), node)
 }

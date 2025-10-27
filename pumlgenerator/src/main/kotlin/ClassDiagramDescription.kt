@@ -101,6 +101,8 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
     }
 
     private fun addPropertyTypeRelation(base: KSClassDeclaration, fieldOfClass: Field, type: Type, level: Int) {
+        logger.v { "addPropertyTypeRelation(): field=$fieldOfClass with type=$type, level=$level" }
+
         when {
             !options.isValid(type.originalKSType, logger) ->
                 null
@@ -174,6 +176,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
     }
 
     private fun addFunctionTypeRelation(base: KSClassDeclaration, methodOfClass: Method, type: Type, level: Int) {
+        logger.v { "addFunctionTypeRelation(): method=$methodOfClass return type=$type, level=$level" }
         when {
             !options.isValid(type.originalKSType, logger) ->
                 null
@@ -442,6 +445,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
     fun computeAllRelations(): String {
         graph.elements.forEach { builder ->
+            logger.v { "add Hierarchies for ${builder.fullQualifiedName}" }
             builder.clazz.superTypes
                 .mapNotNull { it.resolve().declaration as? KSClassDeclaration }
                 .filterNot { it.packageName.asString().startsWith("kotlin") }
@@ -452,16 +456,17 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         }
 
         graph.elements
-            .filterIsInstance<DiagramElementBuilder>()
             .forEach { builder ->
+                logger.v { "add functions relations for ${builder.fullQualifiedName}" }
                 addFunctionRelations(builder)
+                logger.v { "add property relations for ${builder.fullQualifiedName}" }
                 addPropertyRelations(builder)
             }
         val blacklistedVertices = mutableListOf<String>()
         val allEdges = mutableMapOf<Pair<String, String>, Relation>()
         blacklistedVertices.addAll(graph.vertices.filter { graph.inDegreeOf(it) > options.maxRelations || graph.outDegreeOf(it) > options.maxRelations })
         if (graph.computeInvalidRelations().isNotEmpty()) {
-            logger.e { "The following relations were added to the graph but are invalid: ${graph.computeInvalidRelations().joinToString()}" }
+            logger.w { "The following relations were added to the graph but are invalid: ${graph.computeInvalidRelations().joinToString()}" }
         }
         return computationVariant2(allEdges, blacklistedVertices)
     }

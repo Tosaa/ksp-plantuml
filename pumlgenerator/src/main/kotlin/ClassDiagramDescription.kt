@@ -208,38 +208,24 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
     }
 
     private fun computeUMLDiagramsWithPackages() = graph.elements.groupBy {
-        (it as? InterfaceElement.Builder)?.clazz?.packageName?.asString()
-            ?: (it as? ClassElement.Builder)?.clazz?.packageName?.asString()
-            ?: (it as? EnumElement.Builder)?.clazz?.packageName?.asString()
-            ?: (it as? ObjectElement.Builder)?.clazz?.packageName?.asString()
+        it.packageName
     }.mapNotNull { (packageName, builder) ->
         val classComponents = builder.mapNotNull { it.build() }
         if (classComponents.isEmpty()) {
             logger.v { "Ignore package $packageName since it contains no classes" }
             return@mapNotNull null
         }
+
         val usedPackageName: String = when {
-            packageName == null && options.allowEmptyPackage -> ""
-            packageName == null && !options.allowEmptyPackage -> {
-                logger.v { "Ignore package $packageName since empty packageName is not allowed" }
-                return@mapNotNull null
-            }
-
-            packageName != null && packageName.isBlank() && options.allowEmptyPackage -> ""
-            packageName != null && packageName.isBlank() && !options.allowEmptyPackage -> {
-                logger.v { "Ignore package $packageName since empty packageName is not allowed" }
-                return@mapNotNull null
-            }
-
-            !options.isValid(packageName ?: "", logger) -> {
-                logger.v { "Ignore package $packageName since it is excluded" }
+            !options.isValid(packageName, logger) -> {
+                logger.v { "Ignore package $packageName and its components ${classComponents.map { it.elementName }} since '$packageName' is not valid" }
                 return@mapNotNull null
             }
 
             else ->
-                packageName ?: ""
+                packageName
         }
-
+        logger.i { "computedUMLClassDiagram components in package '$usedPackageName': ${classComponents.map { it.elementName }}" }
         val classes = classComponents.joinToString("\n") { it.render() }
         if (usedPackageName.isNotBlank()) {
             """
@@ -439,7 +425,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         return if (options.showPackages) {
             computeUMLDiagramsWithPackages()
         } else {
-            graph.elements.mapNotNull { it.build() }.joinToString("\n") { it.render() }
+            val classComponents = graph.elements.mapNotNull { it.build() }
+            logger.i { "computedUMLClassDiagram components: ${classComponents.map { it.elementName }}" }
+            classComponents.joinToString("\n") { it.render() }
         }
     }
 

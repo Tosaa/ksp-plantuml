@@ -16,6 +16,9 @@ abstract class DiagramElementBuilder(val clazz: KSClassDeclaration, open var isS
     open val fullQualifiedName: String
         get() = clazz.fullQualifiedName
 
+    open val packageName: String
+        get() = clazz.packageName.asString()
+
     protected val extensionProperties: MutableList<KSPropertyDeclaration> = mutableListOf()
 
     open val allProperties: List<KSPropertyDeclaration>

@@ -54,6 +54,9 @@ $functionsString
 
         val type: Type = typeAlias.type.resolve().toType()
 
+        override val packageName: String
+            get() = typeAlias.packageName.asString()
+
         override var isShell: Boolean
             get() = false
             set(value) {}
@@ -84,7 +87,7 @@ $functionsString
         }
 
         override fun toString(): String {
-            return "TypeAliasBuilder(clazz=${clazz.fullQualifiedName})"
+            return "TypeAliasBuilder(alias=${typeAlias}, clazz=${clazz.fullQualifiedName})"
         }
     }
 }

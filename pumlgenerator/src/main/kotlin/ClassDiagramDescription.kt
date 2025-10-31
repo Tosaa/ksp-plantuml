@@ -215,16 +215,17 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             logger.v { "Ignore package $packageName since it contains no classes" }
             return@mapNotNull null
         }
+
         val usedPackageName: String = when {
             !options.isValid(packageName, logger) -> {
-                logger.v { "Ignore package $packageName and its components $builder since '$packageName' is not valid" }
+                logger.v { "Ignore package $packageName and its components $classComponents since '$packageName' is not valid" }
                 return@mapNotNull null
             }
 
             else ->
                 packageName
         }
-
+        logger.i { "return package '$usedPackageName' with components: $classComponents" }
         val classes = classComponents.joinToString("\n") { it.render() }
         if (usedPackageName.isNotBlank()) {
             """

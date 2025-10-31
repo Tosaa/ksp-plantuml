@@ -218,14 +218,14 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
         val usedPackageName: String = when {
             !options.isValid(packageName, logger) -> {
-                logger.v { "Ignore package $packageName and its components $classComponents since '$packageName' is not valid" }
+                logger.v { "Ignore package $packageName and its components ${classComponents.map { it.elementName }} since '$packageName' is not valid" }
                 return@mapNotNull null
             }
 
             else ->
                 packageName
         }
-        logger.i { "return package '$usedPackageName' with components: $classComponents" }
+        logger.i { "computedUMLClassDiagram components in package '$usedPackageName': ${classComponents.map { it.elementName }}" }
         val classes = classComponents.joinToString("\n") { it.render() }
         if (usedPackageName.isNotBlank()) {
             """
@@ -425,7 +425,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         return if (options.showPackages) {
             computeUMLDiagramsWithPackages()
         } else {
-            graph.elements.mapNotNull { it.build() }.joinToString("\n") { it.render() }
+            val classComponents = graph.elements.mapNotNull { it.build() }
+            logger.i { "computedUMLClassDiagram components: ${classComponents.map { it.elementName }}" }
+            classComponents.joinToString("\n") { it.render() }
         }
     }
 

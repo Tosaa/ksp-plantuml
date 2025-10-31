@@ -340,7 +340,7 @@ class PropertyRelationTest : CompilationTest() {
         assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContainsNot(generatedFile,"com_b_Test")
+        assertContainsNot(generatedFile, "com_b_Test")
     }
 
     @OptIn(ExperimentalCompilerApi::class)
@@ -361,6 +361,6 @@ class PropertyRelationTest : CompilationTest() {
         assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
-        assertContainsNot(generatedFile,"com_b_Test")
+        assertContainsNot(generatedFile, "com_b_Test")
     }
 }

@@ -3,6 +3,7 @@
 - Added new option `puml.saveLogToFile`, to enable/disable saving the logs into a log file. `true` by default.
 - Fixed to also render TypeAlias when `puml.showPackages` is set to `true`
 
+
 ## 0.0.7 - 2025-10-12
 - Order of relations in generated `.puml` file will change, based on a refactoring
 - Added new option `puml.outputFileName`, to specify how the file should be named, that is generated in the folder of generated resources.

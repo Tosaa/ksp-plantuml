@@ -1,3 +1,5 @@
+import org.gradle.internal.impldep.org.apache.sshd.common.NamedResource.findByName
+
 plugins {
     // Apply the shared build logic from a convention plugin.
     // The shared code is located in `buildSrc/src/main/kotlin/kotlin-jvm.gradle.kts`.
@@ -94,14 +96,12 @@ tasks {
 }
 
 
-tasks {
-    register("kspExampleCity") {
-        ksp {
-            arg("puml.configFilePath", layout.projectDirectory.file("configs/cityExample.conf").asFile.path)
-            // arg("puml.configFilePath", layout.projectDirectory.file("../doc/publicAPI.conf").asFile.path)
-        }
-        dependsOn(findByName("kspKotlin"))
+val kspExampleCity = tasks.register("kspExampleCity") {
+    ksp {
+        arg("puml.configFilePath", layout.projectDirectory.file("configs/cityExample.conf").asFile.path)
+        // arg("puml.configFilePath", layout.projectDirectory.file("../doc/publicAPI.conf").asFile.path)
     }
+    dependsOn("kspKotlin")
 }
 
 dependencies {

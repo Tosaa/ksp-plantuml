@@ -80,7 +80,7 @@ $finalDiagram
         kotlin.runCatching {
             codeGenerator.generatedFile.find { it.path == outputFile.path }?.delete()
 
-            val file = codeGenerator.createNewFileByPath(Dependencies(true), outputFile.path.trimEnd(*".puml".toCharArray()), "puml").let {
+            val file = codeGenerator.createNewFileByPath(Dependencies(true), outputFile.path.replace(".puml",""),"puml").let {
                 OutputStreamWriter(it)
             }
             // val file = OutputStreamWriter(codeGenerator.createNewFile(Dependencies(true), "", "ClassDiagram", "puml"))

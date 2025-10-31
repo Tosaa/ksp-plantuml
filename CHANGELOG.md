@@ -1,3 +1,7 @@
+## 0.0.9 - unreleased
+- Fixed bug that last character from outputFileName got removed
+
+
 ## 0.0.8 - 2025-10-31
 - Do not use `KSPLogger.error` for the validation of expected and unexpected referenced classes in the diagram.
 - Added new option `puml.saveLogToFile`, to enable/disable saving the logs into a log file. `true` by default.

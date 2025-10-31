@@ -83,6 +83,20 @@ class PropertyRelationTest : CompilationTest() {
     }
     """
 
+
+    val classInPackageBCode = """
+        package com.b
+        class Test(){}
+    """.trimIndent()
+
+    val ClassInPackageACode = """
+        package com.a
+        import com.b.Test
+        
+        class TestRun(val test:Test){}
+    """.trimIndent()
+
+
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Create relations between classes`() {
@@ -306,5 +320,47 @@ class PropertyRelationTest : CompilationTest() {
         assertContains(generatedFile, "doMagic((String) -> String) : () -> String")
         assertContains(generatedFile, "createTextAppendingFunction() : () -> String")
         assertContains(generatedFile, "createTextAppendingFunction(String) : () -> String")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Relations to classes in not included packages are not shown`() {
+        val compilation = newCompilation(
+            DEFAULT_OPTIONS.copy(includedPackages = listOf("com.a")),
+            listOf(
+                SourceFile.kotlin("ClassB.kt", classInPackageBCode),
+                SourceFile.kotlin("ClassA.kt", ClassInPackageACode)
+            )
+        )
+
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContainsNot(generatedFile, "com_b_Test")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Relations to classes in excluded packages are not shown`() {
+        val compilation = newCompilation(
+            DEFAULT_OPTIONS.copy(excludedPackages = listOf("com.b")),
+            listOf(
+                SourceFile.kotlin("ClassB.kt", classInPackageBCode),
+                SourceFile.kotlin("ClassA.kt", ClassInPackageACode)
+            )
+        )
+
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContainsNot(generatedFile, "com_b_Test")
     }
 }

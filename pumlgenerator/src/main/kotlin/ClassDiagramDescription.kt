@@ -70,7 +70,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
     private fun addPropertyRelations(base: KSClassDeclaration, builder: DiagramElementBuilder) {
         if (!options.isValid(base, logger)) {
-            logger.v { "Property relations of ${base.fullQualifiedName} are excluded due to invalid KSClassDeclaration" }
+            logger.v { "Property relations of '${base.fullQualifiedName}' are excluded due to invalid KSClassDeclaration" }
             return
         }
 
@@ -334,7 +334,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         val classOfExtensionFunction = function.extensionReceiver?.resolve()?.declaration
         when {
             classOfExtensionFunction == null -> {
-                logger.w { "addFunction(): Could not resolve Class for extension function $function" }
+                logger.w { "addFunction(): Could not resolve Class for extension function $function in ${function.parent}" }
                 return
             }
 
@@ -500,6 +500,7 @@ end note
                 )
                 outRelations.forEachIndexed { index, relation ->
                     // Avoid adding edge multiple times
+                    val relationRepresentation = "${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}"
                     when {
                         allEdges.containsKey(relation.fromAlias to relation.toAlias) ->
                             logger.v { "Edge for $relation exists already" }
@@ -508,14 +509,14 @@ end note
                             appendLine("${relation.toAlias} ${relation.relationKind.reversedArrow} ${relation.fromAlias}")
 
                         relation.fromAlias in blacklistedVertices ->
-                            logger.v { "Edges for ${relation.fromAlias} are blacklisted by the amount of allowed edges" }
+                            logger.v { "Hide Relation of $relationRepresentation, since Edges for ${relation.fromAlias} are blacklisted by the amount of allowed edges" }
 
                         relation.toAlias in blacklistedVertices ->
-                            logger.v { "Edges for ${relation.toAlias} are blacklisted by the amount of allowed edges" }
+                            logger.v { "Hide Relation of $relationRepresentation, since Edges for ${relation.toAlias} are blacklisted by the amount of allowed edges" }
 
                         else -> {
                             allEdges[relation.fromAlias to relation.toAlias] = relation
-                            appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}")
+                            appendLine(relationRepresentation)
                         }
                     }
                 }
@@ -550,6 +551,12 @@ end note
                         { edge -> edge.relationKind },
                         { edge -> graph.outDegreeOf(edge.toAlias) * (-1) })
                 ).forEachIndexed { index, relation ->
+                    val relationRepresentation = if (graph.hasEdge(relation.toAlias, relation.fromAlias) && graph.hasEdge(relation.fromAlias, relation.toAlias)) {
+                        "${relation.fromAlias} ${relation.relationKind.arrowWithLevel(0)} ${relation.toAlias}"
+                    } else {
+                        "${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}"
+                    }
+
                     when {
                         allEdges.containsKey(relation.fromAlias to relation.toAlias) ->
                             logger.v { "Edge for $relation exists already" }
@@ -558,18 +565,14 @@ end note
                             appendLine("${relation.toAlias} ${relation.relationKind.reversedArrow} ${relation.fromAlias}")
 
                         relation.fromAlias in blacklistedVertices ->
-                            logger.v { "Edges for ${relation.fromAlias} are blacklisted by the amount of allowed edges" }
+                            logger.v { "Hide Relation of $relationRepresentation, since Edges for ${relation.fromAlias} are blacklisted by the amount of allowed edges" }
 
                         relation.toAlias in blacklistedVertices ->
-                            logger.v { "Edges for ${relation.toAlias} are blacklisted by the amount of allowed edges" }
+                            logger.v { "Hide Relation of $relationRepresentation, since Edges for ${relation.toAlias} are blacklisted by the amount of allowed edges" }
 
                         else -> {
                             allEdges[relation.fromAlias to relation.toAlias] = relation
-                            if (graph.hasEdge(relation.toAlias, relation.fromAlias) && graph.hasEdge(relation.fromAlias, relation.toAlias)) {
-                                appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(0)} ${relation.toAlias}")
-                            } else {
-                                appendLine("${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}")
-                            }
+                            appendLine(relationRepresentation)
                         }
                     }
                 }

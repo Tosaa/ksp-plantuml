@@ -49,7 +49,10 @@ enum class OptionConstants(val identifier: String) {
     KEY_CONFIG_FILE_PATH("puml.configFilePath"),
 
     // Save to file within generated resources folder
-    KEY_OUTPUT_FILE_PATH("puml.outputFileName");
+    KEY_OUTPUT_FILE_PATH("puml.outputFileName"),
+
+    // Save logs as file within generated resources folder
+    KEY_SAVE_LOG_TO_FILE("puml.saveLogToFile");
 
     companion object {
         val MAX_RELATIONS = 6

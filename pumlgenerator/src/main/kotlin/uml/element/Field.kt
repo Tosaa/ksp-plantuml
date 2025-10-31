@@ -48,6 +48,10 @@ data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibili
         val modifiers = modifiers.takeIf { it.isNotEmpty() }?.joinToString(" ", "", " ") ?: ""
         return "$visibility$modifiers$attributeName : ${attributeType.typeName}"
     }
+
+    override fun toString(): String {
+        return "Field(name=${attributeName}, type=${attributeType.typeName})"
+    }
 }
 
 fun KSPropertyDeclaration.toField(options: Options?): Field {

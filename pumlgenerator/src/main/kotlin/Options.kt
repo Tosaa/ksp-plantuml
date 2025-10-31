@@ -43,6 +43,7 @@ data class Options(
     val postfix: String = "",
     val title: String = "",
     val outputFileName: String = "",
+    val saveLogToFile: Boolean = true
 ) {
     constructor(kspProcessorOptions: Map<String, String>) : this(
         includedPackages = kspProcessorOptions[OptionConstants.KEY_INCLUDED_PACKAGES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
@@ -75,6 +76,7 @@ data class Options(
         postfix = kspProcessorOptions[OptionConstants.KEY_POSTFIX.identifier] ?: "",
         title = kspProcessorOptions[OptionConstants.KEY_TITLE.identifier] ?: "",
         outputFileName = kspProcessorOptions[OptionConstants.KEY_OUTPUT_FILE_PATH.identifier] ?: "",
+        saveLogToFile = kspProcessorOptions[OptionConstants.KEY_SAVE_LOG_TO_FILE.identifier]?.equals("true", true) ?: true,
     )
 
     fun asMap(): Map<String, String> {
@@ -84,31 +86,32 @@ data class Options(
             put(OptionConstants.KEY_EXCLUDE_CLASS_NAMES.identifier, excludedClassNames.joinToString(", "))
             put(OptionConstants.KEY_EXCLUDE_PROPERTY_NAMES.identifier, excludedPropertyNames.joinToString(", "))
             put(OptionConstants.KEY_EXCLUDE_FUNCTION_NAMES.identifier, excludedFunctionNames.joinToString(", "))
-            put(OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS.identifier, if (showVisibilityModifiers) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INHERITED_PROPERTIES.identifier, if (showInheritedProperties) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INHERITED_FUNCTIONS.identifier, if (showInheritedFunctions) "true" else "false")
-            put(OptionConstants.KEY_MARK_EXTENSIONS.identifier, if (markExtensions) "true" else "false")
-            put(OptionConstants.KEY_SHOW_EXTENSIONS.identifier, if (showExtensions) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PUBLIC_CLASSES.identifier, if (showPublicClasses) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PUBLIC_PROPERTIES.identifier, if (showPublicProperties) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PUBLIC_FUNCTIONS.identifier, if (showPublicFunctions) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INTERNAL_CLASSES.identifier, if (showInternalClasses) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INTERNAL_PROPERTIES.identifier, if (showInternalProperties) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INTERNAL_FUNCTIONS.identifier, if (showInternalFunctions) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PRIVATE_CLASSES.identifier, if (showPrivateClasses) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PRIVATE_PROPERTIES.identifier, if (showPrivateProperties) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PRIVATE_FUNCTIONS.identifier, if (showPrivateFunctions) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INHERITANCE.identifier, if (showInheritance) "true" else "false")
-            put(OptionConstants.KEY_SHOW_PROPERTY_RELATIONS.identifier, if (showPropertyRelations) "true" else "false")
-            put(OptionConstants.KEY_SHOW_FUNCTION_RELATIONS.identifier, if (showFunctionRelations) "true" else "false")
-            put(OptionConstants.KEY_SHOW_INDIRECT_RELATIONS.identifier, if (showIndirectRelations) "true" else "false")
+            put(OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS.identifier, showVisibilityModifiers.toString())
+            put(OptionConstants.KEY_SHOW_INHERITED_PROPERTIES.identifier, showInheritedProperties.toString())
+            put(OptionConstants.KEY_SHOW_INHERITED_FUNCTIONS.identifier, showInheritedFunctions.toString())
+            put(OptionConstants.KEY_MARK_EXTENSIONS.identifier, markExtensions.toString())
+            put(OptionConstants.KEY_SHOW_EXTENSIONS.identifier, showExtensions.toString())
+            put(OptionConstants.KEY_SHOW_PUBLIC_CLASSES.identifier, showPublicClasses.toString())
+            put(OptionConstants.KEY_SHOW_PUBLIC_PROPERTIES.identifier, showPublicProperties.toString())
+            put(OptionConstants.KEY_SHOW_PUBLIC_FUNCTIONS.identifier, showPublicFunctions.toString())
+            put(OptionConstants.KEY_SHOW_INTERNAL_CLASSES.identifier, showInternalClasses.toString())
+            put(OptionConstants.KEY_SHOW_INTERNAL_PROPERTIES.identifier, showInternalProperties.toString())
+            put(OptionConstants.KEY_SHOW_INTERNAL_FUNCTIONS.identifier, showInternalFunctions.toString())
+            put(OptionConstants.KEY_SHOW_PRIVATE_CLASSES.identifier, showPrivateClasses.toString())
+            put(OptionConstants.KEY_SHOW_PRIVATE_PROPERTIES.identifier, showPrivateProperties.toString())
+            put(OptionConstants.KEY_SHOW_PRIVATE_FUNCTIONS.identifier, showPrivateFunctions.toString())
+            put(OptionConstants.KEY_SHOW_INHERITANCE.identifier, showInheritance.toString())
+            put(OptionConstants.KEY_SHOW_PROPERTY_RELATIONS.identifier, showPropertyRelations.toString())
+            put(OptionConstants.KEY_SHOW_FUNCTION_RELATIONS.identifier, showFunctionRelations.toString())
+            put(OptionConstants.KEY_SHOW_INDIRECT_RELATIONS.identifier, showIndirectRelations.toString())
             put(OptionConstants.KEY_MAX_RELATIONS.identifier, maxRelations.toString())
-            put(OptionConstants.KEY_SHOW_PACKAGES.identifier, if (showPackages) "true" else "false")
-            put(OptionConstants.KEY_ALLOW_EMPTY_PACKAGE.identifier, if (allowEmptyPackage) "true" else "false")
+            put(OptionConstants.KEY_SHOW_PACKAGES.identifier, showPackages.toString())
+            put(OptionConstants.KEY_ALLOW_EMPTY_PACKAGE.identifier, allowEmptyPackage.toString())
             put(OptionConstants.KEY_PREFIX.identifier, prefix)
             put(OptionConstants.KEY_POSTFIX.identifier, postfix)
             put(OptionConstants.KEY_TITLE.identifier, title)
             put(OptionConstants.KEY_OUTPUT_FILE_PATH.identifier, outputFileName)
+            put(OptionConstants.KEY_SAVE_LOG_TO_FILE.identifier, saveLogToFile.toString())
         }
     }
 

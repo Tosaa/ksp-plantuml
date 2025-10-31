@@ -12,10 +12,14 @@ import java.io.OutputStreamWriter
 
 class PumlProcessor(
     val codeGenerator: CodeGenerator,
-    val logger: KSPLogger,
+    kspLogger: KSPLogger,
     val options: Options,
-    val diagramCollection: ClassDiagramDescription = ClassDiagramDescription(options, logger)
 ) : SymbolProcessor {
+    private val tmpLogFile = if (options.saveLogToFile) File.createTempFile("planuml", "log") else null
+    val logger = KSPWithFileLogger(kspLogger, tmpLogFile)
+
+    val diagramCollection: ClassDiagramDescription = ClassDiagramDescription(options, logger)
+
     override fun finish() {
         val finalDiagram = generateFinalDiagram(diagramCollection)
         logger.i {
@@ -30,6 +34,15 @@ $finalDiagram
             File(options.outputFileName)
         }
         saveDiagramToFile(finalDiagram, outputFile)
+
+        tmpLogFile?.let { logs ->
+            val logFile = codeGenerator.createNewFileByPath(Dependencies(aggregating = true), "plantuml", "log").let {
+                OutputStreamWriter(it)
+            }
+            logFile.append(logs.readText())
+            logFile.close()
+        }
+
         super.finish()
     }
 
@@ -112,7 +125,7 @@ class PumlProcessorProvider : SymbolProcessorProvider {
 
         return PumlProcessor(
             codeGenerator = environment.codeGenerator,
-            logger = environment.logger,
+            kspLogger = environment.logger,
             options = options
         )
     }

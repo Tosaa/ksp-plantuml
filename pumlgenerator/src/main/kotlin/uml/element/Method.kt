@@ -40,6 +40,10 @@ data class Method(val originalKSFunctionDeclaration: KSFunctionDeclaration, val 
         val modifiers = modifiers.takeIf { it.isNotEmpty() }?.joinToString(" ", "", " ") ?: ""
         return "$visibility$modifiers${functionName}(${parameter.joinToString(", ") { it.typeName }}) : ${returnType.typeName}"
     }
+
+    override fun toString(): String {
+        return "Method(name=$functionName, returnType=${returnType.typeName})"
+    }
 }
 
 fun KSFunctionDeclaration.toMethod(options: Options?): Method {

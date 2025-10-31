@@ -270,6 +270,7 @@ Key | Default                                              | Description
 `puml.title` | ``                                                   | Add a custom title to the plantuml diagram
 `puml.outputFileName` | ``                                                   | Set custom file within /build/generated/ksp/main/resources
 `puml.configFilePath` | ``                                                   | Apply config file with all above described configurations
+`puml.saveLogToFile` | ``                                                   | Save log of KSPProcessor to logfile. Mostly interesting for later analysis why elements are rendered or not rendered
 
 ---
 

@@ -83,6 +83,20 @@ class TypealiasGenerationTest : CompilationTest() {
         }
     """.trimIndent()
 
+
+    val classInPackageB = """
+        package com.b
+        class Test(){}
+    """.trimIndent()
+
+    val typeAliasOfPackageBInPackageACode = """
+        package com.a
+        import com.b.Test
+        
+        typealias TestClass = Test
+    """.trimIndent()
+
+
     @OptIn(ExperimentalCompilerApi::class)
     @Test
     fun `Typealias of classes can be resolved`() {
@@ -224,6 +238,44 @@ class TypealiasGenerationTest : CompilationTest() {
         assertContains(generatedFile, "@startuml")
         assertContains(generatedFile, "@enduml")
         assertContains(generatedFile, "TypeAlias of Pair<Int,Page>")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Typealias of class in excluded package is shown`() {
+
+        val files = listOf(
+            SourceFile.kotlin("Test.kt", classInPackageB),
+            SourceFile.kotlin("TestAlias.kt", typeAliasOfPackageBInPackageACode)
+        )
+        val compilation = newCompilation(DEFAULT_OPTIONS.copy(excludedPackages = listOf("com.b")), files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "TypeAlias of Test")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `Typealias of class in not included package is shown`() {
+
+        val files = listOf(
+            SourceFile.kotlin("Test.kt", classInPackageB),
+            SourceFile.kotlin("TestAlias.kt", typeAliasOfPackageBInPackageACode)
+        )
+        val compilation = newCompilation(DEFAULT_OPTIONS.copy(includedPackages = listOf("com.a")), files)
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, "TypeAlias of Test")
     }
 
 }

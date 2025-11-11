@@ -1,0 +1,27 @@
+@startuml
+title "00_server.kt Plantuml"
+
+    '.Server
+    interface "Server" as Server {
+        + start() : Unit
+		+ stop() : Unit
+    }
+
+
+    '.AbstractServer
+    class "AbstractServer" as AbstractServer {
+        + handleRequest() : Unit
+		+ sendResponse() : Unit
+    }
+
+
+    '.ServerImpl
+    class "ServerImpl" as ServerImpl {
+        
+    }
+
+
+Server <|-- AbstractServer
+AbstractServer <|-- ServerImpl
+
+@enduml

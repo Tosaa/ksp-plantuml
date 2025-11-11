@@ -1,0 +1,33 @@
+@startuml
+title "04_server_state.kt Plantuml"
+
+    '.Server
+    interface "Server" as Server {
+        + state : State
+		+ start() : Unit
+		+ stop() : Unit
+    }
+
+
+    'Server.State
+    enum "Server.State" as Server_State {
+        STARTED
+		STARTING
+		STOPPING
+		STOPPED
+		__
+		+ name : String
+		+ ordinal : Int
+		+ {static} entries : EnumEntries<State>
+		# clone() : Any
+		+ getDeclaringClass() : Class<State>
+		+ describeConstable() : Optional<EnumDesc<State>>
+		# finalize() : Unit
+		+ {static} values() : Array<State>
+		+ {static} valueOf(String) : State
+    }
+
+
+Server --* Server_State
+
+@enduml

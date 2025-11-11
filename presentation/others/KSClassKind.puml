@@ -1,0 +1,27 @@
+@startuml
+title "KSClassKind.kt Plantuml"
+
+    '.ClassKind
+    enum "ClassKind" as ClassKind {
+        INTERFACE
+		CLASS
+		ENUM_CLASS
+		ENUM_ENTRY
+		OBJECT
+		ANNOTATION_CLASS
+		__
+		+ type : String
+		+ name : String
+		+ ordinal : Int
+		+ {static} entries : EnumEntries<ClassKind>
+		# clone() : Any
+		+ getDeclaringClass() : Class<ClassKind>
+		+ describeConstable() : Optional<EnumDesc<ClassKind>>
+		# finalize() : Unit
+		+ {static} values() : Array<ClassKind>
+		+ {static} valueOf(String) : ClassKind
+    }
+
+
+
+@enduml

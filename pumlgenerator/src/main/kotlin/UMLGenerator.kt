@@ -1,5 +1,6 @@
 import com.google.devtools.ksp.findActualType
 import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration

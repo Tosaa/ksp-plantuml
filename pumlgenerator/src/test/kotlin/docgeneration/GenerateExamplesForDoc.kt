@@ -3,8 +3,10 @@ package docgeneration
 import CompilationTest
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.sourcesGeneratedBySymbolProcessor
+import ensureEndsWith
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.incremental.createDirectory
+import org.jetbrains.kotlin.ir.types.IdSignatureValues.result
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -283,6 +285,20 @@ class GenerationForDoc : CompilationTest() {
             appendText(preamble)
             appendText("\n")
             appendText(DEFAULT_OPTIONS.asMap().entries.joinToString("\n") { (key, value) -> "$key=$value" })
+        }
+    }
+
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun generatePumlForPresentation() {
+        val files = File("../presentation").walkTopDown().toList().filter { it.name.endsWith(".kt") }
+        files.forEach { ktFile ->
+            newCompilation(options = DEFAULT_OPTIONS.copy(title = "\"${ktFile.name} Plantuml\""), sources = listOf(SourceFile.kotlin("${ktFile.name}", ktFile.readText(Charsets.UTF_8)))).let {
+                val result = it.compile()
+                val copiedFile = File(ktFile.parentFile, ktFile.nameWithoutExtension.ensureEndsWith(".puml")).apply { createNewFile() }
+                result.sourcesGeneratedBySymbolProcessor.first().copyTo(copiedFile, overwrite = true)
+            }
         }
     }
 

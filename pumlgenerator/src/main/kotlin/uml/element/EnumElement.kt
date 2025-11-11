@@ -46,6 +46,16 @@ $functionsString
 
     class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
 
+        fun getEntries(
+            enumKSClassDeclaration: KSClassDeclaration
+        ): List<String> {
+            return enumKSClassDeclaration.declarations
+                .filterIsInstance<KSClassDeclaration>()
+                .filter { it.classKind == ClassKind.ENUM_ENTRY }
+                .map { it.simpleName.asString() }
+                .toList()
+        }
+
         override fun build(): EnumElement? {
             return if (options.isValid(clazz, logger)) {
                 EnumElement(
@@ -54,11 +64,7 @@ $functionsString
                     elementAlias = clazz.fullQualifiedName.replace(".", "_").trim('_'),
                     attributes = allProperties.map { it.toField(options) },
                     functions = allFunctions.map { it.toMethod(options) },
-                    members = clazz.declarations
-                        .mapNotNull { it as? KSClassDeclaration }
-                        .filter { it.classKind == ClassKind.ENUM_ENTRY }
-                        .map { it.simpleName.asString() }
-                        .toList(),
+                    members = getEntries(clazz),
                     isShell = isShell
                 )
             } else {

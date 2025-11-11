@@ -1,0 +1,20 @@
+@startuml
+title "03_server_default_config.kt Plantuml"
+
+    '.Server
+    interface "Server" as Server {
+        + start() : Unit
+		+ stop() : Unit
+    }
+
+
+    'Server.Config
+    interface "Server.Config" as Server_Config {
+        + {static} Default : Config
+		+ ipAddress : String
+		+ port : Int
+    }
+
+
+
+@enduml

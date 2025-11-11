@@ -1,0 +1,48 @@
+@startuml
+title "05_server_sealed_state.kt Plantuml"
+
+    '.Server
+    interface "Server" as Server {
+        + state : State
+		+ start() : Unit
+		+ stop() : Unit
+    }
+
+
+    'Server.State
+    class "Server.State" as Server_State <<Sealed>>{
+        
+    }
+
+
+    'Server.State.STARTED
+    class "Server.State.STARTED" as Server_State_STARTED << (O, #FF7700) object>>{
+        
+    }
+
+
+    'Server.State.STARTING
+    class "Server.State.STARTING" as Server_State_STARTING << (O, #FF7700) object>>{
+        
+    }
+
+
+    'Server.State.STOPPING
+    class "Server.State.STOPPING" as Server_State_STOPPING {
+        + reason : String
+    }
+
+
+    'Server.State.STOPPED
+    class "Server.State.STOPPED" as Server_State_STOPPED {
+        + reason : String
+    }
+
+
+Server_State <|-- Server_State_STOPPED
+Server_State <|-- Server_State_STOPPING
+Server_State <|-- Server_State_STARTING
+Server_State <|-- Server_State_STARTED
+Server --* Server_State
+
+@enduml

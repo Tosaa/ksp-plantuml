@@ -1,7 +1,9 @@
 package uml.element
 
 import Options
+import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
@@ -11,7 +13,30 @@ import uml.fullQualifiedName
 
 abstract class DiagramElementBuilder(val clazz: KSClassDeclaration, open var isShell: Boolean, val options: Options, val logger: KSPLogger? = null) {
 
-    val companionObject = clazz.declarations.filter { it is KSClassDeclaration && it.isCompanionObject }.map { it as? KSClassDeclaration }.firstOrNull()
+    fun getCompanionObjectDeclaration(
+        clazz: KSClassDeclaration
+    ): KSClassDeclaration? {
+        return clazz
+            .declarations
+            .filterIsInstance<KSClassDeclaration>()
+            .filter { it.classKind == ClassKind.OBJECT }
+            .filter { it.isCompanionObject }
+            .firstOrNull()
+    }
+
+    fun getCompanionObjectProperties(
+        clazz: KSClassDeclaration
+    ): List<KSPropertyDeclaration> {
+        return getCompanionObjectDeclaration(clazz)
+            ?.getAllProperties()?.toList() ?: emptyList()
+    }
+
+    fun getCompanionObjectFunctions(
+        clazz: KSClassDeclaration
+    ): List<KSFunctionDeclaration> {
+        return getCompanionObjectDeclaration(clazz)
+            ?.getAllFunctions()?.toList() ?: emptyList()
+    }
 
     open val fullQualifiedName: String
         get() = clazz.fullQualifiedName
@@ -24,7 +49,7 @@ abstract class DiagramElementBuilder(val clazz: KSClassDeclaration, open var isS
     open val allProperties: List<KSPropertyDeclaration>
         get() = buildList {
             if (!isShell) {
-                val validCompanionObjectProperties = companionObject?.getAllProperties()?.filterPropertiesByOptions(clazz, options, logger) ?: emptySequence()
+                val validCompanionObjectProperties = getCompanionObjectProperties(clazz).asSequence().filterPropertiesByOptions(clazz, options, logger) ?: emptySequence()
                 addAll(validCompanionObjectProperties)
 
                 val validProperties = clazz.getAllProperties().filterPropertiesByOptions(clazz, options, logger)
@@ -42,7 +67,7 @@ abstract class DiagramElementBuilder(val clazz: KSClassDeclaration, open var isS
     open val allFunctions: List<KSFunctionDeclaration>
         get() = buildList {
             if (!isShell) {
-                val validCompanionObjectFunctions = companionObject?.getAllFunctions()?.filterFunctionsByOptions(clazz, options, logger) ?: emptySequence()
+                val validCompanionObjectFunctions = getCompanionObjectFunctions(clazz).asSequence().filterFunctionsByOptions(clazz, options, logger) ?: emptySequence()
                 addAll(validCompanionObjectFunctions)
 
                 val validFunctions = clazz.getAllFunctions().filterFunctionsByOptions(clazz, options, logger)

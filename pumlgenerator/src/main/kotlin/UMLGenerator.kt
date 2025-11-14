@@ -1,6 +1,5 @@
 import com.google.devtools.ksp.findActualType
 import com.google.devtools.ksp.processing.KSPLogger
-import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
@@ -17,12 +16,30 @@ class UMLGenerator(val logger: KSPLogger, val diagrams: ClassDiagramDescription,
             return
         }
 
-        logger.v { "${file.fileName} -> ${file.declarations.joinToString()}" }
-        val ignoredDeclarations = file.declarations.filter { it !is KSClassDeclaration && it !is KSFunctionDeclaration && it !is KSPropertyDeclaration && it !is KSTypeAlias }.toList()
-        if (ignoredDeclarations.isNotEmpty()) {
-            logger.w { "The following declarations were ignored since only class declarations are considered: ${ignoredDeclarations.joinToString()}" }
+        val classes = file.declarations.filterIsInstance<KSClassDeclaration>()
+        classes.forEach {
+            logger.v { "visitFile(): Visit $it in $file" }
+            it.accept(this, data)
         }
-        file.declarations.forEach { it.accept(this, data) }
+        val functions = file.declarations.filterIsInstance<KSFunctionDeclaration>()
+        functions.forEach {
+            logger.v { "visitFile(): Visit $it in $file" }
+            it.accept(this, data)
+        }
+        val properties = file.declarations.filterIsInstance<KSPropertyDeclaration>()
+        properties.forEach {
+            logger.v { "visitFile(): Visit $it in $file" }
+            it.accept(this, data)
+        }
+        val typealiases = file.declarations.filterIsInstance<KSTypeAlias>()
+        typealiases.forEach {
+            logger.v { "visitFile(): Visit $it in $file" }
+            it.accept(this, data)
+        }
+        val ignoredDeclarations = file.declarations.filterNot { it in listOf(typealiases, properties, functions, classes).flatMap { it.toList() } }.toList()
+        if (ignoredDeclarations.isNotEmpty()) {
+            logger.w { "The following declarations of file $file, were ignored: ${ignoredDeclarations.joinToString()}" }
+        }
     }
 
     override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit) {

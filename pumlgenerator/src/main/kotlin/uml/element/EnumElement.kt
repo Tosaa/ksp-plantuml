@@ -4,6 +4,10 @@ import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import filterFunctionsByOptions
+import filterPropertiesByOptions
 import isValid
 import uml.ElementKind
 import uml.className
@@ -55,6 +59,45 @@ $functionsString
                 .map { it.simpleName.asString() }
                 .toList()
         }
+
+
+        // For Enums we need to access allProperties to also get the ones from Enum<T>
+        override val allProperties: List<KSPropertyDeclaration>
+            get() = buildList {
+                if (!isShell) {
+                    val validCompanionObjectProperties = getCompanionObjectProperties(clazz).asSequence().filterPropertiesByOptions(clazz, options, logger) ?: emptySequence()
+                    addAll(validCompanionObjectProperties)
+
+                    val validProperties = clazz.getAllProperties().filterPropertiesByOptions(clazz, options, logger)
+                    addAll(validProperties)
+
+                    val otherProperties = clazz.declarations.filterIsInstance<KSPropertyDeclaration>()
+                        .filterNot { it in validProperties }
+                        .filterPropertiesByOptions(clazz, options, logger)
+                    addAll(otherProperties)
+                }
+
+                addAll(extensionProperties)
+            }.distinct()
+
+        // For Enums we need to access allProperties to also get the ones from Enum<T>
+        override val allFunctions: List<KSFunctionDeclaration>
+            get() = buildList {
+                if (!isShell) {
+                    val validCompanionObjectFunctions = getCompanionObjectFunctions(clazz).asSequence().filterFunctionsByOptions(clazz, options, logger) ?: emptySequence()
+                    addAll(validCompanionObjectFunctions)
+
+                    val validFunctions = clazz.getAllFunctions().filterFunctionsByOptions(clazz, options, logger)
+                    addAll(validFunctions)
+
+                    val otherFunctions = clazz.declarations.filterIsInstance<KSFunctionDeclaration>()
+                        .filterNot { it in validFunctions }
+                        .filterFunctionsByOptions(clazz, options, logger)
+                    addAll(otherFunctions)
+                }
+
+                addAll(extensionFunctions)
+            }
 
         override fun build(): EnumElement? {
             return if (options.isValid(clazz, logger)) {

@@ -40,7 +40,13 @@ class ExtensionFunctionsTest : CompilationTest() {
     val Color.Companion.red : Color
         get() = Color("ffff0000")
     // Not companion
-    fun Color.halfTransparent() : Color = Color("7f"+this.hex.takeLast(6))
+    fun Color.halfTransparent() : Color {
+        return if (this.hex.isEmpty()){
+            Color("00000000")
+        } else {
+            Color("7f"+this.hex.takeLast(6))
+        }
+    }
     """
 
 

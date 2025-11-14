@@ -50,12 +50,16 @@ internal fun KSFunctionDeclaration.isInheritedFunction(declarationOwner: KSClass
         return true
     }
 
-    val superTypesOfDeclarationOwner = declarationOwner.superTypes.toList().mapNotNull { it.resolve().declaration as? KSClassDeclaration }
+    val superTypesOfDeclarationOwner = declarationOwner
+        .superTypes.map { it.resolve().declaration }
+        .filterIsInstance<KSClassDeclaration>().toList()
         .filter { it.qualifiedName?.asString() != "kotlin.Enum" } // Ensures that all Enums have enum specific properties and functions
 
-    val potentialMatchingDeclarations = superTypesOfDeclarationOwner.flatMap { (it.getAllFunctions() + it.declarations.filterIsInstance<KSFunctionDeclaration>()).distinct() }
+    val potentialMatchingDeclarations = superTypesOfDeclarationOwner
+        .flatMap { it.getAllFunctions() }
         .filter { it.simpleName.getShortName() == this.simpleName.getShortName() }
     return if (potentialMatchingDeclarations.isEmpty()) {
+        // No declarations in the parent that match with this Property
         false
     } else {
         potentialMatchingDeclarations.any {
@@ -92,12 +96,16 @@ internal fun KSPropertyDeclaration.isInheritedProperty(declarationOwner: KSClass
         return true
     }
 
-    val superTypesOfDeclarationOwner = declarationOwner.superTypes.toList().mapNotNull { it.resolve().declaration as? KSClassDeclaration }
+    val superTypesOfDeclarationOwner = declarationOwner
+        .superTypes.map { it.resolve().declaration }
+        .filterIsInstance<KSClassDeclaration>().toList()
         .filter { it.qualifiedName?.asString() != "kotlin.Enum" } // Ensures that all Enums have enum specific properties and functions
 
-    val potentialMatchingDeclarations = superTypesOfDeclarationOwner.flatMap { (it.getAllProperties() + it.declarations.filterIsInstance<KSPropertyDeclaration>()).distinct() }
+    val potentialMatchingDeclarations = superTypesOfDeclarationOwner
+        .flatMap { it.getAllProperties() }
         .filter { it.simpleName.getShortName() == this.simpleName.getShortName() }
     return if (potentialMatchingDeclarations.isEmpty()) {
+        // No declarations in the parent that match with this Property
         false
     } else {
         potentialMatchingDeclarations.any {

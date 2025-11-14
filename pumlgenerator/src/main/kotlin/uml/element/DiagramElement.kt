@@ -11,7 +11,7 @@ sealed class DiagramElement(val elementName: String, val elementAlias: String, v
     val comment: String = "'$uniqueIdentifier"
 
     open fun getContent(indent: String): String {
-        val shellString = if (isShell) DiagramElement.shellString else ""
+        val shellString = if (isShell) shellString else ""
         val attributesString = attributes
             .takeIf { it.isNotEmpty() }
             ?.let { it.joinToString(separator = "\n") { "$indent${it.render()}" } }

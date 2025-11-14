@@ -17,16 +17,16 @@ title Example for SealedClasses
     'ui.UIState.Success
     class "UIState.Success" as ui_UIState_Success <<Data>>{
         + data : String
-		+ component1() : String
 		+ copy(String) : Success
+		+ component1() : String
     }
 
 
     'ui.UIState.Error
     class "UIState.Error" as ui_UIState_Error <<Data>>{
         + exception : Exception
-		+ component1() : Exception
 		+ copy(Exception) : Error
+		+ component1() : Exception
     }
 
 

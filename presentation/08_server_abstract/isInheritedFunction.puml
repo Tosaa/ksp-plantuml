@@ -1,0 +1,14 @@
+@startuml
+title "isInheritedFunction.kt Plantuml"
+
+    '.<ERROR TYPE: KSFunctionDeclaration>
+    class "<ERROR TYPE: KSFunctionDeclaration>" as <ERROR TYPE: KSFunctionDeclaration> {
+        ...
+==
+
+		+ <ext> isInherited() : Boolean
+    }
+
+
+
+@enduml

@@ -1,4 +1,3 @@
-import com.vanniktech.maven.publish.SonatypeHost
 import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
@@ -11,13 +10,13 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 plugins {
     kotlin("jvm")
     id("maven-publish")
-    id("com.vanniktech.maven.publish") version "0.30.0"
-    id("com.google.devtools.ksp") version "2.1.21-2.0.1"
+    id("com.vanniktech.maven.publish") version "0.36.0"
+    id("com.google.devtools.ksp") version "2.3.3"
 
 }
 
 group = "io.github.tosaa.puml.ksp"
-version = "0.0.8"
+version = "0.0.9"
 
 repositories {
     mavenCentral()
@@ -32,9 +31,9 @@ ksp {
 }
 
 dependencies {
-    implementation("com.google.devtools.ksp:symbol-processing-api:2.1.21-2.0.1")
+    implementation("com.google.devtools.ksp:symbol-processing-api:2.3.3")
     testImplementation(kotlin("test"))
-    testImplementation("dev.zacsweers.kctfork:ksp:0.7.1")
+    testImplementation("dev.zacsweers.kctfork:ksp:0.12.1")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     ksp("io.github.tosaa.puml.ksp:ksp-plantuml-generator:0.0.+")
 }
@@ -55,7 +54,7 @@ tasks {
     }
 
     register("projectDiagram") {
-        dependsOn("kspKotlin")
+    dependsOn("kspKotlin")
 
         val generatedDiagram = layout.buildDirectory.file("generated/ksp/main/resources/generated/puml").get().asFile.listFiles { pathname: File ->
             pathname.name.endsWith(".puml")
@@ -78,7 +77,7 @@ kotlin {
 
 
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
 
     signAllPublications()
 

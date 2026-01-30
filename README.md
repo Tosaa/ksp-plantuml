@@ -64,7 +64,7 @@ Add the KSP-Plugin and the Processor to your `build.gradle.kts`:
 
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.1.21-2.0.1"
+    id("com.google.devtools.ksp") version "2.3.3"
 }
 
 dependencies {
@@ -140,7 +140,7 @@ tasks {
         ksp {
             arg("puml.configFilePath", layout.projectDirectory.file("myConfig.conf").asFile.path)
         }
-        dependsOn(findByName("kspKotlin"))
+        dependsOn("kspKotlin")
     }
 }
 ```
@@ -166,7 +166,7 @@ tasks {
                 arg(it.key, it.value)
             }
         }
-        dependsOn(findByName("kspKotlin"))
+        dependsOn("kspKotlin")
     }
 }
 ```

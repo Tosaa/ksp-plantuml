@@ -2,7 +2,7 @@ plugins {
     // Apply the shared build logic from a convention plugin.
     // The shared code is located in `buildSrc/src/main/kotlin/kotlin-jvm.gradle.kts`.
     kotlin("jvm")
-    id("com.google.devtools.ksp") version "2.1.21-2.0.1"
+    id("com.google.devtools.ksp") version "2.3.3"
 
     // Apply the Application plugin to add support for building an executable JVM application.
     application
@@ -14,7 +14,7 @@ tasks {
         ksp {
             arg("puml.configFilePath", layout.projectDirectory.file("configs/firstExample.conf").asFile.path)
         }
-        dependsOn(findByName("kspKotlin"))
+        dependsOn("kspKotlin")
     }
 }
 
@@ -59,7 +59,7 @@ tasks {
                 arg(it.key, it.value)
             }
         }
-        dependsOn(findByName("kspKotlin"))
+        dependsOn("kspKotlin")
     }
 
 }
@@ -89,7 +89,7 @@ tasks {
                 arg(it.key, it.value)
             }
         }
-        dependsOn(findByName("kspKotlin"))
+        dependsOn("kspKotlin")
     }
 }
 
@@ -100,7 +100,7 @@ tasks {
             arg("puml.configFilePath", layout.projectDirectory.file("configs/cityExample.conf").asFile.path)
             // arg("puml.configFilePath", layout.projectDirectory.file("../doc/publicAPI.conf").asFile.path)
         }
-        dependsOn(findByName("kspKotlin"))
+        dependsOn("kspKotlin")
     }
 }
 

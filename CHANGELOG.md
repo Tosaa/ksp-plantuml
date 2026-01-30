@@ -1,3 +1,10 @@
+## 0.0.9 - 2026-01-30
+- Raised Kotlin version to `2.3.0`
+- Raised gradle plugin version to `9.0`
+- Raised `com.google.devtools.ksp` version to `2.3.3`
+- Raised `dev.zacsweers.kctfork:ksp` version to `0.12.1`
+
+
 ## 0.0.8 - 2025-10-31
 - Do not use `KSPLogger.error` for the validation of expected and unexpected referenced classes in the diagram.
 - Added new option `puml.saveLogToFile`, to enable/disable saving the logs into a log file. `true` by default.

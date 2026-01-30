@@ -1,4 +1,3 @@
-import com.vanniktech.maven.publish.SonatypeHost
 import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
@@ -11,7 +10,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 plugins {
     kotlin("jvm")
     id("maven-publish")
-    id("com.vanniktech.maven.publish") version "0.30.0"
+    id("com.vanniktech.maven.publish") version "0.36.0"
     id("com.google.devtools.ksp") version "2.3.3"
 
 }
@@ -55,7 +54,7 @@ tasks {
     }
 
     register("projectDiagram") {
-        dependsOn("kspKotlin")
+    dependsOn("kspKotlin")
 
         val generatedDiagram = layout.buildDirectory.file("generated/ksp/main/resources/generated/puml").get().asFile.listFiles { pathname: File ->
             pathname.name.endsWith(".puml")
@@ -78,7 +77,7 @@ kotlin {
 
 
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
 
     signAllPublications()
 

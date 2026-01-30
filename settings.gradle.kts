@@ -9,8 +9,8 @@ dependencyResolutionManagement {
 pluginManagement {
 
     plugins {
-        kotlin("jvm") version "2.1.21"
-        id("com.google.devtools.ksp") version "2.0.20-1.0.25"
+        kotlin("jvm") version "2.2.21"
+        id("com.google.devtools.ksp") version "2.3.3"
     }
 
     repositories {

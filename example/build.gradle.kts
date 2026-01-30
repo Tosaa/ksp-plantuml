@@ -14,7 +14,7 @@ tasks {
         ksp {
             arg("puml.configFilePath", layout.projectDirectory.file("configs/firstExample.conf").asFile.path)
         }
-        dependsOn("kspKotlin")
+    dependsOn("kspKotlin")
     }
 }
 
@@ -59,7 +59,7 @@ tasks {
                 arg(it.key, it.value)
             }
         }
-        dependsOn("kspKotlin")
+    dependsOn("kspKotlin")
     }
 
 }
@@ -89,7 +89,7 @@ tasks {
                 arg(it.key, it.value)
             }
         }
-        dependsOn("kspKotlin")
+    dependsOn("kspKotlin")
     }
 }
 
@@ -100,7 +100,7 @@ tasks {
             arg("puml.configFilePath", layout.projectDirectory.file("configs/cityExample.conf").asFile.path)
             // arg("puml.configFilePath", layout.projectDirectory.file("../doc/publicAPI.conf").asFile.path)
         }
-        dependsOn("kspKotlin")
+    dependsOn("kspKotlin")
     }
 }
 

@@ -16,6 +16,10 @@ data class Options(
     val includedPackages: List<String> = emptyList(),
     val excludedPackages: List<String> = emptyList(),
     val excludedClassNames: List<String> = emptyList(),
+    val excludedClassNamePrefixes: List<String> = emptyList(),
+    val excludedClassNameSuffixes: List<String> = emptyList(),
+    val excludedClassNameContains: List<String> = emptyList(),
+    val filterPreset: String = DEFAULT_FILTER_PRESET,
     val excludedPropertyNames: List<String> = emptyList(),
     val excludedFunctionNames: List<String> = DEFAULT_EXCLUDED_FUNCTIONS,
     val showInheritedProperties: Boolean = false,
@@ -49,6 +53,10 @@ data class Options(
         includedPackages = kspProcessorOptions[OptionConstants.KEY_INCLUDED_PACKAGES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
         excludedPackages = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_PACKAGES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
         excludedClassNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_CLASS_NAMES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        excludedClassNamePrefixes = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_CLASS_NAME_PREFIXES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        excludedClassNameSuffixes = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_CLASS_NAME_SUFFIXES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        excludedClassNameContains = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_CLASS_NAME_CONTAINS.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        filterPreset = kspProcessorOptions[OptionConstants.KEY_FILTER_PRESET.identifier]?.trim()?.takeIf { it.isNotEmpty() } ?: DEFAULT_FILTER_PRESET,
         excludedPropertyNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_PROPERTY_NAMES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
         excludedFunctionNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_FUNCTION_NAMES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: DEFAULT_EXCLUDED_FUNCTIONS,
         showVisibilityModifiers = kspProcessorOptions[OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS.identifier]?.equals("true", true) ?: true,
@@ -79,11 +87,26 @@ data class Options(
         saveLogToFile = kspProcessorOptions[OptionConstants.KEY_SAVE_LOG_TO_FILE.identifier]?.equals("true", true) ?: true,
     )
 
+    /**
+     * The class names that are excluded by the [filterPreset] together with the ones that are excluded explicitly.
+     * It is created together with the options, so that an unknown [filterPreset] is reported before any class is processed.
+     */
+    val classNameFilter: ClassNameFilter = ClassNameFilter.fromPresetName(filterPreset) + ClassNameFilter(
+        excludedExact = excludedClassNames,
+        excludedPrefixes = excludedClassNamePrefixes,
+        excludedSuffixes = excludedClassNameSuffixes,
+        excludedContains = excludedClassNameContains,
+    )
+
     fun asMap(): Map<String, String> {
         return mutableMapOf<String, String>().apply {
             put(OptionConstants.KEY_INCLUDED_PACKAGES.identifier, includedPackages.joinToString(", "))
             put(OptionConstants.KEY_EXCLUDE_PACKAGES.identifier, excludedPackages.joinToString(", "))
             put(OptionConstants.KEY_EXCLUDE_CLASS_NAMES.identifier, excludedClassNames.joinToString(", "))
+            put(OptionConstants.KEY_EXCLUDE_CLASS_NAME_PREFIXES.identifier, excludedClassNamePrefixes.joinToString(", "))
+            put(OptionConstants.KEY_EXCLUDE_CLASS_NAME_SUFFIXES.identifier, excludedClassNameSuffixes.joinToString(", "))
+            put(OptionConstants.KEY_EXCLUDE_CLASS_NAME_CONTAINS.identifier, excludedClassNameContains.joinToString(", "))
+            put(OptionConstants.KEY_FILTER_PRESET.identifier, filterPreset)
             put(OptionConstants.KEY_EXCLUDE_PROPERTY_NAMES.identifier, excludedPropertyNames.joinToString(", "))
             put(OptionConstants.KEY_EXCLUDE_FUNCTION_NAMES.identifier, excludedFunctionNames.joinToString(", "))
             put(OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS.identifier, showVisibilityModifiers.toString())
@@ -117,6 +140,7 @@ data class Options(
 
     companion object {
         val DEFAULT_EXCLUDED_FUNCTIONS = listOf("<init>", "toString", "equals", "hashCode")
+        const val DEFAULT_FILTER_PRESET = "NONE"
     }
 }
 
@@ -215,8 +239,8 @@ fun Options?.isValid(declaration: KSClassDeclaration, logger: KSPLogger? = null)
             false
         }
 
-        declaration.simpleName.asString() in this.excludedClassNames -> {
-            logger.v { "Exclude '${declaration.simpleName.asString()}' since its in excludedClassNames" }
+        !this.classNameFilter.shouldInclude(declaration.simpleName.asString()) -> {
+            logger.v { "Exclude '${declaration.simpleName.asString()}' since its name is excluded by excludedClassNames, a prefix, a suffix, a fragment or the filterPreset" }
             false
         }
 
@@ -250,8 +274,8 @@ fun Options?.isValid(declaration: KSTypeAlias, logger: KSPLogger? = null): Boole
             false
         }
 
-        declaration.simpleName.asString() in this.excludedClassNames -> {
-            logger.v { "Exclude '${declaration.simpleName.asString()}' since its in excludedClassNames" }
+        !this.classNameFilter.shouldInclude(declaration.simpleName.asString()) -> {
+            logger.v { "Exclude '${declaration.simpleName.asString()}' since its name is excluded by excludedClassNames, a prefix, a suffix, a fragment or the filterPreset" }
             false
         }
 

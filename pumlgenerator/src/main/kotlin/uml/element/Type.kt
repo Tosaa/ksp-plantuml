@@ -28,27 +28,25 @@ open class Type(
     val originalKSType: KSType? = null,
     val typeName: String
 ) {
-    val fullQualifiedName: String
-        get() = if (originalKSType == null) {
-            ""
-        } else {
-            "${originalKSType.declaration.qualifiedName?.getQualifier() ?: originalKSType.declaration.packageName.asString()}.${originalKSType.declaration.simpleName.asString()}"
-        }
+    val fullQualifiedName: String = if (originalKSType == null) {
+        ""
+    } else {
+        "${originalKSType.declaration.qualifiedName?.getQualifier() ?: originalKSType.declaration.packageName.asString()}.${originalKSType.declaration.simpleName.asString()}"
+    }
 
-    val isCollection: Boolean
-        get() = originalKSType != null && originalKSType.declaration.packageName.asString().startsWith("kotlin.collections")
+    val isCollection: Boolean = originalKSType != null && originalKSType.declaration.packageName.asString().startsWith("kotlin.collections")
 
-    val isPrimitive: Boolean
-        get() = originalKSType == null || originalKSType.declaration.let {
-            it.packageName.asString().contentEquals("kotlin") &&
-                    it.simpleName.asString() in PRIMITIVE_NAMES
-        }
+    val isPrimitive: Boolean = originalKSType == null || originalKSType.declaration.let {
+        it.packageName.asString().contentEquals("kotlin") &&
+                it.simpleName.asString() in PRIMITIVE_NAMES
+    }
 
     val isGeneric = (originalKSType?.arguments?.size ?: 0) > 0
     val genericTypes = originalKSType?.arguments?.mapNotNull { it.type?.resolve()?.toType() } ?: emptyList()
 
+    // The KSType is not part of the description, since it must not be accessed after its processing round
     override fun toString(): String {
-        return "Type(originalKSType = $originalKSType, typeName=$typeName)"
+        return "Type(typeName=$typeName)"
     }
 }
 

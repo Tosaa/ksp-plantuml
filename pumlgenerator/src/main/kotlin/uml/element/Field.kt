@@ -9,23 +9,20 @@ import uml.pumlVisibility
 
 
 data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibility: Boolean = true, val markExtension: Boolean) {
-    val uniqueIdentifier: String
-        get() = originalKSProperty.qualifiedName?.getQualifier() ?: (originalKSProperty.packageName.asString() + originalKSProperty.simpleName.asString())
+    // Everything is resolved when the Field is created, since the declaration must not be accessed after its processing round
+    val uniqueIdentifier: String = originalKSProperty.qualifiedName?.getQualifier() ?: (originalKSProperty.packageName.asString() + originalKSProperty.simpleName.asString())
+
+    val attributeName: String = originalKSProperty.simpleName.asString()
+
+    val attributeType: Type = originalKSProperty.type.resolve().toType()
+
+    val attributeModifiers: List<String> = originalKSProperty.modifiers.map { it.toString() }
 
     val isCollection = attributeType.isCollection
 
     val isPrimitive = attributeType.isPrimitive
 
     val isJava = attributeType.fullQualifiedName.startsWith("java")
-
-    val attributeName: String
-        get() = originalKSProperty.simpleName.asString()
-
-    val attributeType: Type
-        get() = originalKSProperty.type.resolve().toType()
-
-    val attributeModifiers: List<String>
-        get() = originalKSProperty.modifiers.map { it.toString() }
 
     val visibility = if (showVisibility) "${originalKSProperty.getVisibility().pumlVisibility} " else ""
 

@@ -3,8 +3,6 @@ package uml.element
 import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSTypeAlias
 import isValid
 import uml.ElementKind
@@ -50,25 +48,17 @@ $functionsString
 """
     }
 
-    class Builder(val typeAlias: KSTypeAlias, clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
+    // An alias renders only the extensions that are declared for it.
+    // The aliased class is passed as shell to the base class, so that its members are not resolved.
+    class Builder(val typeAlias: KSTypeAlias, clazz: KSClassDeclaration, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, true, options, logger) {
 
         val type: Type = typeAlias.type.resolve().toType()
 
-        override val packageName: String
-            get() = typeAlias.packageName.asString()
+        override val packageName: String = typeAlias.packageName.asString()
 
-        override var isShell: Boolean
-            get() = false
-            set(value) {}
+        override val isShell: Boolean = false
 
-        override val fullQualifiedName: String
-            get() = typeAlias.fullQualifiedName
-
-        override val allProperties: List<KSPropertyDeclaration>
-            get() = extensionProperties
-
-        override val allFunctions: List<KSFunctionDeclaration>
-            get() = extensionFunctions
+        override val fullQualifiedName: String = typeAlias.fullQualifiedName
 
         override fun build(): TypealiasElement? {
             return if (options.isValid(typeAlias, logger)) {
@@ -77,8 +67,8 @@ $functionsString
                     elementName = typeAlias.shortName,
                     elementAlias = typeAlias.fullQualifiedName.replace(".", "_").trim('_'),
                     originalName = type.typeName,
-                    attributes = allProperties.map { it.toField(options) },
-                    functions = allFunctions.map { it.toMethod(options) },
+                    attributes = allProperties,
+                    functions = allFunctions,
                     isShell = isShell
                 )
             } else {

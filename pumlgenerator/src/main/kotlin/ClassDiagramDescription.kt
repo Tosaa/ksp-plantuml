@@ -6,7 +6,6 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSTypeAlias
-import com.sun.org.apache.bcel.internal.Repository.addClass
 import graph.FunctionRelation
 import graph.IndirectFunctionRelation
 import graph.IndirectPropertyRelation
@@ -28,41 +27,38 @@ import uml.element.Type
 import uml.element.TypealiasElement
 import uml.element.flatResolve
 import uml.fullQualifiedName
+import uml.sourcePosition
 
 class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = null) {
 
     val graph = RelationGraph()
 
+    // Every processing round visits all files again, but an extension must be added to its class once.
+    // The extensions are identified by their position in the source code, since every round creates new symbols.
+    private val addedExtensions = mutableSetOf<String>()
+
     fun findBuilderFor(declaration: KSClassDeclaration): DiagramElementBuilder? = graph.findBuilderForVertex(declaration.fullQualifiedName)
 
     fun findBuilderFor(declaration: KSTypeAlias): DiagramElementBuilder? = graph.findBuilderForVertex(declaration.fullQualifiedName)
 
-    private fun addHierarchy(child: KSClassDeclaration, parent: KSClassDeclaration) {
+    /**
+     * The parent is referred to by its name, since the supertypes are resolved when the builder of the child is created.
+     * Only classes of the diagram have a builder, therefore the parent is looked up in the graph.
+     */
+    private fun addHierarchy(child: KSClassDeclaration, parentName: String) {
+        val parent = graph.findBuilderForVertex(parentName)?.clazz
         when {
             !options.showInheritance ->
-                logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due to option ${OptionConstants.KEY_SHOW_INHERITANCE}=false" }
+                logger.v { "Hierarchy between ${child.fullQualifiedName} and $parentName excluded due to option ${OptionConstants.KEY_SHOW_INHERITANCE}=false" }
 
-            !options.isValid(child, logger) ->
-                logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due to invalid child" }
+            parent == null ->
+                logger.v { "Hierarchy between ${child.fullQualifiedName} and $parentName excluded due Superclass is a not rendered class" }
 
-            !options.isValid(parent, logger) ->
-                logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due to invalid parent" }
-
-            child == parent ->
-                logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due to reference to itself is ignored" }
+            !graph.hasVertex(child.fullQualifiedName) ->
+                logger.v { "Hierarchy between ${child.fullQualifiedName} and $parentName excluded due derived class is a not rendered class" }
 
             else ->
-                when {
-                    !graph.hasVertex(parent.fullQualifiedName.replace(".", "_")) ->
-                        logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due Superclass is a not rendered class" }
-
-                    !graph.hasVertex(child.fullQualifiedName.replace(".", "_")) ->
-                        logger.v { "Hierarchy between ${child.fullQualifiedName} and ${parent.fullQualifiedName} excluded due derived class is a not rendered class" }
-
-                    else -> {
-                        graph.addRelation(InheritanceRelation(child, parent))
-                    }
-                }
+                graph.addRelation(InheritanceRelation(child, parent))
         }
     }
 
@@ -260,45 +256,43 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 }
 
                 !isShell -> {
-                    logger.v { "${classDeclaration.fullQualifiedName} was added previously as shell, now its marked as complete" }
-                    existingBuilder.isShell = false
+                    logger.v { "${classDeclaration.fullQualifiedName} was added previously as shell, now its replaced by the complete class" }
+                    // The shell is replaced instead of completed, since its declaration might belong to an earlier processing round
+                    createBuilder(classDeclaration, isShell = false)?.let { builder ->
+                        builder.addMembersOf(existingBuilder)
+                        graph.replaceElementBuilder(existingBuilder, builder)
+                    }
                     addInnerClasses(classDeclaration)
                 }
             }
             return
         }
 
-        when (classDeclaration.classKind) {
-            ClassKind.CLASS -> {
-                val builder = ClassElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
-                graph.addElementBuilder(builder)
-                logger.v { "${builder.fullQualifiedName} added" }
-            }
-
-            ClassKind.INTERFACE -> {
-                val builder = InterfaceElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
-                graph.addElementBuilder(builder)
-                logger.v { "${builder.fullQualifiedName} added" }
-            }
-
-            ClassKind.ENUM_CLASS -> {
-                val builder = EnumElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
-                graph.addElementBuilder(builder)
-                logger.v { "${builder.fullQualifiedName} added" }
-            }
-
-            ClassKind.OBJECT -> {
-                val builder = ObjectElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
-                graph.addElementBuilder(builder)
-                logger.v { "${builder.fullQualifiedName} added" }
-            }
-
-            else -> Unit
+        createBuilder(classDeclaration, isShell)?.let { builder ->
+            graph.addElementBuilder(builder)
+            logger.v { "${builder.fullQualifiedName} added" }
         }
 
         if (!isShell) {
             addInnerClasses(classDeclaration)
         }
+    }
+
+    private fun createBuilder(classDeclaration: KSClassDeclaration, isShell: Boolean): DiagramElementBuilder? = when (classDeclaration.classKind) {
+        ClassKind.CLASS ->
+            ClassElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
+
+        ClassKind.INTERFACE ->
+            InterfaceElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
+
+        ClassKind.ENUM_CLASS ->
+            EnumElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
+
+        ClassKind.OBJECT ->
+            ObjectElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
+
+        else ->
+            null
     }
 
     private fun addInnerClasses(classDeclaration: KSClassDeclaration) {
@@ -321,6 +315,11 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         when {
             classOfExtensionFunction == null -> {
                 logger.w { "addFunction(): Could not resolve Class for extension function $function in ${function.parent}" }
+                return
+            }
+
+            !addedExtensions.add(function.sourcePosition) -> {
+                logger.v { "addFunction(): Extension function $function was added in a previous processing round" }
                 return
             }
 
@@ -374,6 +373,11 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         when {
             classOfExtensionVariable == null -> {
                 logger.w { "addFunction(): Could not resolve Class for extension variable $property" }
+                return
+            }
+
+            !addedExtensions.add(property.sourcePosition) -> {
+                logger.v { "addProperty(): Extension property $property was added in a previous processing round" }
                 return
             }
 
@@ -434,13 +438,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
     fun computeAllRelations(): String {
         graph.elements.forEach { builder ->
             logger.v { "add Hierarchies for ${builder.fullQualifiedName}" }
-            builder.clazz.superTypes
-                .mapNotNull { it.resolve().declaration as? KSClassDeclaration }
-                .filterNot { it.packageName.asString().startsWith("kotlin") }
-                .filterNot { it.packageName.asString().startsWith("java") }
-                .forEach { parent ->
-                    addHierarchy(builder.clazz, parent)
-                }
+            builder.superTypeNames.forEach { parentName ->
+                addHierarchy(builder.clazz, parentName)
+            }
         }
 
         graph.elements
@@ -575,7 +575,7 @@ end note
             return
         }
 
-        val builder = TypealiasElement.Builder(typeAlias = typeAlias, clazz = typeAlias.findActualType(), isShell = false, options = options, logger = logger)
+        val builder = TypealiasElement.Builder(typeAlias = typeAlias, clazz = typeAlias.findActualType(), options = options, logger = logger)
         graph.addElementBuilder(builder)
         logger.v { "${builder.fullQualifiedName} added" }
     }

@@ -27,8 +27,8 @@ class ObjectElement(
                     uniqueIdentifier = clazz.fullQualifiedName,
                     elementName = clazz.className,
                     elementAlias = clazz.fullQualifiedName.replace(".", "_").trim('_'),
-                    attributes = allProperties.map { it.toField(options) },
-                    functions = allFunctions.map { it.toMethod(options) },
+                    attributes = allProperties,
+                    functions = allFunctions,
                     isShell = isShell
                 )
             } else {

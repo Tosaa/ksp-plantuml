@@ -190,7 +190,8 @@ fun Options?.isValid(type: KSType?, logger: KSPLogger? = null): Boolean = runCat
         else -> true
     }
 }.getOrElse { throwable ->
-    logger.w { "Exclude '${type?.declaration?.simpleName?.asString()}' due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
+    // The type is not accessed again, since it might be the reason of the error
+    logger.w { "Exclude type due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
     false
 }
 
@@ -224,7 +225,8 @@ fun Options?.isValid(declaration: KSClassDeclaration, logger: KSPLogger? = null)
         else -> true
     }
 }.getOrElse { throwable ->
-    logger.w { "Exclude '${declaration.simpleName.asString()}' due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
+    // The declaration is not accessed again, since it might be the reason of the error
+    logger.w { "Exclude declaration due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
     false
 }
 

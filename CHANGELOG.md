@@ -1,3 +1,7 @@
+## Unreleased
+- Fixed the processing of projects in which another processor generates code, e.g. the ones of Hilt, Dagger or Room. The diagram is written after the last processing round, when the symbols of the earlier rounds cannot be accessed anymore (`KaInvalidLifetimeOwnerAccessException`). Everything that is rendered is resolved while the files are processed now, and extensions are added once instead of once for every round.
+
+
 ## 0.0.9 - 2026-01-30
 - Raised `Kotlin` version to `2.2.21`
 - Raised `gradle-plugin` version to `9.0`

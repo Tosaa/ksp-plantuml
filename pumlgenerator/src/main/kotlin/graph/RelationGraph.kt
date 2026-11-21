@@ -19,6 +19,15 @@ class RelationGraph {
         this.elements.add(diagramElement)
     }
 
+    /**
+     * Replaces [oldElement] by [newElement] of the same class, which takes the position of the replaced one.
+     */
+    fun replaceElementBuilder(oldElement: DiagramElementBuilder, newElement: DiagramElementBuilder) {
+        val replacedElements = elements.map { if (it === oldElement) newElement else it }
+        elements.clear()
+        elements.addAll(replacedElements)
+    }
+
     fun addRelation(relation: Relation) {
         this.relations.add(relation)
     }
@@ -46,7 +55,7 @@ class RelationGraph {
     fun hasVertex(vertex: Vertex): Boolean = vertex.replace(".", "_").trim('_') in vertices
 
     fun findBuilderForVertex(vertex: Vertex): DiagramElementBuilder? {
-        return elements.find { it.fullQualifiedName == vertex }
+        return elements.find { it.fullQualifiedName.withoutEmptyPackage() == vertex.withoutEmptyPackage() }
     }
 
     fun describe(): String {
@@ -63,4 +72,7 @@ class RelationGraph {
 
     fun computeInvalidRelations(): List<Relation> = relations
         .filter { relation -> relation.fromAlias !in vertices || relation.toAlias !in vertices }
+
+    // The name of a class without a package is ".Foo" if it is taken from its declaration and "Foo" if the class is referred to as supertype
+    private fun String.withoutEmptyPackage(): String = trimStart('.')
 }

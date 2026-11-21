@@ -1,12 +1,24 @@
 package uml
 
 import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.symbol.FileLocation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSTypeAlias
 import com.google.devtools.ksp.symbol.Modifier
 import w
+
+/**
+ * Identifies this [KSDeclaration] by its position in the source code.
+ * In contrast to the declaration itself, the position is the same in every processing round.
+ */
+internal val KSDeclaration.sourcePosition: String
+    get() {
+        val location = location as? FileLocation
+        return "${location?.filePath ?: containingFile?.filePath}:${location?.lineNumber}:${qualifiedName?.asString() ?: simpleName.asString()}"
+    }
 
 val KSClassDeclaration.fullQualifiedName: String
     get() = "${qualifiedName?.getQualifier() ?: packageName.asString()}.${simpleName.asString()}"

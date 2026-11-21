@@ -8,14 +8,11 @@ import com.google.devtools.ksp.symbol.Modifier
 import uml.pumlVisibility
 
 data class Method(val originalKSFunctionDeclaration: KSFunctionDeclaration, val showVisibility: Boolean, val markExtension: Boolean) {
-    val uniqueIdentifier: String
-        get() = originalKSFunctionDeclaration.qualifiedName?.getQualifier() ?: (originalKSFunctionDeclaration.packageName.asString() + originalKSFunctionDeclaration.simpleName.asString())
-    val functionName: String
-        get() = originalKSFunctionDeclaration.simpleName.asString()
-    val parameter: List<Type>
-        get() = originalKSFunctionDeclaration.parameters.map { it.type.resolve().toType() }
-    val returnType: Type
-        get() = originalKSFunctionDeclaration.returnType?.resolve()?.toType() ?: ReservedType(null, "Unresolved")
+    // Everything is resolved when the Method is created, since the declaration must not be accessed after its processing round
+    val uniqueIdentifier: String = originalKSFunctionDeclaration.qualifiedName?.getQualifier() ?: (originalKSFunctionDeclaration.packageName.asString() + originalKSFunctionDeclaration.simpleName.asString())
+    val functionName: String = originalKSFunctionDeclaration.simpleName.asString()
+    val parameter: List<Type> = originalKSFunctionDeclaration.parameters.map { it.type.resolve().toType() }
+    val returnType: Type = originalKSFunctionDeclaration.returnType?.resolve()?.toType() ?: ReservedType(null, "Unresolved")
 
     val modifiers = mutableListOf<String>().apply {
         val isExtensionFunction = originalKSFunctionDeclaration.extensionReceiver != null

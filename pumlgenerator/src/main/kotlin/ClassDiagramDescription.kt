@@ -22,7 +22,6 @@ import uml.element.Field
 import uml.element.InterfaceElement
 import uml.element.Method
 import uml.element.ObjectElement
-import uml.element.ReservedType
 import uml.element.Type
 import uml.element.TypealiasElement
 import uml.element.flatResolve
@@ -87,7 +86,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                         logger.v { "Property relation of field $fieldOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
 
                     else -> {
-                        val types = fieldOfClass.attributeType.flatResolve(options = options, logger = logger).filter { options.isValid(it.first.originalKSType, logger) }
+                        val types = fieldOfClass.attributeType.flatResolve(logger = logger)
                         types.forEach { (type, level) ->
                             addPropertyTypeRelation(base, fieldOfClass, type, level)
                         }
@@ -141,7 +140,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         functions.forEach { methodOfClass ->
             when {
                 !options.showFunctionRelations ->
-                    logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to option ${OptionConstants.KEY_SHOW_PROPERTY_RELATIONS}=false" }
+                    logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to option ${OptionConstants.KEY_SHOW_FUNCTION_RELATIONS}=false" }
 
                 methodOfClass.returnType.isPrimitive ->
                     logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due kotlin primitives are ignored" }
@@ -152,17 +151,8 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
                 base.fullQualifiedName == methodOfClass.returnType.fullQualifiedName ->
                     logger.v { "Function relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
 
-                !methodOfClass.returnType.isGeneric && !methodOfClass.returnType.isCollection && methodOfClass.returnType !is ReservedType -> {
-                    if (!options.isValid(methodOfClass.originalKSFunctionDeclaration, logger) || !options.isValid(methodOfClass.returnType.originalKSType, logger)) {
-                        Unit // Reason is logged in the isValid invocation}
-                    } else {
-                        logger.i { "Add Relation ${FunctionRelation(base, methodOfClass)}" }
-                        graph.addRelation(FunctionRelation(base, methodOfClass))
-                    }
-                }
-
                 else -> {
-                    val types = methodOfClass.returnType.flatResolve(options = options, logger = logger).filter { options.isValid(it.first.originalKSType, logger) }
+                    val types = methodOfClass.returnType.flatResolve(logger = logger)
                     types.forEach { (type, level) ->
                         addFunctionTypeRelation(base, methodOfClass, type, level)
                     }

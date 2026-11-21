@@ -1,10 +1,8 @@
 package uml.element
 
-import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSType
 import i
-import isValid
 
 val PRIMITIVE_NAMES: List<String> = listOf(
     "String",
@@ -64,24 +62,24 @@ class ReservedType(
  * List<Foo> consists of types: List, Foo.
  * List is the first level type and holds Foo as second level type.
  */
-fun Type.flatResolve(options: Options, logger: KSPLogger? = null, level: Int = 0): Set<Pair<Type, Int>> {
+fun Type.flatResolve(logger: KSPLogger? = null, level: Int = 0): Set<Pair<Type, Int>> {
     logger.i { "flatResolve(): $this" }
     val resolved = buildSet {
         when {
             isCollection -> {
                 logger.i { "flatResolve(): resolve collection: ${genericTypes.joinToString()}" }
                 genericTypes.forEach {
-                    addAll(it.flatResolve(options = options, logger = logger, level + 1))
+                    addAll(it.flatResolve(logger = logger, level + 1))
                 }
             }
 
             genericTypes.isNotEmpty() -> {
                 logger.i { "flatResolve(): resolve and add: ${genericTypes.joinToString()}" }
-                if (options.isValid(type = this@flatResolve.originalKSType, logger = logger)) {
+                if (this@flatResolve.fullQualifiedName.isNotEmpty()) {
                     add(this@flatResolve to level)
                 }
                 genericTypes.forEach {
-                    addAll(it.flatResolve(options = options, logger = logger, level + 1))
+                    addAll(it.flatResolve(logger = logger, level + 1))
                 }
             }
 

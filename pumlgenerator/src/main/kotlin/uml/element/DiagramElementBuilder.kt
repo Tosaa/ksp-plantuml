@@ -49,12 +49,17 @@ abstract class DiagramElementBuilder(val clazz: KSClassDeclaration, isShellIniti
     var allFunctions: List<Method> = if (isShellInitially) emptyList() else computeMemberMethods()
         private set
 
+    private var builtElement: DiagramElement? = null
+    private var builtElementValid: Boolean = false
+
     fun addExtensionFunction(function: KSFunctionDeclaration) {
         allFunctions = allFunctions + function.toMethod(options)
+        invalidateBuiltElement()
     }
 
     fun addExtensionProperty(property: KSPropertyDeclaration) {
         allProperties = allProperties + property.toField(options)
+        invalidateBuiltElement()
     }
 
     /**
@@ -64,9 +69,26 @@ abstract class DiagramElementBuilder(val clazz: KSClassDeclaration, isShellIniti
     fun addMembersOf(shell: DiagramElementBuilder) {
         allProperties = allProperties + shell.allProperties
         allFunctions = allFunctions + shell.allFunctions
+        invalidateBuiltElement()
     }
 
-    abstract fun build(): DiagramElement?
+    /**
+     * The element is built once and reused until a member is added, since it is requested for the rendering and for every kind of relation.
+     */
+    fun build(): DiagramElement? {
+        if (!builtElementValid) {
+            builtElement = buildElement()
+            builtElementValid = true
+        }
+        return builtElement
+    }
+
+    protected abstract fun buildElement(): DiagramElement?
+
+    private fun invalidateBuiltElement() {
+        builtElementValid = false
+        builtElement = null
+    }
 
     private fun computeMemberFields(): List<Field> = buildList {
         val validCompanionObjectProperties = companionObject?.getAllProperties()

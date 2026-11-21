@@ -5,6 +5,7 @@ import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import isValid
+import toPumlAlias
 import uml.ElementKind
 import uml.className
 import uml.fullQualifiedName
@@ -52,12 +53,12 @@ $functionsString
             .map { it.simpleName.asString() }
             .toList()
 
-        override fun build(): EnumElement? {
+        override fun buildElement(): EnumElement? {
             return if (options.isValid(clazz, logger)) {
                 EnumElement(
                     uniqueIdentifier = clazz.fullQualifiedName,
                     elementName = clazz.className,
-                    elementAlias = clazz.fullQualifiedName.replace(".", "_").trim('_'),
+                    elementAlias = clazz.fullQualifiedName.toPumlAlias(),
                     attributes = allProperties,
                     functions = allFunctions,
                     members = entries,

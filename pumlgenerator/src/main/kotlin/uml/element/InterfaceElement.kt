@@ -5,6 +5,7 @@ import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.Modifier
 import isValid
+import toPumlAlias
 import uml.ElementKind
 import uml.className
 import uml.fullQualifiedName
@@ -23,12 +24,12 @@ class InterfaceElement(
 
     class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
 
-        override fun build(): InterfaceElement? {
+        override fun buildElement(): InterfaceElement? {
             return if (options.isValid(clazz, logger)) {
                 InterfaceElement(
                     uniqueIdentifier = clazz.fullQualifiedName,
                     elementName = clazz.className,
-                    elementAlias = clazz.fullQualifiedName.replace(".", "_").trim('_'),
+                    elementAlias = clazz.fullQualifiedName.toPumlAlias(),
                     attributes = allProperties,
                     functions = allFunctions,
                     isSealedClass = clazz.modifiers.contains(Modifier.SEALED),

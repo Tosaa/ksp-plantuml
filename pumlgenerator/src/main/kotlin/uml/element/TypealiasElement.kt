@@ -5,6 +5,7 @@ import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSTypeAlias
 import isValid
+import toPumlAlias
 import uml.ElementKind
 import uml.fullQualifiedName
 import uml.shortName
@@ -60,12 +61,12 @@ $functionsString
 
         override val fullQualifiedName: String = typeAlias.fullQualifiedName
 
-        override fun build(): TypealiasElement? {
+        override fun buildElement(): TypealiasElement? {
             return if (options.isValid(typeAlias, logger)) {
                 TypealiasElement(
                     uniqueIdentifier = typeAlias.fullQualifiedName,
                     elementName = typeAlias.shortName,
-                    elementAlias = typeAlias.fullQualifiedName.replace(".", "_").trim('_'),
+                    elementAlias = typeAlias.fullQualifiedName.toPumlAlias(),
                     originalName = type.typeName,
                     attributes = allProperties,
                     functions = allFunctions,

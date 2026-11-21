@@ -4,6 +4,7 @@ import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import isValid
+import toPumlAlias
 import uml.ElementKind
 import uml.className
 import uml.fullQualifiedName
@@ -21,12 +22,12 @@ class ObjectElement(
 
     class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
 
-        override fun build(): ObjectElement? {
+        override fun buildElement(): ObjectElement? {
             return if (options.isValid(clazz, logger)) {
                 ObjectElement(
                     uniqueIdentifier = clazz.fullQualifiedName,
                     elementName = clazz.className,
-                    elementAlias = clazz.fullQualifiedName.replace(".", "_").trim('_'),
+                    elementAlias = clazz.fullQualifiedName.toPumlAlias(),
                     attributes = allProperties,
                     functions = allFunctions,
                     isShell = isShell

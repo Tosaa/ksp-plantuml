@@ -27,6 +27,8 @@ class OptionComputationTest {
             kspProcessorOptions["puml.excludedClassNameSuffixes"] = "_Impl"
             kspProcessorOptions["puml.excludedClassNameContains"] = "Generated"
             kspProcessorOptions["puml.filterPreset"] = "room"
+            kspProcessorOptions["puml.showJavaObjectMembers"] = "true"
+            kspProcessorOptions["puml.showGeneratedMembers"] = "true"
             symbolProcessorProviders += SymbolProcessorProvider { env ->
                 options = Options(env.options)
                 return@SymbolProcessorProvider object : SymbolProcessor {
@@ -43,6 +45,8 @@ class OptionComputationTest {
         assertEquals(listOf("_Impl"), options?.excludedClassNameSuffixes)
         assertEquals(listOf("Generated"), options?.excludedClassNameContains)
         assertEquals("room", options?.filterPreset)
+        assertEquals(true, options?.showJavaObjectMembers)
+        assertEquals(true, options?.showGeneratedMembers)
         // Todo: further Options resolving
     }
 
@@ -50,6 +54,8 @@ class OptionComputationTest {
     fun `Options that are not passed keep their default value`() {
         val options = Options(emptyMap())
         assertEquals(Options.DEFAULT_FILTER_PRESET, options.filterPreset)
+        assertEquals(false, options.showJavaObjectMembers)
+        assertEquals(false, options.showGeneratedMembers)
         assertEquals(true, options.saveLogToFile)
     }
 

@@ -23,6 +23,10 @@ enum class OptionConstants(val identifier: String) {
     KEY_SHOW_INHERITED_PROPERTIES("puml.showInheritedProperties"),
     KEY_SHOW_INHERITED_FUNCTIONS("puml.showInheritedFunctions"),
 
+    // Show/Hide members that are not declared in the source code
+    KEY_SHOW_JAVA_OBJECT_MEMBERS("puml.showJavaObjectMembers"),
+    KEY_SHOW_GENERATED_MEMBERS("puml.showGeneratedMembers"),
+
     // Show/Hide information in diagram by visibility
     KEY_SHOW_PUBLIC_CLASSES("puml.showPublicClasses"),
     KEY_SHOW_PUBLIC_PROPERTIES("puml.showPublicProperties"),

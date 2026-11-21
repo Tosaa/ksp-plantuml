@@ -9,8 +9,10 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSTypeAlias
+import uml.isGeneratedMemberOf
 import uml.isInheritedFunction
 import uml.isInheritedProperty
+import uml.isJvmRootFunction
 
 data class Options(
     val includedPackages: List<String> = emptyList(),
@@ -24,6 +26,8 @@ data class Options(
     val excludedFunctionNames: List<String> = DEFAULT_EXCLUDED_FUNCTIONS,
     val showInheritedProperties: Boolean = false,
     val showInheritedFunctions: Boolean = false,
+    val showJavaObjectMembers: Boolean = false,
+    val showGeneratedMembers: Boolean = false,
     val showVisibilityModifiers: Boolean = true,
     val showExtensions: Boolean = true,
     val markExtensions: Boolean = true,
@@ -63,6 +67,8 @@ data class Options(
         markExtensions = kspProcessorOptions[OptionConstants.KEY_MARK_EXTENSIONS.identifier]?.equals("true", true) ?: true,
         showInheritedProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITED_PROPERTIES.identifier]?.equals("true", true) ?: false,
         showInheritedFunctions = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITED_FUNCTIONS.identifier]?.equals("true", true) ?: false,
+        showJavaObjectMembers = kspProcessorOptions[OptionConstants.KEY_SHOW_JAVA_OBJECT_MEMBERS.identifier]?.equals("true", true) ?: false,
+        showGeneratedMembers = kspProcessorOptions[OptionConstants.KEY_SHOW_GENERATED_MEMBERS.identifier]?.equals("true", true) ?: false,
         showExtensions = kspProcessorOptions[OptionConstants.KEY_SHOW_EXTENSIONS.identifier]?.equals("true", true) ?: true,
         showPublicClasses = kspProcessorOptions[OptionConstants.KEY_SHOW_PUBLIC_CLASSES.identifier]?.equals("true", true) ?: true,
         showPublicProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_PUBLIC_PROPERTIES.identifier]?.equals("true", true) ?: true,
@@ -112,6 +118,8 @@ data class Options(
             put(OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS.identifier, showVisibilityModifiers.toString())
             put(OptionConstants.KEY_SHOW_INHERITED_PROPERTIES.identifier, showInheritedProperties.toString())
             put(OptionConstants.KEY_SHOW_INHERITED_FUNCTIONS.identifier, showInheritedFunctions.toString())
+            put(OptionConstants.KEY_SHOW_JAVA_OBJECT_MEMBERS.identifier, showJavaObjectMembers.toString())
+            put(OptionConstants.KEY_SHOW_GENERATED_MEMBERS.identifier, showGeneratedMembers.toString())
             put(OptionConstants.KEY_MARK_EXTENSIONS.identifier, markExtensions.toString())
             put(OptionConstants.KEY_SHOW_EXTENSIONS.identifier, showExtensions.toString())
             put(OptionConstants.KEY_SHOW_PUBLIC_CLASSES.identifier, showPublicClasses.toString())
@@ -374,8 +382,17 @@ fun Options?.isValid(declaration: KSDeclaration, logger: KSPLogger? = null): Boo
 }
 
 fun Sequence<KSPropertyDeclaration>.filterPropertiesByOptions(clazz: KSClassDeclaration, options: Options, logger: KSPLogger?): Sequence<KSPropertyDeclaration> {
+    // The filters by name are applied first, since the check for inheritance has to resolve types
+    val validProperties = this.filter { options.isValid(it, logger) }
+        .filter { property ->
+            options.showGeneratedMembers || !property.isGeneratedMemberOf(clazz).also {
+                if (it) {
+                    logger.v { "filterPropertiesByOptions(): Filtered generated property ${clazz.simpleName.asString()}.${property.simpleName.asString()}" }
+                }
+            }
+        }
     return if (!options.showInheritedProperties) {
-        this.filter { options.isValid(it, logger) }
+        validProperties
             .filter { property ->
                 !property.isInheritedProperty(clazz, logger).also {
                     if (it) {
@@ -384,13 +401,29 @@ fun Sequence<KSPropertyDeclaration>.filterPropertiesByOptions(clazz: KSClassDecl
                 }
             }
     } else {
-        this.filter { options.isValid(it, logger) }
+        validProperties
     }
 }
 
 fun Sequence<KSFunctionDeclaration>.filterFunctionsByOptions(clazz: KSClassDeclaration, options: Options, logger: KSPLogger?): Sequence<KSFunctionDeclaration> {
+    // The filters by name are applied first, since the check for inheritance has to resolve types
+    val validFunctions = this.filter { options.isValid(it, logger) }
+        .filter { function ->
+            options.showJavaObjectMembers || !function.isJvmRootFunction().also {
+                if (it) {
+                    logger.v { "filterFunctionsByOptions(): Filtered function of java.lang.Object ${clazz.simpleName.asString()}.${function.simpleName.asString()}" }
+                }
+            }
+        }
+        .filter { function ->
+            options.showGeneratedMembers || !function.isGeneratedMemberOf(clazz).also {
+                if (it) {
+                    logger.v { "filterFunctionsByOptions(): Filtered generated function ${clazz.simpleName.asString()}.${function.simpleName.asString()}" }
+                }
+            }
+        }
     return if (!options.showInheritedFunctions) {
-        this.filter { options.isValid(it, logger) }
+        validFunctions
             .filter { function ->
                 !function.isInheritedFunction(clazz, logger).also {
                     if (it) {
@@ -399,6 +432,6 @@ fun Sequence<KSFunctionDeclaration>.filterFunctionsByOptions(clazz: KSClassDecla
                 }
             }
     } else {
-        this.filter { options.isValid(it, logger) }
+        validFunctions
     }
 }

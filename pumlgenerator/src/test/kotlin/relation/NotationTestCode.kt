@@ -48,6 +48,16 @@ object NotationTestCode {
     }
     """
 
+    val listeners = """
+    package listeners
+    class Event
+    class Batch
+    interface EventListener {
+        fun onEvent(event: Event)
+        fun onBatches(batches: List<Batch>)
+    }
+    """
+
     val family = """
     package family
     class Parent {

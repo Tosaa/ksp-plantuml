@@ -134,3 +134,34 @@ class IndirectFunctionRelation(val classDeclaration: KSClassDeclaration, val cla
         get() = propertyName
     override val toAlias: String = returnType.fullQualifiedName.toPumlAlias()
 }
+
+/**
+ * Relation to indicate that a class has a function with a parameter of a type of another class.
+ * E.g. `fun onEvent(event: Event)`
+ */
+class ParameterRelation(val classDeclaration: KSClassDeclaration, val classMethod: Method, val parameterType: Type, val logger: KSPLogger? = null) : Relation(RelationKind.Parameter) {
+    val classNameAlias = classDeclaration.fullQualifiedName.toPumlAlias()
+    val propertyName = classMethod.functionName
+
+    override val fromAlias: String
+        get() = classNameAlias
+    override val fromAliasDetail: String
+        get() = propertyName
+    override val toAlias: String = parameterType.fullQualifiedName.toPumlAlias()
+}
+
+/**
+ * Relation to indicate that a class has a function with a parameter that refers indirectly to a type of another class.
+ * Its relation is indirect because the type of the parameter refers to the other class as type argument.
+ * E.g. `fun onEvents(events: List<Event>)` or `fun onEvent(callback: (Event) -> Unit)`
+ */
+class IndirectParameterRelation(val classDeclaration: KSClassDeclaration, val classMethod: Method, val parameterType: Type, val logger: KSPLogger? = null) : Relation(RelationKind.IndirectParameter) {
+    val classNameAlias = classDeclaration.fullQualifiedName.toPumlAlias()
+    val propertyName = classMethod.functionName
+
+    override val fromAlias: String
+        get() = classNameAlias
+    override val fromAliasDetail: String
+        get() = propertyName
+    override val toAlias: String = parameterType.fullQualifiedName.toPumlAlias()
+}

@@ -45,6 +45,7 @@ enum class OptionConstants(val identifier: String) {
     KEY_SHOW_INHERITANCE("puml.showInheritance"),
     KEY_SHOW_PROPERTY_RELATIONS("puml.showPropertyRelations"),
     KEY_SHOW_FUNCTION_RELATIONS("puml.showFunctionRelations"),
+    KEY_SHOW_PARAMETER_RELATIONS("puml.showParameterRelations"),
     KEY_SHOW_INDIRECT_RELATIONS("puml.showIndirectRelations"),
     KEY_MAX_RELATIONS("puml.maxRelations"),
 

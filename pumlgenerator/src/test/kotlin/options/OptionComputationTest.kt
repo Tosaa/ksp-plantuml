@@ -33,6 +33,7 @@ class OptionComputationTest {
             kspProcessorOptions["puml.showJavaObjectMembers"] = "true"
             kspProcessorOptions["puml.showGeneratedMembers"] = "true"
             kspProcessorOptions["puml.notation"] = "uml"
+            kspProcessorOptions["puml.showParameterRelations"] = "true"
             symbolProcessorProviders += SymbolProcessorProvider { env ->
                 options = Options(env.options)
                 return@SymbolProcessorProvider object : SymbolProcessor {
@@ -52,6 +53,7 @@ class OptionComputationTest {
         assertEquals(true, options?.showJavaObjectMembers)
         assertEquals(true, options?.showGeneratedMembers)
         assertEquals(Notation.UML, options?.notation)
+        assertEquals(true, options?.showParameterRelations)
         // Todo: further Options resolving
     }
 
@@ -61,6 +63,7 @@ class OptionComputationTest {
         assertEquals(Options.DEFAULT_FILTER_PRESET, options.filterPreset)
         assertEquals(false, options.showJavaObjectMembers)
         assertEquals(false, options.showGeneratedMembers)
+        assertEquals(false, options.showParameterRelations)
         assertEquals(true, options.saveLogToFile)
         assertEquals(Notation.PLANTUML, options.notation)
     }

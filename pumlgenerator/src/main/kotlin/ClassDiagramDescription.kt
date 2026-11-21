@@ -9,8 +9,10 @@ import com.google.devtools.ksp.symbol.KSTypeAlias
 import graph.CollectionPropertyRelation
 import graph.FunctionRelation
 import graph.IndirectFunctionRelation
+import graph.IndirectParameterRelation
 import graph.IndirectPropertyRelation
 import graph.InheritanceRelation
+import graph.ParameterRelation
 import graph.PropertyRelation
 import graph.RealizationRelation
 import graph.Relation
@@ -192,6 +194,79 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
             level > 0 && options.showIndirectRelations ->
                 IndirectFunctionRelation(classDeclaration = base, classMethod = methodOfClass, returnType = type)
+
+            else -> {
+                logger.v { "Ignore Relation of $methodOfClass due to $KEY_SHOW_INDIRECT_RELATIONS=false" }
+                null
+            }
+        }?.let { relation ->
+            logger.i { "Add Relation $relation" }
+            graph.addRelation(relation)
+        }
+    }
+
+    private fun addParameterRelations(builder: DiagramElementBuilder) = addParameterRelations(base = builder.clazz, builder = builder)
+
+    /**
+     * A function depends on the types of its parameters, even if it returns nothing.
+     * Listener and callback interfaces are usually related to other classes by their parameters only.
+     */
+    private fun addParameterRelations(base: KSClassDeclaration, builder: DiagramElementBuilder) {
+        if (!options.showParameterRelations) {
+            logger.v { "Parameter relations of ${base.fullQualifiedName} are excluded due to option ${OptionConstants.KEY_SHOW_PARAMETER_RELATIONS}=false" }
+            return
+        }
+
+        if (!options.isValid(base, logger)) {
+            logger.v { "Parameter relations of ${base.fullQualifiedName} are excluded due to invalid KSClassDeclaration" }
+            return
+        }
+
+        val functions = builder.build()?.functions ?: return
+        functions.forEach { methodOfClass ->
+            methodOfClass.parameter.forEach { parameterType ->
+                when {
+                    parameterType.isPrimitive ->
+                        logger.v { "Parameter relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due kotlin primitives are ignored" }
+
+                    parameterType.fullQualifiedName.startsWith("java") ->
+                        logger.v { "Parameter relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due java std classes are ignored" }
+
+                    base.fullQualifiedName == parameterType.fullQualifiedName ->
+                        logger.v { "Parameter relation of method $methodOfClass of class ${base.fullQualifiedName} excluded due to reference to itself, which are ignored" }
+
+                    else -> {
+                        val types = parameterType.flatResolve(logger = logger)
+                        types.forEach { (type, level) ->
+                            addParameterTypeRelation(base, methodOfClass, type, level)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun addParameterTypeRelation(base: KSClassDeclaration, methodOfClass: Method, type: Type, level: Int) {
+        logger.v { "addParameterTypeRelation(): method=$methodOfClass parameter type=$type, level=$level" }
+        when {
+            !options.isValid(type.originalKSType, logger) ->
+                null
+
+            !graph.hasVertex(type.fullQualifiedName) -> {
+                logger.v { "Ignore Relation of $methodOfClass to $type, since class of type $type is not in the diagram" }
+                null
+            }
+
+            base.fullQualifiedName == type.fullQualifiedName -> {
+                logger.v { "Ignore Relation of $methodOfClass to $type, since to references to itself are ignored" }
+                null
+            }
+
+            level == 0 ->
+                ParameterRelation(classDeclaration = base, classMethod = methodOfClass, parameterType = type)
+
+            level > 0 && options.showIndirectRelations ->
+                IndirectParameterRelation(classDeclaration = base, classMethod = methodOfClass, parameterType = type)
 
             else -> {
                 logger.v { "Ignore Relation of $methodOfClass due to $KEY_SHOW_INDIRECT_RELATIONS=false" }
@@ -450,6 +525,8 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             .forEach { builder ->
                 logger.v { "add functions relations for ${builder.fullQualifiedName}" }
                 addFunctionRelations(builder)
+                logger.v { "add parameter relations for ${builder.fullQualifiedName}" }
+                addParameterRelations(builder)
                 logger.v { "add property relations for ${builder.fullQualifiedName}" }
                 addPropertyRelations(builder)
             }

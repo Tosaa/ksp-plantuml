@@ -44,6 +44,7 @@ data class Options(
     val showInheritance: Boolean = true,
     val showPropertyRelations: Boolean = true,
     val showFunctionRelations: Boolean = true,
+    val showParameterRelations: Boolean = false,
     val showIndirectRelations: Boolean = true,
     val maxRelations: Int = MAX_RELATIONS,
     val showPackages: Boolean = false,
@@ -84,6 +85,7 @@ data class Options(
         showInheritance = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITANCE.identifier]?.equals("true", true) ?: true,
         showPropertyRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_PROPERTY_RELATIONS.identifier]?.equals("true", true) ?: true,
         showFunctionRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_FUNCTION_RELATIONS.identifier]?.equals("true", true) ?: true,
+        showParameterRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_PARAMETER_RELATIONS.identifier]?.equals("true", true) ?: false,
         showIndirectRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_INDIRECT_RELATIONS.identifier]?.equals("true", true) ?: true,
         maxRelations = kspProcessorOptions[OptionConstants.KEY_MAX_RELATIONS.identifier]?.toIntOrNull() ?: MAX_RELATIONS,
         showPackages = kspProcessorOptions[OptionConstants.KEY_SHOW_PACKAGES.identifier]?.equals("true", true) ?: false,
@@ -137,6 +139,7 @@ data class Options(
             put(OptionConstants.KEY_SHOW_INHERITANCE.identifier, showInheritance.toString())
             put(OptionConstants.KEY_SHOW_PROPERTY_RELATIONS.identifier, showPropertyRelations.toString())
             put(OptionConstants.KEY_SHOW_FUNCTION_RELATIONS.identifier, showFunctionRelations.toString())
+            put(OptionConstants.KEY_SHOW_PARAMETER_RELATIONS.identifier, showParameterRelations.toString())
             put(OptionConstants.KEY_SHOW_INDIRECT_RELATIONS.identifier, showIndirectRelations.toString())
             put(OptionConstants.KEY_MAX_RELATIONS.identifier, maxRelations.toString())
             put(OptionConstants.KEY_SHOW_PACKAGES.identifier, showPackages.toString())

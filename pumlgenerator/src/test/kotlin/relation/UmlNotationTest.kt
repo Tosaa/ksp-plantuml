@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
  * - Generalization (solid line, hollow triangle) between classes and between interfaces
  * - Realization (dashed line, hollow triangle) between a class or an object and an interface
  * - Association (solid line, open arrow) with a multiplicity for properties
- * - Dependency (dashed line, open arrow) for type arguments and return types
+ * - Dependency (dashed line, open arrow) for type arguments, return types and parameters
  * - Keywords for interfaces and enumerations, stereotypes for Kotlin specific modifiers
  * - Visibility of members as + - # ~
  */
@@ -71,6 +71,14 @@ class UmlNotationTest : CompilationTest() {
         assertContains(generatedFile, "city_Car ..> city_Driver")
         // return type of a function
         assertContains(generatedFile, "city_Car ..> city_Horn")
+    }
+
+    @Test
+    fun `Parameters are dependencies`() {
+        val generatedFile = generate(NotationTestCode.listeners, umlOptions.copy(showParameterRelations = true))
+        assertContains(generatedFile, "listeners_EventListener ..> listeners_Event")
+        // type argument of a parameter
+        assertContains(generatedFile, "listeners_EventListener ..> listeners_Batch")
     }
 
     @Test

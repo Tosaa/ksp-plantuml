@@ -1,5 +1,6 @@
 package uml.element
 
+import Notation
 import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.ClassKind
@@ -18,8 +19,9 @@ class EnumElement(
     attributes: List<Field>,
     functions: List<Method>,
     val members: List<String>,
-    isShell: Boolean
-) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
+    isShell: Boolean,
+    notation: Notation
+) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell, notation) {
 
     override val elementKind: ElementKind = ElementKind.ENUM
 
@@ -62,7 +64,8 @@ $functionsString
                     attributes = allProperties,
                     functions = allFunctions,
                     members = entries,
-                    isShell = isShell
+                    isShell = isShell,
+                    notation = options.notation
                 )
             } else {
                 null

@@ -1,5 +1,6 @@
 package uml.element
 
+import Notation
 import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -17,8 +18,9 @@ class InterfaceElement(
     attributes: List<Field>,
     functions: List<Method>,
     isSealedClass: Boolean,
-    isShell: Boolean
-) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
+    isShell: Boolean,
+    notation: Notation
+) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell, notation) {
 
     override val elementKind: ElementKind = ElementKind.INTERFACE(isSealedClass)
 
@@ -33,7 +35,8 @@ class InterfaceElement(
                     attributes = allProperties,
                     functions = allFunctions,
                     isSealedClass = clazz.modifiers.contains(Modifier.SEALED),
-                    isShell = isShell
+                    isShell = isShell,
+                    notation = options.notation
                 )
             } else {
                 null

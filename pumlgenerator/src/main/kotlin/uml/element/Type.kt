@@ -4,6 +4,8 @@ import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSType
 import i
 
+private const val ARRAY_NAME = "kotlin.Array"
+
 val PRIMITIVE_NAMES: List<String> = listOf(
     "String",
     "Int",
@@ -39,6 +41,8 @@ open class Type(
                 it.simpleName.asString() in PRIMITIVE_NAMES
     }
 
+    val isNullable: Boolean = originalKSType?.isMarkedNullable == true
+
     val isGeneric = (originalKSType?.arguments?.size ?: 0) > 0
     val genericTypes = originalKSType?.arguments?.mapNotNull { it.type?.resolve()?.toType() } ?: emptyList()
 
@@ -54,6 +58,14 @@ class ReservedType(
 ) : Type(originalKSType, typeName)
 
 /**
+ * A type that is referenced by another type, see [flatResolve].
+ *
+ * @param level 0 for the type itself, increased by one for every type that wraps it
+ * @param isCollectionElement `true` if the type is wrapped by collections or arrays only, like `Foo` in `List<Foo>` or `Map<String, List<Foo>>`
+ */
+data class ResolvedType(val type: Type, val level: Int, val isCollectionElement: Boolean)
+
+/**
  * flatResolve is used to resolve all referenced types of a type.
  * E.g.
  * Result<Pair<Int,String> consists of types: Result, Pair, Int and String.
@@ -62,24 +74,26 @@ class ReservedType(
  * List<Foo> consists of types: List, Foo.
  * List is the first level type and holds Foo as second level type.
  */
-fun Type.flatResolve(logger: KSPLogger? = null, level: Int = 0): Set<Pair<Type, Int>> {
+fun Type.flatResolve(logger: KSPLogger? = null, level: Int = 0, isCollectionElement: Boolean = false): Set<ResolvedType> {
     logger.i { "flatResolve(): $this" }
+    // The types that are wrapped by this type are elements of a collection, if this type and all types that wrap it are collections or arrays
+    val wrapsCollectionElements = (isCollection || fullQualifiedName == ARRAY_NAME) && (level == 0 || isCollectionElement)
     val resolved = buildSet {
         when {
             isCollection -> {
                 logger.i { "flatResolve(): resolve collection: ${genericTypes.joinToString()}" }
                 genericTypes.forEach {
-                    addAll(it.flatResolve(logger = logger, level + 1))
+                    addAll(it.flatResolve(logger = logger, level + 1, wrapsCollectionElements))
                 }
             }
 
             genericTypes.isNotEmpty() -> {
                 logger.i { "flatResolve(): resolve and add: ${genericTypes.joinToString()}" }
                 if (this@flatResolve.fullQualifiedName.isNotEmpty()) {
-                    add(this@flatResolve to level)
+                    add(ResolvedType(this@flatResolve, level, isCollectionElement))
                 }
                 genericTypes.forEach {
-                    addAll(it.flatResolve(logger = logger, level + 1))
+                    addAll(it.flatResolve(logger = logger, level + 1, wrapsCollectionElements))
                 }
             }
 
@@ -90,11 +104,11 @@ fun Type.flatResolve(logger: KSPLogger? = null, level: Int = 0): Set<Pair<Type, 
 
             else -> {
                 logger.i { "flatResolve(): resolved: ${this@flatResolve}" }
-                add(this@flatResolve to level)
+                add(ResolvedType(this@flatResolve, level, isCollectionElement))
             }
         }
     }
-    return resolved.filterNot { it.first is ReservedType || it.first.isPrimitive }.toSet()
+    return resolved.filterNot { it.type is ReservedType || it.type.isPrimitive }.toSet()
 }
 
 fun KSType.toType(): Type {

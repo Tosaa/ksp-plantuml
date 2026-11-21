@@ -28,6 +28,7 @@ data class Options(
     val showInheritedFunctions: Boolean = false,
     val showJavaObjectMembers: Boolean = false,
     val showGeneratedMembers: Boolean = false,
+    val notation: Notation = Notation.DEFAULT,
     val showVisibilityModifiers: Boolean = true,
     val showExtensions: Boolean = true,
     val markExtensions: Boolean = true,
@@ -63,6 +64,7 @@ data class Options(
         filterPreset = kspProcessorOptions[OptionConstants.KEY_FILTER_PRESET.identifier]?.trim()?.takeIf { it.isNotEmpty() } ?: DEFAULT_FILTER_PRESET,
         excludedPropertyNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_PROPERTY_NAMES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
         excludedFunctionNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_FUNCTION_NAMES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: DEFAULT_EXCLUDED_FUNCTIONS,
+        notation = kspProcessorOptions[OptionConstants.KEY_NOTATION.identifier]?.let { Notation.fromName(it) } ?: Notation.DEFAULT,
         showVisibilityModifiers = kspProcessorOptions[OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS.identifier]?.equals("true", true) ?: true,
         markExtensions = kspProcessorOptions[OptionConstants.KEY_MARK_EXTENSIONS.identifier]?.equals("true", true) ?: true,
         showInheritedProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITED_PROPERTIES.identifier]?.equals("true", true) ?: false,
@@ -115,6 +117,7 @@ data class Options(
             put(OptionConstants.KEY_FILTER_PRESET.identifier, filterPreset)
             put(OptionConstants.KEY_EXCLUDE_PROPERTY_NAMES.identifier, excludedPropertyNames.joinToString(", "))
             put(OptionConstants.KEY_EXCLUDE_FUNCTION_NAMES.identifier, excludedFunctionNames.joinToString(", "))
+            put(OptionConstants.KEY_NOTATION.identifier, notation.name)
             put(OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS.identifier, showVisibilityModifiers.toString())
             put(OptionConstants.KEY_SHOW_INHERITED_PROPERTIES.identifier, showInheritedProperties.toString())
             put(OptionConstants.KEY_SHOW_INHERITED_FUNCTIONS.identifier, showInheritedFunctions.toString())

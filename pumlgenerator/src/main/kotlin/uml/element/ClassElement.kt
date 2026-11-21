@@ -1,5 +1,6 @@
 package uml.element
 
+import Notation
 import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -18,8 +19,9 @@ class ClassElement(
     functions: List<Method>,
     val isSealedClass: Boolean,
     val isDataClass: Boolean,
-    isShell: Boolean
-) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
+    isShell: Boolean,
+    notation: Notation
+) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell, notation) {
 
     override val elementKind: ElementKind = ElementKind.CLAZZ(isSealed = isSealedClass, isData = isDataClass)
 
@@ -35,7 +37,8 @@ class ClassElement(
                     functions = allFunctions,
                     isSealedClass = clazz.modifiers.contains(Modifier.SEALED),
                     isDataClass = clazz.modifiers.contains(Modifier.DATA),
-                    isShell = isShell
+                    isShell = isShell,
+                    notation = options.notation
                 )
             } else {
                 null

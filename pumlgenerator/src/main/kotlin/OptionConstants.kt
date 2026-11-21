@@ -12,6 +12,9 @@ enum class OptionConstants(val identifier: String) {
     KEY_EXCLUDE_FUNCTION_NAMES("puml.excludedFunctionNames"),
     KEY_ALLOW_EMPTY_PACKAGE("puml.allowEmptyPackage"),
 
+    // Notation in which the diagram is drawn
+    KEY_NOTATION("puml.notation"),
+
     // Enable/Disable individual visualisations
     KEY_SHOW_VISIBILITY_MODIFIERS("puml.showVisibilityModifiers"),
     KEY_MARK_EXTENSIONS("puml.markExtensions"),

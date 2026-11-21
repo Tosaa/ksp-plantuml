@@ -66,6 +66,8 @@ $finalDiagram
     private fun generateFinalDiagram(diagramCollection: ClassDiagramDescription): String {
         val diagramBuilder = StringBuilder()
         diagramBuilder.appendLine("@startuml")
+        // The style of the notation is written in front of the prefix, which can therefore override it, e.g. with `show circle`
+        options.notation.style.takeIf { it.isNotBlank() }?.let { diagramBuilder.appendLine(it) }
         options.title.takeIf { it.isNotBlank() }?.let { diagramBuilder.appendLine("title $it") }
         options.prefix.takeIf { it.isNotBlank() }?.let { diagramBuilder.appendLine(it) }
         diagramBuilder.appendLine(diagramCollection.computeUMLClassDiagrams())

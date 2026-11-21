@@ -6,11 +6,13 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSTypeAlias
+import graph.CollectionPropertyRelation
 import graph.FunctionRelation
 import graph.IndirectFunctionRelation
 import graph.IndirectPropertyRelation
 import graph.InheritanceRelation
 import graph.PropertyRelation
+import graph.RealizationRelation
 import graph.Relation
 import graph.RelationGraph
 import graph.RelationKind
@@ -56,6 +58,10 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
             !graph.hasVertex(child.fullQualifiedName) ->
                 logger.v { "Hierarchy between ${child.fullQualifiedName} and $parentName excluded due derived class is a not rendered class" }
 
+            // A class or an object realizes the interfaces it implements. An interface that extends another interface is a generalization.
+            parent.classKind == ClassKind.INTERFACE && child.classKind != ClassKind.INTERFACE ->
+                graph.addRelation(RealizationRelation(child, parent))
+
             else ->
                 graph.addRelation(InheritanceRelation(child, parent))
         }
@@ -87,15 +93,15 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
                     else -> {
                         val types = fieldOfClass.attributeType.flatResolve(logger = logger)
-                        types.forEach { (type, level) ->
-                            addPropertyTypeRelation(base, fieldOfClass, type, level)
+                        types.forEach { (type, level, isCollectionElement) ->
+                            addPropertyTypeRelation(base, fieldOfClass, type, level, isCollectionElement)
                         }
                     }
                 }
             }
     }
 
-    private fun addPropertyTypeRelation(base: KSClassDeclaration, fieldOfClass: Field, type: Type, level: Int) {
+    private fun addPropertyTypeRelation(base: KSClassDeclaration, fieldOfClass: Field, type: Type, level: Int, isCollectionElement: Boolean) {
         logger.v { "addPropertyTypeRelation(): field=$fieldOfClass with type=$type, level=$level" }
 
         when {
@@ -114,6 +120,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
             level == 0 ->
                 PropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
+
+            level > 0 && options.showIndirectRelations && isCollectionElement ->
+                CollectionPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
 
             level > 0 && options.showIndirectRelations ->
                 IndirectPropertyRelation(classDeclaration = base, classAttribute = fieldOfClass, fieldType = type)
@@ -473,18 +482,18 @@ end note
                 // Start with edges to vertices with most out edges & End with vertices with least out edges
                 val outRelations = graph.outEdgesOf(it).sortedWith(
                     compareBy(
-                        { edge -> edge.relationKind },
+                        { edge -> edge.relationKind.priority(options.notation) },
                         { edge -> graph.outDegreeOf(edge.toAlias) * (-1) })
                 )
                 outRelations.forEachIndexed { index, relation ->
                     // Avoid adding edge multiple times
-                    val relationRepresentation = "${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}"
+                    val relationRepresentation = "${relation.fromAlias} ${relation.relationKind.arrowWithLevel(options.notation, 1)} ${relation.target(options.notation)}"
                     when {
                         allEdges.containsKey(relation.fromAlias to relation.toAlias) ->
                             logger.v { "Edge for $relation exists already" }
 
-                        relation.relationKind == RelationKind.Inheritance ->
-                            appendLine("${relation.toAlias} ${relation.relationKind.reversedArrow} ${relation.fromAlias}")
+                        relation.relationKind == RelationKind.Inheritance || relation.relationKind == RelationKind.Realization ->
+                            appendLine("${relation.toAlias} ${relation.relationKind.reversedArrow(options.notation)} ${relation.fromAlias}")
 
                         relation.fromAlias in blacklistedVertices ->
                             logger.v { "Hide Relation of $relationRepresentation, since Edges for ${relation.fromAlias} are blacklisted by the amount of allowed edges" }
@@ -526,21 +535,21 @@ end note
             graph.vertices.sortedBy { graph.inDegreeOf(it) + graph.outDegreeOf(it) }.reversed().forEach {
                 graph.outEdgesOf(it).sortedWith(
                     compareBy(
-                        { edge -> edge.relationKind },
+                        { edge -> edge.relationKind.priority(options.notation) },
                         { edge -> graph.outDegreeOf(edge.toAlias) * (-1) })
                 ).forEachIndexed { index, relation ->
                     val relationRepresentation = if (graph.hasEdge(relation.toAlias, relation.fromAlias) && graph.hasEdge(relation.fromAlias, relation.toAlias)) {
-                        "${relation.fromAlias} ${relation.relationKind.arrowWithLevel(0)} ${relation.toAlias}"
+                        "${relation.fromAlias} ${relation.relationKind.arrowWithLevel(options.notation, 0)} ${relation.target(options.notation)}"
                     } else {
-                        "${relation.fromAlias} ${relation.relationKind.arrowWithLevel(1)} ${relation.toAlias}"
+                        "${relation.fromAlias} ${relation.relationKind.arrowWithLevel(options.notation, 1)} ${relation.target(options.notation)}"
                     }
 
                     when {
                         allEdges.containsKey(relation.fromAlias to relation.toAlias) ->
                             logger.v { "Edge for $relation exists already" }
 
-                        relation.relationKind == RelationKind.Inheritance ->
-                            appendLine("${relation.toAlias} ${relation.relationKind.reversedArrow} ${relation.fromAlias}")
+                        relation.relationKind == RelationKind.Inheritance || relation.relationKind == RelationKind.Realization ->
+                            appendLine("${relation.toAlias} ${relation.relationKind.reversedArrow(options.notation)} ${relation.fromAlias}")
 
                         relation.fromAlias in blacklistedVertices ->
                             logger.v { "Hide Relation of $relationRepresentation, since Edges for ${relation.fromAlias} are blacklisted by the amount of allowed edges" }

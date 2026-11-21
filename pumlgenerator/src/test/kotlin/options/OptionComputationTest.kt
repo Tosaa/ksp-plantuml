@@ -1,5 +1,6 @@
 package options
 
+import Notation
 import Options
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -11,7 +12,9 @@ import com.tschuchort.compiletesting.symbolProcessorProviders
 import com.tschuchort.compiletesting.useKsp2
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.junit.jupiter.api.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class OptionComputationTest {
 
@@ -29,6 +32,7 @@ class OptionComputationTest {
             kspProcessorOptions["puml.filterPreset"] = "room"
             kspProcessorOptions["puml.showJavaObjectMembers"] = "true"
             kspProcessorOptions["puml.showGeneratedMembers"] = "true"
+            kspProcessorOptions["puml.notation"] = "uml"
             symbolProcessorProviders += SymbolProcessorProvider { env ->
                 options = Options(env.options)
                 return@SymbolProcessorProvider object : SymbolProcessor {
@@ -47,6 +51,7 @@ class OptionComputationTest {
         assertEquals("room", options?.filterPreset)
         assertEquals(true, options?.showJavaObjectMembers)
         assertEquals(true, options?.showGeneratedMembers)
+        assertEquals(Notation.UML, options?.notation)
         // Todo: further Options resolving
     }
 
@@ -57,6 +62,21 @@ class OptionComputationTest {
         assertEquals(false, options.showJavaObjectMembers)
         assertEquals(false, options.showGeneratedMembers)
         assertEquals(true, options.saveLogToFile)
+        assertEquals(Notation.PLANTUML, options.notation)
+    }
+
+    @Test
+    fun `The name of a notation is not case sensitive and a blank name selects the default notation`() {
+        assertEquals(Notation.UML, Notation.fromName(" Uml "))
+        assertEquals(Notation.PLANTUML, Notation.fromName("plantuml"))
+        assertEquals(Notation.PLANTUML, Options(mapOf("puml.notation" to " ")).notation)
+    }
+
+    @Test
+    fun `An unknown notation is reported when the options are created`() {
+        val exception = assertFailsWith<IllegalArgumentException> { Options(mapOf("puml.notation" to "SYSML")) }
+        assertContains(exception.message.orEmpty(), "puml.notation")
+        assertContains(exception.message.orEmpty(), "PLANTUML, UML")
     }
 
 }

@@ -1,5 +1,6 @@
 package uml.element
 
+import Notation
 import Options
 import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -8,7 +9,7 @@ import com.google.devtools.ksp.symbol.Modifier
 import uml.pumlVisibility
 
 
-data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibility: Boolean = true, val markExtension: Boolean) {
+data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibility: Boolean = true, val markExtension: Boolean, val notation: Notation) {
     // Everything is resolved when the Field is created, since the declaration must not be accessed after its processing round
     val uniqueIdentifier: String = originalKSProperty.qualifiedName?.getQualifier() ?: (originalKSProperty.packageName.asString() + originalKSProperty.simpleName.asString())
 
@@ -24,7 +25,7 @@ data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibili
 
     val isJava = attributeType.fullQualifiedName.startsWith("java")
 
-    val visibility = if (showVisibility) "${originalKSProperty.getVisibility().pumlVisibility} " else ""
+    val visibility = if (showVisibility) "${originalKSProperty.getVisibility().pumlVisibility(notation)} " else ""
 
     val genericTypes = attributeType.originalKSType?.arguments ?: emptyList()
 
@@ -37,7 +38,7 @@ data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibili
             add("{static}")
         }
         if (markExtension && originalKSProperty.extensionReceiver != null) {
-            add("<ext>")
+            add(if (notation == Notation.UML) "<<ext>>" else "<ext>")
         }
     }
 
@@ -52,5 +53,5 @@ data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibili
 }
 
 fun KSPropertyDeclaration.toField(options: Options?): Field {
-    return Field(this, options?.showVisibilityModifiers == true, options?.markExtensions == true)
+    return Field(this, options?.showVisibilityModifiers == true, options?.markExtensions == true, options?.notation ?: Notation.DEFAULT)
 }

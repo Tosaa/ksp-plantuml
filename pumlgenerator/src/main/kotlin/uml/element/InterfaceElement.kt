@@ -18,11 +18,12 @@ class InterfaceElement(
     attributes: List<Field>,
     functions: List<Method>,
     isSealedClass: Boolean,
+    isFunctionalInterface: Boolean,
     isShell: Boolean,
     notation: Notation
 ) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell, notation) {
 
-    override val elementKind: ElementKind = ElementKind.INTERFACE(isSealedClass)
+    override val elementKind: ElementKind = ElementKind.INTERFACE(isSealed = isSealedClass, isFunctional = isFunctionalInterface)
 
     class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
 
@@ -35,6 +36,7 @@ class InterfaceElement(
                     attributes = allProperties,
                     functions = allFunctions,
                     isSealedClass = clazz.modifiers.contains(Modifier.SEALED),
+                    isFunctionalInterface = clazz.modifiers.contains(Modifier.FUN),
                     isShell = isShell,
                     notation = options.notation
                 )

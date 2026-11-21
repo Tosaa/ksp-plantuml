@@ -16,6 +16,7 @@ import graph.RealizationRelation
 import graph.Relation
 import graph.RelationGraph
 import graph.RelationKind
+import uml.element.AnnotationElement
 import uml.element.ClassElement
 import uml.element.DiagramElement
 import uml.element.DiagramElementBuilder
@@ -289,6 +290,9 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
 
         ClassKind.OBJECT ->
             ObjectElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
+
+        ClassKind.ANNOTATION_CLASS ->
+            AnnotationElement.Builder(clazz = classDeclaration, options = options, logger = logger, isShell = isShell)
 
         else ->
             null

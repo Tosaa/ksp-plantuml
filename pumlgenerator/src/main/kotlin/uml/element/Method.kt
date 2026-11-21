@@ -31,6 +31,9 @@ data class Method(val originalKSFunctionDeclaration: KSFunctionDeclaration, val 
         val isExtensionReceiverCompanion = (originalKSFunctionDeclaration.extensionReceiver?.resolve()?.declaration as? KSClassDeclaration)?.isCompanionObject == true
         val isJVMStatic = originalKSFunctionDeclaration.modifiers.contains(Modifier.JAVA_STATIC)
         val isCompanionFunction = isParentCompanion || isExtensionReceiverCompanion || isJVMStatic
+        if (originalKSFunctionDeclaration.modifiers.contains(Modifier.ABSTRACT)) {
+            add("{abstract}")
+        }
         if (isCompanionFunction) {
             add("{static}")
         }

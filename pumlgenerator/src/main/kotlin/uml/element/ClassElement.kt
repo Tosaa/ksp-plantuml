@@ -17,13 +17,20 @@ class ClassElement(
     uniqueIdentifier: String,
     attributes: List<Field>,
     functions: List<Method>,
+    val isAbstractClass: Boolean,
     val isSealedClass: Boolean,
     val isDataClass: Boolean,
+    val isValueClass: Boolean,
     isShell: Boolean,
     notation: Notation
 ) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell, notation) {
 
-    override val elementKind: ElementKind = ElementKind.CLAZZ(isSealed = isSealedClass, isData = isDataClass)
+    override val elementKind: ElementKind = ElementKind.CLAZZ(
+        isAbstract = isAbstractClass,
+        isSealed = isSealedClass,
+        isData = isDataClass,
+        isValue = isValueClass,
+    )
 
     class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger? = null) : DiagramElementBuilder(clazz, isShell, options, logger) {
 
@@ -35,8 +42,11 @@ class ClassElement(
                     elementAlias = clazz.fullQualifiedName.toPumlAlias(),
                     attributes = allProperties,
                     functions = allFunctions,
+                    // Sealed classes cannot be instantiated, therefore they are abstract by definition
+                    isAbstractClass = clazz.modifiers.contains(Modifier.ABSTRACT) || clazz.modifiers.contains(Modifier.SEALED),
                     isSealedClass = clazz.modifiers.contains(Modifier.SEALED),
                     isDataClass = clazz.modifiers.contains(Modifier.DATA),
+                    isValueClass = clazz.modifiers.contains(Modifier.VALUE),
                     isShell = isShell,
                     notation = options.notation
                 )

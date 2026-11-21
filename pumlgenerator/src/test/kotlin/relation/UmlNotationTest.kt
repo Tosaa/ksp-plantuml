@@ -90,10 +90,11 @@ class UmlNotationTest : CompilationTest() {
     }
 
     @Test
-    fun `Interfaces and enumerations are marked with their keyword`() {
+    fun `Interfaces enumerations and annotations are marked with their keyword`() {
         val generatedFile = generate(NotationTestCode.members)
         assertContains(generatedFile, "interface \"Sensor\" as members_Sensor <<interface>>")
         assertContains(generatedFile, "enum \"Level\" as members_Level <<enumeration>>")
+        assertContains(generatedFile, "annotation \"Experimental\" as members_Experimental <<annotation>>")
     }
 
     @Test

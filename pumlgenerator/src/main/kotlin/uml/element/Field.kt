@@ -34,6 +34,9 @@ data class Field(val originalKSProperty: KSPropertyDeclaration, val showVisibili
         val isExtensionReceiverCompanion = (originalKSProperty.extensionReceiver?.resolve()?.declaration as? KSClassDeclaration)?.isCompanionObject == true
         val isJVMStatic = originalKSProperty.modifiers.contains(Modifier.JAVA_STATIC)
         val isCompanionFunction = isParentCompanion || isExtensionReceiverCompanion || isJVMStatic
+        if (originalKSProperty.modifiers.contains(Modifier.ABSTRACT)) {
+            add("{abstract}")
+        }
         if (isCompanionFunction) {
             add("{static}")
         }

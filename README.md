@@ -34,8 +34,12 @@ The project is **open source**, **privacy-focused**, and **highly customizable**
 ## 📌 Supported Kotlin Features
 
 - Sealed classes
-- Object declarations
+- Abstract classes
+- Value classes
+- Object declarations and data objects
 - companion objects
+- Fun interfaces
+- Annotation classes
 - Suspend functions
 - Extension functions
 - Visibility modifiers (public, internal, private)
@@ -310,13 +314,13 @@ The notation decides how the elements and the relations are drawn, not which of 
 
 Part of the diagram | `PLANTUML` | `UML`
 --|--|--
-Kind of an element | Circled character, e.g. `C` for a class or `I` for an interface | Keyword: `<<interface>>` or `<<enumeration>>`
+Kind of an element | Circled character, e.g. `C` for a class or `I` for an interface | Keyword: `<<interface>>`, `<<enumeration>>` or `<<annotation>>`
 Visibility of a member | Icon, internal and package private members are drawn as protected | `+` (public), `-` (private), `#` (protected) or `~` (internal or package private)
 Function | `name(Type) : ReturnType` | `name(parameter : Type) : ReturnType`, a `vararg` parameter has the multiplicity `[*]`
 Extension, suspend function | `<ext>`, `suspend` | Stereotypes `<<ext>>`, `<<suspend>>`
 Relations | Diamonds for properties, see [Many types of relations example](#many-types-of-relations-example) | Associations and dependencies, see [Many types of relations example](#many-types-of-relations-example)
 
-In both notations static members are underlined and modifiers of Kotlin are stereotypes, e.g. `<<Data>>`, `<<Sealed>>` or `<<object>>`.
+In both notations static members are underlined, abstract classes and abstract members are written in italics, and modifiers of Kotlin are stereotypes, e.g. `<<Data>>`, `<<Sealed>>`, `<<Value>>`, `<<Fun>>` or `<<object>>`.
 
 The notation `UML` starts every diagram with `hide circle` and `skinparam classAttributeIconSize 0`, which replace the circled characters and the visibility icons of Plantuml.
 `puml.prefix` is written behind these settings and can override them, e.g. with `show circle`.

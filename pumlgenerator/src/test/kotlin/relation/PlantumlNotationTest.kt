@@ -74,12 +74,14 @@ class PlantumlNotationTest : CompilationTest() {
     }
 
     @Test
-    fun `Interfaces and enumerations have no keyword, since plantuml draws their kind as circled character`() {
+    fun `Interfaces enumerations and annotations have no keyword, since plantuml draws their kind as circled character`() {
         val generatedFile = generate(NotationTestCode.members)
         assertContains(generatedFile, "interface \"Sensor\" as members_Sensor {")
         assertContains(generatedFile, "enum \"Level\" as members_Level {")
+        assertContains(generatedFile, "annotation \"Experimental\" as members_Experimental {")
         assertContainsNot(generatedFile, "<<interface>>")
         assertContainsNot(generatedFile, "<<enumeration>>")
+        assertContainsNot(generatedFile, "<<annotation>>")
     }
 
     @Test

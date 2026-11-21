@@ -21,9 +21,9 @@ title Example for InheritanceWithInheritedFields
 
 
     '.MazeGame
-    class "MazeGame" as MazeGame {
+    abstract class "MazeGame" as MazeGame {
         + rooms : MutableList<Room>
-		# makeRoom() : Room
+		# {abstract} makeRoom() : Room
     }
 
 

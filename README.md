@@ -326,6 +326,10 @@ In both notations static members are underlined, abstract classes and abstract m
 The notation `UML` starts every diagram with `hide circle` and `skinparam classAttributeIconSize 0`, which replace the circled characters and the visibility icons of Plantuml.
 `puml.prefix` is written behind these settings and can override them, e.g. with `show circle`.
 
+![example of how the uml looks like in the notation PLANTUML](doc/plantuml/PlantumlNotation.png)
+
+![example of how the uml looks like in the notation UML](doc/plantuml/UmlNotation.png)
+
 ### DataClass example
 ![example of how the uml looks like if a Data class is defined in Kotlin](doc/plantuml/DataClass.png)
 

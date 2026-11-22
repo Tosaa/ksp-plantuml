@@ -8,60 +8,121 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import filterFunctionsByOptions
 import filterPropertiesByOptions
 import uml.fullQualifiedName
+import w
 
-abstract class DiagramElementBuilder(val clazz: KSClassDeclaration, open var isShell: Boolean, val options: Options, val logger: KSPLogger? = null) {
+/**
+ * Everything that is rendered is resolved when the builder is created or when a member is added to it.
+ * The symbols of a processing round must not be accessed in a later round or when the diagram is written,
+ * which happens as soon as another processor generates code and causes a further round.
+ */
+abstract class DiagramElementBuilder(val clazz: KSClassDeclaration, isShellInitially: Boolean, val options: Options, val logger: KSPLogger? = null) {
 
     val companionObject = clazz.declarations.filter { it is KSClassDeclaration && it.isCompanionObject }.map { it as? KSClassDeclaration }.firstOrNull()
 
-    open val fullQualifiedName: String
-        get() = clazz.fullQualifiedName
+    open val fullQualifiedName: String = clazz.fullQualifiedName
 
-    open val packageName: String
-        get() = clazz.packageName.asString()
+    open val packageName: String = clazz.packageName.asString()
 
-    protected val extensionProperties: MutableList<KSPropertyDeclaration> = mutableListOf()
+    /**
+     * The qualified names of the classes and interfaces that [clazz] extends or implements, without the ones of the kotlin and java standard library.
+     */
+    val superTypeNames: List<String> = runCatching {
+        clazz.superTypes
+            .mapNotNull { it.resolve().declaration as? KSClassDeclaration }
+            .filterNot { it.packageName.asString().startsWith("kotlin") }
+            .filterNot { it.packageName.asString().startsWith("java") }
+            .mapNotNull { it.qualifiedName?.asString() }
+            .toList()
+    }.getOrElse {
+        logger.w { "Could not resolve the supertypes of ${clazz.fullQualifiedName}: ${it.message}" }
+        emptyList()
+    }
 
-    open val allProperties: List<KSPropertyDeclaration>
-        get() = buildList {
-            if (!isShell) {
-                val validCompanionObjectProperties = companionObject?.getAllProperties()?.filterPropertiesByOptions(clazz, options, logger) ?: emptySequence()
-                addAll(validCompanionObjectProperties)
+    /**
+     * A shell renders only the members that were added explicitly, e.g. extension functions.
+     */
+    open val isShell: Boolean = isShellInitially
 
-                val validProperties = clazz.getAllProperties().filterPropertiesByOptions(clazz, options, logger)
-                addAll(validProperties)
+    var allProperties: List<Field> = if (isShellInitially) emptyList() else computeMemberFields()
+        private set
 
-                val otherProperties = clazz.declarations.filterIsInstance<KSPropertyDeclaration>().filterNot { it in clazz.getAllProperties() }.filterPropertiesByOptions(clazz, options, logger)
-                addAll(otherProperties)
-            }
+    var allFunctions: List<Method> = if (isShellInitially) emptyList() else computeMemberMethods()
+        private set
 
-            addAll(extensionProperties)
-        }
-
-    protected val extensionFunctions: MutableList<KSFunctionDeclaration> = mutableListOf()
-
-    open val allFunctions: List<KSFunctionDeclaration>
-        get() = buildList {
-            if (!isShell) {
-                val validCompanionObjectFunctions = companionObject?.getAllFunctions()?.filterFunctionsByOptions(clazz, options, logger) ?: emptySequence()
-                addAll(validCompanionObjectFunctions)
-
-                val validFunctions = clazz.getAllFunctions().filterFunctionsByOptions(clazz, options, logger)
-                addAll(validFunctions)
-
-                val otherFunctions = clazz.declarations.filterIsInstance<KSFunctionDeclaration>().filterNot { it in clazz.getAllFunctions() }.filterFunctionsByOptions(clazz, options, logger)
-                addAll(otherFunctions)
-            }
-
-            addAll(extensionFunctions)
-        }
+    private var builtElement: DiagramElement? = null
+    private var builtElementValid: Boolean = false
 
     fun addExtensionFunction(function: KSFunctionDeclaration) {
-        extensionFunctions.add(function)
+        allFunctions = allFunctions + function.toMethod(options)
+        invalidateBuiltElement()
     }
 
     fun addExtensionProperty(property: KSPropertyDeclaration) {
-        extensionProperties.add(property)
+        allProperties = allProperties + property.toField(options)
+        invalidateBuiltElement()
     }
 
-    abstract fun build(): DiagramElement?
+    /**
+     * Takes over the members that were added to the [shell] of the same class.
+     * A shell is replaced by a builder of the declaration that is processed, since the shell might belong to a declaration of an earlier processing round.
+     */
+    fun addMembersOf(shell: DiagramElementBuilder) {
+        allProperties = allProperties + shell.allProperties
+        allFunctions = allFunctions + shell.allFunctions
+        invalidateBuiltElement()
+    }
+
+    /**
+     * The element is built once and reused until a member is added, since it is requested for the rendering and for every kind of relation.
+     */
+    fun build(): DiagramElement? {
+        if (!builtElementValid) {
+            builtElement = buildElement()
+            builtElementValid = true
+        }
+        return builtElement
+    }
+
+    protected abstract fun buildElement(): DiagramElement?
+
+    private fun invalidateBuiltElement() {
+        builtElementValid = false
+        builtElement = null
+    }
+
+    private fun computeMemberFields(): List<Field> = buildList {
+        val validCompanionObjectProperties = companionObject?.getAllProperties()
+            ?.filterPropertiesByOptions(clazz, options, logger) ?: emptySequence()
+        addAll(validCompanionObjectProperties.map { it.toField(options) })
+        val declaredAndInheritedProperties = clazz.getAllProperties().toList()
+        addAll(
+            declaredAndInheritedProperties.asSequence()
+                .filterPropertiesByOptions(clazz, options, logger)
+                .map { it.toField(options) }
+        )
+        val declaredAndInherited = declaredAndInheritedProperties.toSet()
+        val otherProperties = clazz.declarations
+            .filterIsInstance<KSPropertyDeclaration>()
+            .filterNot { it in declaredAndInherited }
+            .filterPropertiesByOptions(clazz, options, logger)
+        addAll(otherProperties.map { it.toField(options) })
+    }
+
+    private fun computeMemberMethods(): List<Method> = buildList {
+        val validCompanionObjectFunctions = companionObject?.getAllFunctions()
+            ?.filterFunctionsByOptions(clazz, options, logger) ?: emptySequence()
+        addAll(validCompanionObjectFunctions.map { it.toMethod(options) })
+        val declaredAndInheritedFunctions = clazz.getAllFunctions().toList()
+        addAll(
+            declaredAndInheritedFunctions.asSequence()
+                .filterFunctionsByOptions(clazz, options, logger)
+                .map { it.toMethod(options) }
+        )
+        val declaredAndInherited = declaredAndInheritedFunctions.toSet()
+        val otherFunctions = clazz.declarations
+            .filterIsInstance<KSFunctionDeclaration>()
+            .filterNot { it in declaredAndInherited }
+            .filterFunctionsByOptions(clazz, options, logger)
+        addAll(otherFunctions.map { it.toMethod(options) })
+    }
 }

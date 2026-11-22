@@ -16,7 +16,8 @@ open class CompilationTest {
         useKsp2()
         inheritClassPath = true
         this.sources = sources
-        kspProcessorOptions.putAll(options.asMap())
+        // The diagram has to be the only generated file, since the tests read the first generated file and the order of the files depends on the file system
+        kspProcessorOptions.putAll(options.copy(saveLogToFile = false).asMap())
         symbolProcessorProviders += PumlProcessorProvider()
     }
 

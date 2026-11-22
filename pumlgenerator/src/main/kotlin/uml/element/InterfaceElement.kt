@@ -1,10 +1,12 @@
 package uml.element
 
+import Notation
 import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.Modifier
 import isValid
+import toPumlAlias
 import uml.ElementKind
 import uml.className
 import uml.fullQualifiedName
@@ -16,23 +18,27 @@ class InterfaceElement(
     attributes: List<Field>,
     functions: List<Method>,
     isSealedClass: Boolean,
-    isShell: Boolean
-) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
+    isFunctionalInterface: Boolean,
+    isShell: Boolean,
+    notation: Notation
+) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell, notation) {
 
-    override val elementKind: ElementKind = ElementKind.INTERFACE(isSealedClass)
+    override val elementKind: ElementKind = ElementKind.INTERFACE(isSealed = isSealedClass, isFunctional = isFunctionalInterface)
 
     class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
 
-        override fun build(): InterfaceElement? {
+        override fun buildElement(): InterfaceElement? {
             return if (options.isValid(clazz, logger)) {
                 InterfaceElement(
                     uniqueIdentifier = clazz.fullQualifiedName,
                     elementName = clazz.className,
-                    elementAlias = clazz.fullQualifiedName.replace(".", "_").trim('_'),
-                    attributes = allProperties.map { it.toField(options) },
-                    functions = allFunctions.map { it.toMethod(options) },
+                    elementAlias = clazz.fullQualifiedName.toPumlAlias(),
+                    attributes = allProperties,
+                    functions = allFunctions,
                     isSealedClass = clazz.modifiers.contains(Modifier.SEALED),
-                    isShell = isShell
+                    isFunctionalInterface = clazz.modifiers.contains(Modifier.FUN),
+                    isShell = isShell,
+                    notation = options.notation
                 )
             } else {
                 null

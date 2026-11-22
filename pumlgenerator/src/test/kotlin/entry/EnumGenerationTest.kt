@@ -110,7 +110,7 @@ class EnumGenerationTest : CompilationTest() {
 
     @OptIn(ExperimentalCompilerApi::class)
     @Test
-    fun `enum default properties and functions are shown`() {
+    fun `enum generated properties and functions are hidden by default`() {
         val expectedClassName = "ABC"
         val packageName = "test.a.b.c"
         val expectedAlias = "test_a_b_c_ABC"
@@ -120,6 +120,35 @@ class EnumGenerationTest : CompilationTest() {
             "ABC.kt", generateEnum(packageName, expectedClassName, entries, emptyList(), emptyList())
         )
         val compilation = newCompilation(DEFAULT_OPTIONS, listOf(kotlinSource))
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContainsNot(generatedFile, "The following relations were added to the graph but are invalid")
+        assertContains(generatedFile, "@startuml")
+        assertContains(generatedFile, "@enduml")
+        assertContains(generatedFile, classDefinition)
+        entries.forEach {
+            assertContains(generatedFile, it)
+        }
+        assertContainsNot(generatedFile, "name : String")
+        assertContainsNot(generatedFile, "ordinal : Int")
+        assertContainsNot(generatedFile, "entries : EnumEntries<ABC>")
+        assertContainsNot(generatedFile, "values() : Array<ABC>")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `enum generated properties and functions are shown with showGeneratedMembers`() {
+        val expectedClassName = "ABC"
+        val packageName = "test.a.b.c"
+        val expectedAlias = "test_a_b_c_ABC"
+        val classDefinition = "enum \"$expectedClassName\" as $expectedAlias"
+        val entries = listOf("A", "B", "C")
+        val kotlinSource = SourceFile.kotlin(
+            "ABC.kt", generateEnum(packageName, expectedClassName, entries, emptyList(), emptyList())
+        )
+        val compilation = newCompilation(DEFAULT_OPTIONS.copy(showGeneratedMembers = true), listOf(kotlinSource))
         val result = compilation.compile()
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
         assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }

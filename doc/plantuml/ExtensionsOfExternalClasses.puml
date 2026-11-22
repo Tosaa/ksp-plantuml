@@ -14,8 +14,6 @@ title Example for ExtensionsOfExternalClasses
     'plantuml.utils.PlantumlTemplate
     class "PlantumlTemplate" as plantuml_utils_PlantumlTemplate <<Data>>{
         + content : String
-		+ component1() : String
-		+ copy(String) : PlantumlTemplate
     }
 
 

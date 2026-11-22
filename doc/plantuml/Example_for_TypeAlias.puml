@@ -21,8 +21,6 @@ title Example for TypeAlias
     'basic.Box
     class "Box" as basic_Box <<Data>>{
         + id : Int
-		+ component1() : Int
-		+ copy(Int) : Box
     }
 
 

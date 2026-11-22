@@ -4,9 +4,16 @@ enum class OptionConstants(val identifier: String) {
     KEY_INCLUDED_PACKAGES("puml.includedPackages"),
     KEY_EXCLUDE_PACKAGES("puml.excludedPackages"),
     KEY_EXCLUDE_CLASS_NAMES("puml.excludedClassNames"),
+    KEY_EXCLUDE_CLASS_NAME_PREFIXES("puml.excludedClassNamePrefixes"),
+    KEY_EXCLUDE_CLASS_NAME_SUFFIXES("puml.excludedClassNameSuffixes"),
+    KEY_EXCLUDE_CLASS_NAME_CONTAINS("puml.excludedClassNameContains"),
+    KEY_FILTER_PRESET("puml.filterPreset"),
     KEY_EXCLUDE_PROPERTY_NAMES("puml.excludedPropertyNames"),
     KEY_EXCLUDE_FUNCTION_NAMES("puml.excludedFunctionNames"),
     KEY_ALLOW_EMPTY_PACKAGE("puml.allowEmptyPackage"),
+
+    // Notation in which the diagram is drawn
+    KEY_NOTATION("puml.notation"),
 
     // Enable/Disable individual visualisations
     KEY_SHOW_VISIBILITY_MODIFIERS("puml.showVisibilityModifiers"),
@@ -18,6 +25,10 @@ enum class OptionConstants(val identifier: String) {
     // Show/Hide inherited information
     KEY_SHOW_INHERITED_PROPERTIES("puml.showInheritedProperties"),
     KEY_SHOW_INHERITED_FUNCTIONS("puml.showInheritedFunctions"),
+
+    // Show/Hide members that are not declared in the source code
+    KEY_SHOW_JAVA_OBJECT_MEMBERS("puml.showJavaObjectMembers"),
+    KEY_SHOW_GENERATED_MEMBERS("puml.showGeneratedMembers"),
 
     // Show/Hide information in diagram by visibility
     KEY_SHOW_PUBLIC_CLASSES("puml.showPublicClasses"),
@@ -34,6 +45,7 @@ enum class OptionConstants(val identifier: String) {
     KEY_SHOW_INHERITANCE("puml.showInheritance"),
     KEY_SHOW_PROPERTY_RELATIONS("puml.showPropertyRelations"),
     KEY_SHOW_FUNCTION_RELATIONS("puml.showFunctionRelations"),
+    KEY_SHOW_PARAMETER_RELATIONS("puml.showParameterRelations"),
     KEY_SHOW_INDIRECT_RELATIONS("puml.showIndirectRelations"),
     KEY_MAX_RELATIONS("puml.maxRelations"),
 

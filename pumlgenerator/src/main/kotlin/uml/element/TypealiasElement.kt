@@ -1,12 +1,12 @@
 package uml.element
 
+import Notation
 import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSTypeAlias
 import isValid
+import toPumlAlias
 import uml.ElementKind
 import uml.fullQualifiedName
 import uml.shortName
@@ -27,8 +27,9 @@ class TypealiasElement(
     val originalName: String,
     attributes: List<Field>,
     functions: List<Method>,
-    isShell: Boolean
-) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
+    isShell: Boolean,
+    notation: Notation
+) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell, notation) {
 
     override val elementKind: ElementKind = ElementKind.ALIAS
 
@@ -50,36 +51,29 @@ $functionsString
 """
     }
 
-    class Builder(val typeAlias: KSTypeAlias, clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
+    // An alias renders only the extensions that are declared for it.
+    // The aliased class is passed as shell to the base class, so that its members are not resolved.
+    class Builder(val typeAlias: KSTypeAlias, clazz: KSClassDeclaration, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, true, options, logger) {
 
         val type: Type = typeAlias.type.resolve().toType()
 
-        override val packageName: String
-            get() = typeAlias.packageName.asString()
+        override val packageName: String = typeAlias.packageName.asString()
 
-        override var isShell: Boolean
-            get() = false
-            set(value) {}
+        override val isShell: Boolean = false
 
-        override val fullQualifiedName: String
-            get() = typeAlias.fullQualifiedName
+        override val fullQualifiedName: String = typeAlias.fullQualifiedName
 
-        override val allProperties: List<KSPropertyDeclaration>
-            get() = extensionProperties
-
-        override val allFunctions: List<KSFunctionDeclaration>
-            get() = extensionFunctions
-
-        override fun build(): TypealiasElement? {
+        override fun buildElement(): TypealiasElement? {
             return if (options.isValid(typeAlias, logger)) {
                 TypealiasElement(
                     uniqueIdentifier = typeAlias.fullQualifiedName,
                     elementName = typeAlias.shortName,
-                    elementAlias = typeAlias.fullQualifiedName.replace(".", "_").trim('_'),
+                    elementAlias = typeAlias.fullQualifiedName.toPumlAlias(),
                     originalName = type.typeName,
-                    attributes = allProperties.map { it.toField(options) },
-                    functions = allFunctions.map { it.toMethod(options) },
-                    isShell = isShell
+                    attributes = allProperties,
+                    functions = allFunctions,
+                    isShell = isShell,
+                    notation = options.notation
                 )
             } else {
                 null

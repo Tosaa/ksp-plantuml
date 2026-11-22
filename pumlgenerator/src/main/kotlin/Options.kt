@@ -7,19 +7,28 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
-import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSTypeAlias
+import uml.element.Type
+import uml.isGeneratedMemberOf
 import uml.isInheritedFunction
 import uml.isInheritedProperty
+import uml.isJvmRootFunction
 
 data class Options(
     val includedPackages: List<String> = emptyList(),
     val excludedPackages: List<String> = emptyList(),
     val excludedClassNames: List<String> = emptyList(),
+    val excludedClassNamePrefixes: List<String> = emptyList(),
+    val excludedClassNameSuffixes: List<String> = emptyList(),
+    val excludedClassNameContains: List<String> = emptyList(),
+    val filterPreset: String = DEFAULT_FILTER_PRESET,
     val excludedPropertyNames: List<String> = emptyList(),
     val excludedFunctionNames: List<String> = DEFAULT_EXCLUDED_FUNCTIONS,
     val showInheritedProperties: Boolean = false,
     val showInheritedFunctions: Boolean = false,
+    val showJavaObjectMembers: Boolean = false,
+    val showGeneratedMembers: Boolean = false,
+    val notation: Notation = Notation.DEFAULT,
     val showVisibilityModifiers: Boolean = true,
     val showExtensions: Boolean = true,
     val markExtensions: Boolean = true,
@@ -35,6 +44,7 @@ data class Options(
     val showInheritance: Boolean = true,
     val showPropertyRelations: Boolean = true,
     val showFunctionRelations: Boolean = true,
+    val showParameterRelations: Boolean = false,
     val showIndirectRelations: Boolean = true,
     val maxRelations: Int = MAX_RELATIONS,
     val showPackages: Boolean = false,
@@ -49,12 +59,19 @@ data class Options(
         includedPackages = kspProcessorOptions[OptionConstants.KEY_INCLUDED_PACKAGES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
         excludedPackages = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_PACKAGES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
         excludedClassNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_CLASS_NAMES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        excludedClassNamePrefixes = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_CLASS_NAME_PREFIXES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        excludedClassNameSuffixes = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_CLASS_NAME_SUFFIXES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        excludedClassNameContains = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_CLASS_NAME_CONTAINS.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
+        filterPreset = kspProcessorOptions[OptionConstants.KEY_FILTER_PRESET.identifier]?.trim()?.takeIf { it.isNotEmpty() } ?: DEFAULT_FILTER_PRESET,
         excludedPropertyNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_PROPERTY_NAMES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
         excludedFunctionNames = kspProcessorOptions[OptionConstants.KEY_EXCLUDE_FUNCTION_NAMES.identifier]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: DEFAULT_EXCLUDED_FUNCTIONS,
+        notation = kspProcessorOptions[OptionConstants.KEY_NOTATION.identifier]?.let { Notation.fromName(it) } ?: Notation.DEFAULT,
         showVisibilityModifiers = kspProcessorOptions[OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS.identifier]?.equals("true", true) ?: true,
         markExtensions = kspProcessorOptions[OptionConstants.KEY_MARK_EXTENSIONS.identifier]?.equals("true", true) ?: true,
         showInheritedProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITED_PROPERTIES.identifier]?.equals("true", true) ?: false,
         showInheritedFunctions = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITED_FUNCTIONS.identifier]?.equals("true", true) ?: false,
+        showJavaObjectMembers = kspProcessorOptions[OptionConstants.KEY_SHOW_JAVA_OBJECT_MEMBERS.identifier]?.equals("true", true) ?: false,
+        showGeneratedMembers = kspProcessorOptions[OptionConstants.KEY_SHOW_GENERATED_MEMBERS.identifier]?.equals("true", true) ?: false,
         showExtensions = kspProcessorOptions[OptionConstants.KEY_SHOW_EXTENSIONS.identifier]?.equals("true", true) ?: true,
         showPublicClasses = kspProcessorOptions[OptionConstants.KEY_SHOW_PUBLIC_CLASSES.identifier]?.equals("true", true) ?: true,
         showPublicProperties = kspProcessorOptions[OptionConstants.KEY_SHOW_PUBLIC_PROPERTIES.identifier]?.equals("true", true) ?: true,
@@ -68,6 +85,7 @@ data class Options(
         showInheritance = kspProcessorOptions[OptionConstants.KEY_SHOW_INHERITANCE.identifier]?.equals("true", true) ?: true,
         showPropertyRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_PROPERTY_RELATIONS.identifier]?.equals("true", true) ?: true,
         showFunctionRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_FUNCTION_RELATIONS.identifier]?.equals("true", true) ?: true,
+        showParameterRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_PARAMETER_RELATIONS.identifier]?.equals("true", true) ?: false,
         showIndirectRelations = kspProcessorOptions[OptionConstants.KEY_SHOW_INDIRECT_RELATIONS.identifier]?.equals("true", true) ?: true,
         maxRelations = kspProcessorOptions[OptionConstants.KEY_MAX_RELATIONS.identifier]?.toIntOrNull() ?: MAX_RELATIONS,
         showPackages = kspProcessorOptions[OptionConstants.KEY_SHOW_PACKAGES.identifier]?.equals("true", true) ?: false,
@@ -79,16 +97,34 @@ data class Options(
         saveLogToFile = kspProcessorOptions[OptionConstants.KEY_SAVE_LOG_TO_FILE.identifier]?.equals("true", true) ?: true,
     )
 
+    /**
+     * The class names that are excluded by the [filterPreset] together with the ones that are excluded explicitly.
+     * It is created together with the options, so that an unknown [filterPreset] is reported before any class is processed.
+     */
+    val classNameFilter: ClassNameFilter = ClassNameFilter.fromPresetName(filterPreset) + ClassNameFilter(
+        excludedExact = excludedClassNames,
+        excludedPrefixes = excludedClassNamePrefixes,
+        excludedSuffixes = excludedClassNameSuffixes,
+        excludedContains = excludedClassNameContains,
+    )
+
     fun asMap(): Map<String, String> {
         return mutableMapOf<String, String>().apply {
             put(OptionConstants.KEY_INCLUDED_PACKAGES.identifier, includedPackages.joinToString(", "))
             put(OptionConstants.KEY_EXCLUDE_PACKAGES.identifier, excludedPackages.joinToString(", "))
             put(OptionConstants.KEY_EXCLUDE_CLASS_NAMES.identifier, excludedClassNames.joinToString(", "))
+            put(OptionConstants.KEY_EXCLUDE_CLASS_NAME_PREFIXES.identifier, excludedClassNamePrefixes.joinToString(", "))
+            put(OptionConstants.KEY_EXCLUDE_CLASS_NAME_SUFFIXES.identifier, excludedClassNameSuffixes.joinToString(", "))
+            put(OptionConstants.KEY_EXCLUDE_CLASS_NAME_CONTAINS.identifier, excludedClassNameContains.joinToString(", "))
+            put(OptionConstants.KEY_FILTER_PRESET.identifier, filterPreset)
             put(OptionConstants.KEY_EXCLUDE_PROPERTY_NAMES.identifier, excludedPropertyNames.joinToString(", "))
             put(OptionConstants.KEY_EXCLUDE_FUNCTION_NAMES.identifier, excludedFunctionNames.joinToString(", "))
+            put(OptionConstants.KEY_NOTATION.identifier, notation.name)
             put(OptionConstants.KEY_SHOW_VISIBILITY_MODIFIERS.identifier, showVisibilityModifiers.toString())
             put(OptionConstants.KEY_SHOW_INHERITED_PROPERTIES.identifier, showInheritedProperties.toString())
             put(OptionConstants.KEY_SHOW_INHERITED_FUNCTIONS.identifier, showInheritedFunctions.toString())
+            put(OptionConstants.KEY_SHOW_JAVA_OBJECT_MEMBERS.identifier, showJavaObjectMembers.toString())
+            put(OptionConstants.KEY_SHOW_GENERATED_MEMBERS.identifier, showGeneratedMembers.toString())
             put(OptionConstants.KEY_MARK_EXTENSIONS.identifier, markExtensions.toString())
             put(OptionConstants.KEY_SHOW_EXTENSIONS.identifier, showExtensions.toString())
             put(OptionConstants.KEY_SHOW_PUBLIC_CLASSES.identifier, showPublicClasses.toString())
@@ -103,6 +139,7 @@ data class Options(
             put(OptionConstants.KEY_SHOW_INHERITANCE.identifier, showInheritance.toString())
             put(OptionConstants.KEY_SHOW_PROPERTY_RELATIONS.identifier, showPropertyRelations.toString())
             put(OptionConstants.KEY_SHOW_FUNCTION_RELATIONS.identifier, showFunctionRelations.toString())
+            put(OptionConstants.KEY_SHOW_PARAMETER_RELATIONS.identifier, showParameterRelations.toString())
             put(OptionConstants.KEY_SHOW_INDIRECT_RELATIONS.identifier, showIndirectRelations.toString())
             put(OptionConstants.KEY_MAX_RELATIONS.identifier, maxRelations.toString())
             put(OptionConstants.KEY_SHOW_PACKAGES.identifier, showPackages.toString())
@@ -117,6 +154,7 @@ data class Options(
 
     companion object {
         val DEFAULT_EXCLUDED_FUNCTIONS = listOf("<init>", "toString", "equals", "hashCode")
+        const val DEFAULT_FILTER_PRESET = "NONE"
     }
 }
 
@@ -161,37 +199,35 @@ fun Options?.isValid(packageName: String, logger: KSPLogger? = null): Boolean = 
     false
 }
 
-fun Options?.isValid(type: KSType?, logger: KSPLogger? = null): Boolean = runCatching {
-    when {
-        this == null ->
-            true
+/**
+ * Checks the declaration of the [type] with the values that were taken from it when the [Type] was created,
+ * since the relations are checked after the last processing round, when the declaration must not be accessed anymore.
+ */
+fun Options?.isValid(type: Type, logger: KSPLogger? = null): Boolean = when {
+    this == null ->
+        true
 
-        type == null ->
-            true
+    type.originalKSType == null ->
+        true
 
-
-        type.declaration.isPublic() && !this.showPublicClasses -> {
-            logger.v { "Exclude '${type.declaration.simpleName.getShortName()}' since its Public and Public deactivated by the options" }
-            false
-        }
-
-        type.declaration.isInternal() && !this.showInternalClasses -> {
-            logger.v { "Exclude '${type.declaration.simpleName.getShortName()}' since its Internal and Internal deactivated by the options" }
-            false
-        }
-
-        type.declaration.isPrivate() && !this.showPrivateClasses -> {
-            logger.v { "Exclude '${type.declaration.simpleName.getShortName()}' since its Private and Private deactivated by the options" }
-            false
-        }
-
-        !isValid(type.declaration.packageName.asString(), logger) -> false
-
-        else -> true
+    type.isPublic && !this.showPublicClasses -> {
+        logger.v { "Exclude '${type.typeName}' since its Public and Public deactivated by the options" }
+        false
     }
-}.getOrElse { throwable ->
-    logger.w { "Exclude '${type?.declaration?.simpleName?.asString()}' due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
-    false
+
+    type.isInternal && !this.showInternalClasses -> {
+        logger.v { "Exclude '${type.typeName}' since its Internal and Internal deactivated by the options" }
+        false
+    }
+
+    type.isPrivate && !this.showPrivateClasses -> {
+        logger.v { "Exclude '${type.typeName}' since its Private and Private deactivated by the options" }
+        false
+    }
+
+    !isValid(type.packageName, logger) -> false
+
+    else -> true
 }
 
 fun Options?.isValid(declaration: KSClassDeclaration, logger: KSPLogger? = null): Boolean = runCatching {
@@ -214,8 +250,8 @@ fun Options?.isValid(declaration: KSClassDeclaration, logger: KSPLogger? = null)
             false
         }
 
-        declaration.simpleName.asString() in this.excludedClassNames -> {
-            logger.v { "Exclude '${declaration.simpleName.asString()}' since its in excludedClassNames" }
+        !this.classNameFilter.shouldInclude(declaration.simpleName.asString()) -> {
+            logger.v { "Exclude '${declaration.simpleName.asString()}' since its name is excluded by excludedClassNames, a prefix, a suffix, a fragment or the filterPreset" }
             false
         }
 
@@ -224,7 +260,8 @@ fun Options?.isValid(declaration: KSClassDeclaration, logger: KSPLogger? = null)
         else -> true
     }
 }.getOrElse { throwable ->
-    logger.w { "Exclude '${declaration.simpleName.asString()}' due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
+    // The declaration is not accessed again, since it might be the reason of the error
+    logger.w { "Exclude declaration due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
     false
 }
 
@@ -248,8 +285,8 @@ fun Options?.isValid(declaration: KSTypeAlias, logger: KSPLogger? = null): Boole
             false
         }
 
-        declaration.simpleName.asString() in this.excludedClassNames -> {
-            logger.v { "Exclude '${declaration.simpleName.asString()}' since its in excludedClassNames" }
+        !this.classNameFilter.shouldInclude(declaration.simpleName.asString()) -> {
+            logger.v { "Exclude '${declaration.simpleName.asString()}' since its name is excluded by excludedClassNames, a prefix, a suffix, a fragment or the filterPreset" }
             false
         }
 
@@ -348,8 +385,17 @@ fun Options?.isValid(declaration: KSDeclaration, logger: KSPLogger? = null): Boo
 }
 
 fun Sequence<KSPropertyDeclaration>.filterPropertiesByOptions(clazz: KSClassDeclaration, options: Options, logger: KSPLogger?): Sequence<KSPropertyDeclaration> {
+    // The filters by name are applied first, since the check for inheritance has to resolve types
+    val validProperties = this.filter { options.isValid(it, logger) }
+        .filter { property ->
+            options.showGeneratedMembers || !property.isGeneratedMemberOf(clazz).also {
+                if (it) {
+                    logger.v { "filterPropertiesByOptions(): Filtered generated property ${clazz.simpleName.asString()}.${property.simpleName.asString()}" }
+                }
+            }
+        }
     return if (!options.showInheritedProperties) {
-        this.filter { options.isValid(it, logger) }
+        validProperties
             .filter { property ->
                 !property.isInheritedProperty(clazz, logger).also {
                     if (it) {
@@ -358,13 +404,29 @@ fun Sequence<KSPropertyDeclaration>.filterPropertiesByOptions(clazz: KSClassDecl
                 }
             }
     } else {
-        this.filter { options.isValid(it, logger) }
+        validProperties
     }
 }
 
 fun Sequence<KSFunctionDeclaration>.filterFunctionsByOptions(clazz: KSClassDeclaration, options: Options, logger: KSPLogger?): Sequence<KSFunctionDeclaration> {
+    // The filters by name are applied first, since the check for inheritance has to resolve types
+    val validFunctions = this.filter { options.isValid(it, logger) }
+        .filter { function ->
+            options.showJavaObjectMembers || !function.isJvmRootFunction().also {
+                if (it) {
+                    logger.v { "filterFunctionsByOptions(): Filtered function of java.lang.Object ${clazz.simpleName.asString()}.${function.simpleName.asString()}" }
+                }
+            }
+        }
+        .filter { function ->
+            options.showGeneratedMembers || !function.isGeneratedMemberOf(clazz).also {
+                if (it) {
+                    logger.v { "filterFunctionsByOptions(): Filtered generated function ${clazz.simpleName.asString()}.${function.simpleName.asString()}" }
+                }
+            }
+        }
     return if (!options.showInheritedFunctions) {
-        this.filter { options.isValid(it, logger) }
+        validFunctions
             .filter { function ->
                 !function.isInheritedFunction(clazz, logger).also {
                     if (it) {
@@ -373,6 +435,6 @@ fun Sequence<KSFunctionDeclaration>.filterFunctionsByOptions(clazz: KSClassDecla
                 }
             }
     } else {
-        this.filter { options.isValid(it, logger) }
+        validFunctions
     }
 }

@@ -1,10 +1,12 @@
 package uml.element
 
+import Notation
 import Options
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import isValid
+import toPumlAlias
 import uml.ElementKind
 import uml.className
 import uml.fullQualifiedName
@@ -17,8 +19,9 @@ class EnumElement(
     attributes: List<Field>,
     functions: List<Method>,
     val members: List<String>,
-    isShell: Boolean
-) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell) {
+    isShell: Boolean,
+    notation: Notation
+) : DiagramElement(elementName, elementAlias, uniqueIdentifier, attributes, functions, isShell, notation) {
 
     override val elementKind: ElementKind = ElementKind.ENUM
 
@@ -46,20 +49,23 @@ $functionsString
 
     class Builder(clazz: KSClassDeclaration, isShell: Boolean, options: Options, logger: KSPLogger?) : DiagramElementBuilder(clazz, isShell, options, logger) {
 
-        override fun build(): EnumElement? {
+        private val entries: List<String> = clazz.declarations
+            .mapNotNull { it as? KSClassDeclaration }
+            .filter { it.classKind == ClassKind.ENUM_ENTRY }
+            .map { it.simpleName.asString() }
+            .toList()
+
+        override fun buildElement(): EnumElement? {
             return if (options.isValid(clazz, logger)) {
                 EnumElement(
                     uniqueIdentifier = clazz.fullQualifiedName,
                     elementName = clazz.className,
-                    elementAlias = clazz.fullQualifiedName.replace(".", "_").trim('_'),
-                    attributes = allProperties.map { it.toField(options) },
-                    functions = allFunctions.map { it.toMethod(options) },
-                    members = clazz.declarations
-                        .mapNotNull { it as? KSClassDeclaration }
-                        .filter { it.classKind == ClassKind.ENUM_ENTRY }
-                        .map { it.simpleName.asString() }
-                        .toList(),
-                    isShell = isShell
+                    elementAlias = clazz.fullQualifiedName.toPumlAlias(),
+                    attributes = allProperties,
+                    functions = allFunctions,
+                    members = entries,
+                    isShell = isShell,
+                    notation = options.notation
                 )
             } else {
                 null

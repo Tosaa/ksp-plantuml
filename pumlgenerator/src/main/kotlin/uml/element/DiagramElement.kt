@@ -1,10 +1,11 @@
 package uml.element
 
+import Notation
 import ensureStartsWith
 import uml.ElementKind
 import uml.Renderable
 
-sealed class DiagramElement(val elementName: String, val elementAlias: String, val uniqueIdentifier: String, val attributes: List<Field>, val functions: List<Method>, val isShell: Boolean) : Renderable {
+sealed class DiagramElement(val elementName: String, val elementAlias: String, val uniqueIdentifier: String, val attributes: List<Field>, val functions: List<Method>, val isShell: Boolean, val notation: Notation) : Renderable {
 
     abstract val elementKind: ElementKind
 
@@ -31,7 +32,7 @@ $functionsString
     override fun render(): String {
         return """
     ${comment.ensureStartsWith('\'')}
-    ${elementKind.kind} "$elementName" as $elementAlias ${elementKind.kindExtra}{
+    ${elementKind.kind} "$elementName" as $elementAlias ${elementKind.kindExtra(notation)}{
         ${getContent("$INDENT$INDENT").trim()}
     }
 """

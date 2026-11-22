@@ -41,6 +41,28 @@ class DataClassGenerationTest : CompilationTest() {
         expectedProperties.forEach {
             assertContains(generatedFile, it)
         }
+        // Compiler generated members are hidden by default
+        assertContainsNot(generatedFile, "component1() : Int")
+        assertContainsNot(generatedFile, "component2() : String")
+        assertContainsNot(generatedFile, "copy(")
+    }
+
+    @OptIn(ExperimentalCompilerApi::class)
+    @Test
+    fun `create UML class entry for data class with showGeneratedMembers`() {
+        val expectedClassName = "TestClass"
+        val packageName = "data"
+        val expectedAlias = "data_TestClass"
+        val classDefinition = "class \"$expectedClassName\" as $expectedAlias <<Data>>"
+        val kotlinSource = SourceFile.kotlin(
+            "TestClass.kt", generateDataClass(packageName, expectedClassName, listOf("val bar : Int = 4", "val bar2 : String"), listOf("fun foo(): Unit", "fun foo2(): String"))
+        )
+        val compilation = newCompilation(DEFAULT_OPTIONS.copy(showGeneratedMembers = true), listOf(kotlinSource))
+        val result = compilation.compile()
+        assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        assertTrue { result.sourcesGeneratedBySymbolProcessor.toList().isNotEmpty() }
+        val generatedFile = result.sourcesGeneratedBySymbolProcessor.first().readText()
+        assertContains(generatedFile, classDefinition)
         assertContains(generatedFile, "component1() : Int")
         assertContains(generatedFile, "component2() : String")
     }

@@ -1,6 +1,7 @@
 package docgeneration
 
 import CompilationTest
+import Notation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.sourcesGeneratedBySymbolProcessor
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
@@ -149,6 +150,24 @@ class GenerationForDoc : CompilationTest() {
         get() = this.isFile && this.exists() && listOf("startuml", "enduml").all { it in this.readText() }
     """
 
+    // Shows the differences between the notations
+    val notationCode = """
+    package shop
+    interface Product {
+        val name: String
+    }
+    enum class Category { FOOD, TOYS }
+    class Price(val amount: Int)
+    class Item(override val name: String, val category: Category, val price: Price?) : Product
+    class Cart {
+        val items: List<Item> = emptyList()
+        internal val owner: String = ""
+        fun total(): Price = Price(0)
+        suspend fun checkout(vararg coupons: String): Boolean = true
+    }
+    fun Cart.isEmpty(): Boolean = items.isEmpty()
+    """
+
     val indirectRelationsCode = """
     package person
     class Age(val value: Int)
@@ -209,6 +228,8 @@ class GenerationForDoc : CompilationTest() {
             Triple("SealedClasses", sealedClassesCode, DEFAULT_OPTIONS),
             Triple("IndirectRelations", indirectRelationsCode, DEFAULT_OPTIONS),
             Triple("ManyRelations", manyRelationsCode, DEFAULT_OPTIONS),
+            Triple("PlantumlNotation", notationCode, DEFAULT_OPTIONS),
+            Triple("UmlNotation", notationCode, DEFAULT_OPTIONS.copy(notation = Notation.UML)),
         ).forEach { (name, code, options) ->
             val note = buildString {
                 appendLine("note as note_of_code")

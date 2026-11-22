@@ -9,16 +9,7 @@ title Example for Enums
 		GREEN
 		__
 		+ description : String
-		+ name : String
-		+ ordinal : Int
-		+ {static} entries : EnumEntries<TrafficLights>
 		+ canCrossSafely() : Boolean
-		# clone() : Any
-		+ getDeclaringClass() : Class<TrafficLights>
-		+ describeConstable() : Optional<EnumDesc<TrafficLights>>
-		# finalize() : Unit
-		+ {static} values() : Array<TrafficLights>
-		+ {static} valueOf(String) : TrafficLights
     }
 
 

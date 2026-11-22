@@ -54,6 +54,12 @@ class MultiRoundTest : CompilationTest() {
     class Shop(val products: List<Product>) : GeneratedCatalog()
     """
 
+    // Is processed in the first round and refers to a class of the second round and to a type of a library (kotlin.Function1)
+    private val customerCode = """
+    package shop
+    class Customer(val favoriteShop: Shop, val onPurchase: (Product) -> Unit)
+    """
+
     @OptIn(ExperimentalCompilerApi::class)
     private fun generateInTwoRounds(vararg sources: SourceFile): String {
         val compilation = newCompilation(DEFAULT_OPTIONS, sources.toList()).apply {
@@ -61,6 +67,8 @@ class MultiRoundTest : CompilationTest() {
         }
         val result = compilation.compile()
         assertEquals(KotlinCompilation.ExitCode.OK, result.exitCode, result.messages)
+        // Accessing a symbol of an earlier round fails with an internal error, which is logged as warning
+        assertContainsNot(result.messages, "internal Kotlin error")
         return result.sourcesGeneratedBySymbolProcessor.first { it.extension == "puml" }.readText()
     }
 
@@ -114,5 +122,17 @@ class MultiRoundTest : CompilationTest() {
         assertContains(generatedFile, "<ext> open() : Boolean")
         assertContains(generatedFile, "+ products : List<Product>")
         assertContains(generatedFile, "shop_GeneratedCatalog <|-- shop_Shop")
+    }
+
+    @Test
+    fun `A class of the first round is related to a class of the second round`() {
+        val generatedFile = generateInTwoRounds(
+            SourceFile.kotlin("Customer.kt", customerCode),
+            SourceFile.kotlin("Product.kt", productCode),
+            SourceFile.kotlin("Shop.kt", shopCode),
+        )
+        assertContains(generatedFile, "+ favoriteShop : Shop")
+        assertContains(generatedFile, "+ onPurchase : (Product) -> Unit")
+        assertContains(generatedFile, "shop_Customer --* shop_Shop")
     }
 }

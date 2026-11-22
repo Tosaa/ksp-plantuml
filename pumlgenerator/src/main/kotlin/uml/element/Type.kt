@@ -1,5 +1,8 @@
 package uml.element
 
+import com.google.devtools.ksp.isInternal
+import com.google.devtools.ksp.isPrivate
+import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSType
 import i
@@ -42,6 +45,13 @@ open class Type(
     }
 
     val isNullable: Boolean = originalKSType?.isMarkedNullable == true
+
+    // The relations are checked against the options after the last processing round, when the declaration must not be accessed anymore.
+    // Therefore, the values that are checked are taken from the declaration when the Type is created.
+    val isPublic: Boolean = originalKSType?.declaration?.isPublic() == true
+    val isInternal: Boolean = originalKSType?.declaration?.isInternal() == true
+    val isPrivate: Boolean = originalKSType?.declaration?.isPrivate() == true
+    val packageName: String = originalKSType?.declaration?.packageName?.asString() ?: ""
 
     val isGeneric = (originalKSType?.arguments?.size ?: 0) > 0
     val genericTypes = originalKSType?.arguments?.mapNotNull { it.type?.resolve()?.toType() } ?: emptyList()

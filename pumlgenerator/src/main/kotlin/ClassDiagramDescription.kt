@@ -108,7 +108,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
         logger.v { "addPropertyTypeRelation(): field=$fieldOfClass with type=$type, level=$level" }
 
         when {
-            !options.isValid(type.originalKSType, logger) ->
+            !options.isValid(type, logger) ->
                 null
 
             !graph.hasVertex(type.fullQualifiedName) -> {
@@ -176,7 +176,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
     private fun addFunctionTypeRelation(base: KSClassDeclaration, methodOfClass: Method, type: Type, level: Int) {
         logger.v { "addFunctionTypeRelation(): method=$methodOfClass return type=$type, level=$level" }
         when {
-            !options.isValid(type.originalKSType, logger) ->
+            !options.isValid(type, logger) ->
                 null
 
             !graph.hasVertex(type.fullQualifiedName) -> {
@@ -249,7 +249,7 @@ class ClassDiagramDescription(val options: Options, val logger: KSPLogger? = nul
     private fun addParameterTypeRelation(base: KSClassDeclaration, methodOfClass: Method, type: Type, level: Int) {
         logger.v { "addParameterTypeRelation(): method=$methodOfClass parameter type=$type, level=$level" }
         when {
-            !options.isValid(type.originalKSType, logger) ->
+            !options.isValid(type, logger) ->
                 null
 
             !graph.hasVertex(type.fullQualifiedName) -> {

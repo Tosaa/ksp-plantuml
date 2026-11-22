@@ -7,8 +7,8 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
-import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSTypeAlias
+import uml.element.Type
 import uml.isGeneratedMemberOf
 import uml.isInheritedFunction
 import uml.isInheritedProperty
@@ -199,38 +199,35 @@ fun Options?.isValid(packageName: String, logger: KSPLogger? = null): Boolean = 
     false
 }
 
-fun Options?.isValid(type: KSType?, logger: KSPLogger? = null): Boolean = runCatching {
-    when {
-        this == null ->
-            true
+/**
+ * Checks the declaration of the [type] with the values that were taken from it when the [Type] was created,
+ * since the relations are checked after the last processing round, when the declaration must not be accessed anymore.
+ */
+fun Options?.isValid(type: Type, logger: KSPLogger? = null): Boolean = when {
+    this == null ->
+        true
 
-        type == null ->
-            true
+    type.originalKSType == null ->
+        true
 
-
-        type.declaration.isPublic() && !this.showPublicClasses -> {
-            logger.v { "Exclude '${type.declaration.simpleName.getShortName()}' since its Public and Public deactivated by the options" }
-            false
-        }
-
-        type.declaration.isInternal() && !this.showInternalClasses -> {
-            logger.v { "Exclude '${type.declaration.simpleName.getShortName()}' since its Internal and Internal deactivated by the options" }
-            false
-        }
-
-        type.declaration.isPrivate() && !this.showPrivateClasses -> {
-            logger.v { "Exclude '${type.declaration.simpleName.getShortName()}' since its Private and Private deactivated by the options" }
-            false
-        }
-
-        !isValid(type.declaration.packageName.asString(), logger) -> false
-
-        else -> true
+    type.isPublic && !this.showPublicClasses -> {
+        logger.v { "Exclude '${type.typeName}' since its Public and Public deactivated by the options" }
+        false
     }
-}.getOrElse { throwable ->
-    // The type is not accessed again, since it might be the reason of the error
-    logger.w { "Exclude type due to internal Kotlin error:\n${throwable.stackTraceToString()}" }
-    false
+
+    type.isInternal && !this.showInternalClasses -> {
+        logger.v { "Exclude '${type.typeName}' since its Internal and Internal deactivated by the options" }
+        false
+    }
+
+    type.isPrivate && !this.showPrivateClasses -> {
+        logger.v { "Exclude '${type.typeName}' since its Private and Private deactivated by the options" }
+        false
+    }
+
+    !isValid(type.packageName, logger) -> false
+
+    else -> true
 }
 
 fun Options?.isValid(declaration: KSClassDeclaration, logger: KSPLogger? = null): Boolean = runCatching {
